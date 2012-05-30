@@ -19,7 +19,7 @@ ofxRGBDRenderer::ofxRGBDRenderer(){
 	simplify = 1;
 
 	farClip = 6000;
-	ZFuzz = 0;
+//	ZFuzz = 0;
     meshRotate = ofVec3f(0,0,0);
     
     calculateNormals = false;
@@ -156,13 +156,14 @@ ofBaseHasTexture& ofxRGBDRenderer::getRGBTexture() {
 }
 
 void ofxRGBDRenderer::setDepthImage(ofShortPixels& pix){
-	currentDepthImage.setFromPixels(pix);
-	if(!undistortedDepthImage.isAllocated()){
-		undistortedDepthImage.allocate(640,480,OF_IMAGE_GRAYSCALE);
-	}
+//	currentDepthImage.setFromPixels(pix);
+//	if(!undistortedDepthImage.isAllocated()){
+//		undistortedDepthImage.allocate(640,480,OF_IMAGE_GRAYSCALE);
+//	}
+    currentDepthImage = &pix;
 	hasDepthImage = true;
 }
-
+/*
 void ofxRGBDRenderer::setDepthImage(unsigned short* depthPixelsRaw){
 	currentDepthImage.setFromPixels(depthPixelsRaw, 640,480, OF_IMAGE_GRAYSCALE);
 	if(!undistortedDepthImage.isAllocated()){
@@ -170,6 +171,7 @@ void ofxRGBDRenderer::setDepthImage(unsigned short* depthPixelsRaw){
 	}
 	hasDepthImage = true;
 }
+*/
 
 Calibration& ofxRGBDRenderer::getDepthCalibration(){
 	return depthCalibration;
@@ -209,10 +211,7 @@ void ofxRGBDRenderer::update(){
 	
 
     if(!forceUndistortOff){
-        depthCalibration.undistort( toCv(currentDepthImage), toCv(undistortedDepthImage), CV_INTER_NN);
-    }
-    else {
-        undistortedDepthImage = currentDepthImage;
+        depthCalibration.undistort( toCv(*currentDepthImage), CV_INTER_NN);
     }
 	
     //start
@@ -222,11 +221,11 @@ void ofxRGBDRenderer::update(){
     int indexPointer = 0;
     int vertexPointer = 0;
     hasVerts = false;
-	unsigned short* ptr = undistortedDepthImage.getPixels();
+//	unsigned short* ptr = currentDepthImage->getPixels();
 	for(int y = 0; y < h; y += simplify) {
 		for(int x = 0; x < w; x += simplify) {
             vertexPointer = y*w+x;
-			unsigned short z = undistortedDepthImage.getPixels()[y*w+x];
+			unsigned short z = currentDepthImage->getPixels()[y*w+x];
 			IndexMap& indx = indexMap[indexPointer];
 			if(z != 0 && z < farClip){
 				xReal = (((float)x - principalPoint.x) / imageSize.width) * z * fx;

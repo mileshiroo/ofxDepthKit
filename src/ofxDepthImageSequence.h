@@ -24,7 +24,7 @@ class ofxDepthImageSequence {
     bool loadSequence(string sequenceDirectory);
     bool isLoaded();
     bool doFramesHaveTimestamps();
-    
+        
     int getCurrentFrame();
     long getCurrentMilliseconds();
     float getCurrentSeconds();

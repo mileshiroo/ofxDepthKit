@@ -34,7 +34,7 @@ class ofxRGBDRenderer {
 
 	void setRGBTexture(ofBaseHasTexture& rgbTexture); 
     void setDepthImage(ofShortPixels& pix);
-	void setDepthImage(unsigned short* depthPixelsRaw);
+//	void setDepthImage(unsigned short* depthPixelsRaw);
 
     ofBaseHasTexture& getRGBTexture();
 
@@ -46,8 +46,6 @@ class ofxRGBDRenderer {
 	float edgeCull;
 	float farClip;
 	
-	//helps diffuse "stairstep" looking patterns by adding a bit of randomness
-	float ZFuzz;
 	
     bool calculateTextureCoordinates;
     bool forceUndistortOff;
@@ -108,8 +106,9 @@ class ofxRGBDRenderer {
     bool calculateNormals;
 
 	ofBaseHasTexture* currentRGBImage;
-	ofShortImage currentDepthImage;
-	ofShortImage undistortedDepthImage;
+    ofShortPixels* currentDepthImage;
+	//ofShortImage currentDepthImage;
+	//ofShortImage undistortedDepthImage;
 	
 	vector<Point2f> imagePoints;    
 	vector<Point2f> undistortedPoints;

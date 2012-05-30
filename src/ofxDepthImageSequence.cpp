@@ -81,11 +81,15 @@ bool ofxDepthImageSequence::loadSequence(string sequenceDirectory){
 }
 
 long ofxDepthImageSequence::getDurationInMillis(){
+    if(!sequenceLoaded){
+        ofLogError("ofxDepthImageSequence::getDurationInMillis() -- sequence not loaded");
+        return 0;
+    }
     return durationInMillis;
 }
 
 float ofxDepthImageSequence::getDurationInSeconds(){
-    return durationInMillis / 1000.0;
+    return getDurationInMillis() / 1000.0;
 }
 
 int ofxDepthImageSequence::getCurrentFrame(){
@@ -183,7 +187,6 @@ ofShortPixels& ofxDepthImageSequence::getPixels(){
         ofLogError("ofxDepthImageSequence::getPixels() -- sequence not loaded");
     }
     else {
-//	if(!images[currentFrame].pix.isAllocated()){
     	compressor.readCompressedPng(images[currentFrame].path, pixels);
     }
     return pixels;
