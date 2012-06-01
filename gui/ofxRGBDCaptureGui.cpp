@@ -240,7 +240,7 @@ void ofxRGBDCaptureGui::draw(ofEventArgs& args){
     	
         ofPushStyle();
         ofSetColor(timeline.getColors().disabledColor);
-        float percentComplete = float(btnTakes[i].takeRef->framesConverted) / float(btnTakes[i].takeRef->numFrames);
+        float percentComplete = float(btnTakes[i].takeRef->compressedDepthFrameCount) / float(btnTakes[i].takeRef->totalDepthFrameCount);
         float processedWidth = btnTakes[i].button->width*percentComplete;
         ofRectangle highlighRect(btnTakes[i].button->x + processedWidth,
                                  btnTakes[i].button->y,
@@ -471,7 +471,7 @@ void ofxRGBDCaptureGui::loadDefaultDirectory(){
 }
 
 void ofxRGBDCaptureGui::loadSequenceForPlayback( int index ){
-    depthSequence.loadSequence( recorder.getTakes()[index]->path );
+    depthSequence.loadSequence( recorder.getTakes()[index]->depthFolder );
 	timeline.setDurationInFrames(depthSequence.videoThumbs.size());
 }
 
@@ -496,7 +496,7 @@ void ofxRGBDCaptureGui::captureCalibrationImage(){
 
 //--------------------------------------------------------------
 void ofxRGBDCaptureGui::updateTakeButtons(){
-	vector<Take*>& takes = recorder.getTakes();
+	vector<ofxRGBDMediaTake*>& takes = recorder.getTakes();
 	
 	for(int i = 0; i < btnTakes.size(); i++){
         btnTakes[i].button->disableAllEvents();
@@ -520,7 +520,10 @@ void ofxRGBDCaptureGui::updateTakeButtons(){
 		}
 		
 		btnTake->setPosAndSize(x, y, thirdWidth, btnheight*.66);
-		btnTake->setLabel( ofFilePath::getFileName(takes[i]->path) );
+		//btnTake->setLabel( ofFilePath::getFileName(takes[i]->depthFolder) );
+		vector<string> components = ofSplitString(takes[i]->mediaFolder, "/");
+        
+        btnTake->setLabel( components[components.size()-1] );
 		btnTake->setIdleColor(idleColor);
 		btnTake->setDownColor(downColor);
 		btnTake->setHoverColor(hoverColor);

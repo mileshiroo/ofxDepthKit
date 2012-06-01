@@ -10,6 +10,7 @@
 #pragma once
 #include "ofMain.h"
 #include "ofxDepthImageCompressor.h"
+#include "ofxRGBDMediaTake.h"
 
 typedef struct {
 	unsigned short* pixels;
@@ -18,11 +19,13 @@ typedef struct {
 	int timestamp;
 } QueuedFrame;
 
+/*
 typedef struct {
     string path;
 	int numFrames;
     int framesConverted;
 } Take;
+*/
 
 //thread classes for callbacks
 class ofxDepthImageRecorder;
@@ -47,7 +50,7 @@ class ofxDepthImageRecorder {
 	ofxDepthImageRecorder();
 	~ofxDepthImageRecorder();
 
-    vector<Take*>& getTakes();
+    vector<ofxRGBDMediaTake*>& getTakes();
 	
 	void setup();
 	void toggleRecord();
@@ -80,7 +83,7 @@ class ofxDepthImageRecorder {
     void incrementTake();
     
     //start converting the current directory
-    vector<Take*> takes;
+    vector<ofxRGBDMediaTake*> takes;
 	void compressCurrentTake();
 	void updateTakes();
 	int compressingTakeIndex;    
@@ -100,5 +103,6 @@ class ofxDepthImageRecorder {
 	
 	queue<QueuedFrame> saveQueue;
 	//queue<string> encodeDirectories;
-    queue<Take*> encodeDirectories;
+    //queue<Take*> encodeDirectories;
+    queue<ofxRGBDMediaTake*> encodeDirectories;
 };

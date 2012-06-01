@@ -7,7 +7,6 @@
 
 #pragma once
 #include "ofMain.h"
-#include "ofxRGBDRenderSettings.h"
 
 class ofxRGBDMediaTake {
   public:
@@ -15,30 +14,28 @@ class ofxRGBDMediaTake {
     
     bool loadFromFolder(string sourceMediaFolder);
     bool valid();
-    
-    
-    //void populateCompositions();
-	void populateRenderSettings();
-    vector<ofxRGBDRenderSettings>& getRenderSettings();
-    
+
+    bool hasPairings;
+    bool hasCalibration;
+    bool hasDepth;
+    bool hasColor;
+    bool hasHiResVideo;
+    bool hasLoResVideo;
+
     string mediaFolder;
-    string calibrationDirectory;
+    string calibrationFolder;
     string lowResVideoPath;
     string hiResVideoPath;
     string videoThumbsPath;
     string depthFolder;
     string pairingsFile;
     
+    int totalDepthFrameCount;
+    int compressedDepthFrameCount;
+    int uncompressedDepthFrameCount;
+
   protected:
 
-    bool hasCalibrationDirectory;
-    bool hasDepthFolder;
-    bool hasLargeVideoFile;
-    bool hasSmallVideoFile;
-    
-    //TODO convert to full compositions!
-    vector<ofxRGBDRenderSettings> renderSettings;
-    
     
 };
 

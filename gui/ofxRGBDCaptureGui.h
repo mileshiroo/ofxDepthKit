@@ -17,6 +17,7 @@
 #include "ofxCvCheckerboardPreview.h"
 #include "ofxRGBDAlignment.h"
 #include "ofxDepthImageProvider.h"
+#include "ofxRGBDMediaTake.h"
 
 typedef enum {
 	TabCalibrate,
@@ -31,7 +32,7 @@ typedef enum {
 } DepthRenderMode;
 
 typedef struct {
-	Take* takeRef;
+	ofxRGBDMediaTake* takeRef;
     ofxMSAInteractiveObjectWithDelegate* button;
     bool isSelected;
 } TakeButton;
