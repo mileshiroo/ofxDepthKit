@@ -39,14 +39,14 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
 	
     ofDirectory dataDirectory(mediaFolder);
     if(!dataDirectory.exists()){
-        ofSystemAlertDialog("Error loading media folder " + mediaFolder + " -- Directory not found.");
+        ofLogWarning("ofxRGBDMediaTake::loadFromFolder -- folder " + mediaFolder + " -- Directory doesn't exist.");
         return false;
     }
     
 	dataDirectory.listDir();    
 	int numFiles = dataDirectory.numFiles();
     if(numFiles == 0){
-        ofSystemAlertDialog("Error loading media folder " + mediaFolder + " -- Directory is empty.");
+        ofLogWarning("ofxRGBDMediaTake::loadFromFolder -- folder " + mediaFolder + " -- Directory is empty.");
         return false;        
     }
 
@@ -109,7 +109,7 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
     mainDirectoryColor.allowExt("mpg");
     mainDirectoryColor.listDir();
     
-    //move the movies into the color/ dir
+    //move the movies into the color/ dir if they are hanging outside
     if(mainDirectoryColor.numFiles() > 0){
         if(!colorDirectory.exists()){
             colorDirectory.create();
@@ -210,7 +210,6 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
     //////////////////////////////////////////////
     // REPORT
     //////////////////////////////////////////////
-
     bool debug = true;
     if(debug){
         cout << "REPORT FOR " << sourceMediaFolder << endl;

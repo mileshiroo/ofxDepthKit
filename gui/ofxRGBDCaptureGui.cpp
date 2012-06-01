@@ -443,8 +443,7 @@ void ofxRGBDCaptureGui::loadDirectory(string path){
         return;
     }
     
-	workingDirectory = path;
-	recorder.setRecordLocation(path+"/takes", "frame");
+	recorder.setRecordLocation(path, "frame");
 	ofDirectory dir(workingDirectory+"/calibration");
 	if(!dir.exists()){
 		dir.create(true);
@@ -496,8 +495,12 @@ void ofxRGBDCaptureGui::captureCalibrationImage(){
 
 //--------------------------------------------------------------
 void ofxRGBDCaptureGui::updateTakeButtons(){
-	vector<ofxRGBDMediaTake*>& takes = recorder.getTakes();
 	
+    vector<ofxRGBDMediaTake*>& takes = recorder.getTakes();
+	if(takes.size() == btnTakes.size()){
+    	return;
+    }
+    
 	for(int i = 0; i < btnTakes.size(); i++){
         btnTakes[i].button->disableAllEvents();
         btnTakes[i].button->enabled = false;
@@ -520,9 +523,7 @@ void ofxRGBDCaptureGui::updateTakeButtons(){
 		}
 		
 		btnTake->setPosAndSize(x, y, thirdWidth, btnheight*.66);
-		//btnTake->setLabel( ofFilePath::getFileName(takes[i]->depthFolder) );
-		vector<string> components = ofSplitString(takes[i]->mediaFolder, "/");
-        
+		vector<string> components = ofSplitString(takes[i]->mediaFolder, "/");        
         btnTake->setLabel( components[components.size()-1] );
 		btnTake->setIdleColor(idleColor);
 		btnTake->setDownColor(downColor);

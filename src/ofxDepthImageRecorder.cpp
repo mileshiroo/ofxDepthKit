@@ -88,7 +88,7 @@ bool ofxDepthImageRecorder::addImage(unsigned short* image){
 	int framebytes = 640*480*sizeof(unsigned short);
 	if(0 != memcmp(image, lastFramePixs.getPixels(), framebytes)){
 		QueuedFrame frame;
-        //TODO use high res timer!!!
+        
 		frame.timestamp = msaTimer.getAppTimeMillis() - recordingStartTime;
 		frame.pixels = new unsigned short[640*480];
 		memcpy(frame.pixels, image, framebytes);
@@ -134,7 +134,6 @@ void ofxDepthImageRecorder::toggleRecord(){
 	}
 }
 
-
 bool ofxDepthImageRecorder::isRecording(){
 	return recording;
 }
@@ -145,9 +144,9 @@ void ofxDepthImageRecorder::incrementTake(){
     currentFolderPrefix = string(takeString);
     ofDirectory dir(targetDirectory + "/" + currentFolderPrefix);
     
-	if(!dir.exists()){
-		dir.create(true);
-	}
+    dir.create(true);
+	ofDirectory depthDir = ofDirectory(dir.getOriginalDirectory() + "/depth/");
+    depthDir.create(true);
 	
     currentFrame = 0;	
     recordingStartTime = msaTimer.getAppTimeMillis();
@@ -168,8 +167,8 @@ void ofxDepthImageRecorder::compressCurrentTake(){
     t->depthFrameCount = 1;
      */
     
+    takes.push_back( t );
     encoderThread.lock();
-    takes.push_back(t);
     encodeDirectories.push( t );
     encoderThread.unlock();
 }
@@ -189,8 +188,12 @@ void ofxDepthImageRecorder::updateTakes(){
 	for(int i = 0; i < dir.numFiles(); i++){
         ofxRGBDMediaTake* t = new ofxRGBDMediaTake();
         t->loadFromFolder(dir.getPath(i));
-        if(t->valid()){
+        if(t->hasDepth){
             takes.push_back(t);
+        }
+        else{
+            ofLogWarning("ofxDepthImageRecorder::updateTakes -- Take " + dir.getPath(i) + " has no depth images");
+            delete t;
         }
 	}
     
