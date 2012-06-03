@@ -13,8 +13,7 @@ ofxRGBDMediaTake::ofxRGBDMediaTake(){
     hasPairings = false;
     hasDepth = false;
     hasColor = false;
-    hasHiResVideo = false;
-    hasLoResVideo = false;
+    hasAlternativeHiResVideo = false;
     
     compressedDepthFrameCount = 0;
     uncompressedDepthFrameCount = 0;
@@ -28,13 +27,11 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
     hasCalibration = false;
     hasDepth = false;
     hasColor = false;
-    hasHiResVideo = false;
-    hasLoResVideo = false;
+    hasAlternativeHiResVideo = false;
     
     calibrationFolder = "";
-    lowResVideoPath = "";
-    hiResVideoPath = "";
-    depthFolder = "";
+    videoPath = "";
+    alternativeHiResVideoPath = "";
     pairingsFile = "";
 	
     ofDirectory dataDirectory(mediaFolder);
@@ -50,11 +47,24 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
         return false;        
     }
 
+    vector<string> components = ofSplitString( mediaFolder, "/");
+    name = components[components.size()-1];
+    
     //////////////////////////////////////////////
     // DEPTH
     //////////////////////////////////////////////
+
+    bool depthFolderFound = false;
+    for(int i = 0; i < dataDirectory.numFiles(); i++){
+        if(dataDirectory.getName(i).find("depth") != string::npos && dataDirectory.getFile(i).isDirectory()){
+            depthFolder = dataDirectory.getPath(i);
+            depthFolderFound = true;
+        }
+    }
+    if(!depthFolderFound){
+	    depthFolder = mediaFolder + "/depth/";
+    }
     
-    depthFolder =  mediaFolder + "/depth/";
     ofDirectory depthDirectory = ofDirectory(depthFolder);
     
     //potentially a legacy folder. check to see if there are +20 PNG or raws's 
@@ -90,7 +100,6 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
         
         totalDepthFrameCount = uncompressedDepthFrameCount + compressedDepthFrameCount;
         hasDepth = (totalDepthFrameCount > 0);
-
     }
     
     //////////////////////////////////////////////
@@ -101,7 +110,7 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
     // COLOR
     //////////////////////////////////////////////
   
-    string colorFolder = mediaFolder + "color/";
+    string colorFolder = mediaFolder + "/color/";
     ofDirectory colorDirectory = ofDirectory(colorFolder);
 	ofDirectory mainDirectoryColor = ofDirectory(sourceMediaFolder);
     mainDirectoryColor.allowExt("mpeg");
@@ -134,8 +143,7 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
         }
         else if(colorDirectory.numFiles() == 1){
             hasColor = true;
-            hasHiResVideo = true;
-            hiResVideoPath = colorDirectory.getPath(0);
+            videoPath = colorDirectory.getPath(0);
         }
         else {
 	        int largestIndex = 0;  
@@ -154,13 +162,20 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
             }
             
             hasColor = true;
-            hasHiResVideo = true;
-            hasLoResVideo = true;
-            hiResVideoPath = colorDirectory.getPath(largestSize);
-            lowResVideoPath = colorDirectory.getPath(smallestSize); 
+            hasAlternativeHiResVideo = true;
+            alternativeHiResVideoPath = colorDirectory.getPath(largestIndex);
+            videoPath = colorDirectory.getPath(smallestIndex); 
         }
-    }
-    
+        
+        if(hasColor){
+            videoThumbsPath = ofFilePath::removeExt(videoPath);
+            if(!ofDirectory(videoThumbsPath).exists()){
+                ofDirectory(videoThumbsPath).create(true);
+            }
+            
+        }
+
+    }    
     //////////////////////////////////////////////
     // END COLOR
     //////////////////////////////////////////////
@@ -174,14 +189,14 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
         mainDirectoryPairings.listDir();
         for(int i = 0; i < mainDirectoryPairings.numFiles(); i++){
             if(mainDirectoryPairings.getName(i).find("pairings") != string::npos){
-                pairingsFile = dataDirectory.getPath(i);
+                pairingsFile = mainDirectoryPairings.getPath(i);
                 hasPairings = true;
                 break;
             }
         }
 
         if(!hasPairings){
-            pairingsFile = "pairings.xml";
+            pairingsFile = mediaFolder + "/pairings.xml";
         }
     }
     //////////////////////////////////////////////
@@ -193,7 +208,7 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
     // CALIBRATION
     //////////////////////////////////////////////
 	if(hasColor){
-        calibrationFolder = sourceMediaFolder + "calibration/";
+        calibrationFolder = mediaFolder + "/calibration/";
         ofDirectory calibrationDirectory = ofDirectory(calibrationFolder);
         hasCalibration = calibrationDirectory.exists();
         if(!hasCalibration){
@@ -202,7 +217,6 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
             hasCalibration = calibrationDirectory.exists();
         }
     }
-    
     //////////////////////////////////////////////
     // END CALIBRATION
     //////////////////////////////////////////////
@@ -223,15 +237,15 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
         
         cout << "has COLOR? " << (hasColor ? "YES" : "NO") << endl;
         if(hasColor){
-            cout << "has HI RES " << (hasHiResVideo ? "YES" : "NO") << endl;
-            cout << "has LO RES " << (hasLoResVideo ? "YES" : "NO") << endl;
-            
+            cout << "has VIDEO " << (hasColor ? "YES" : "NO") << endl;
+            cout << "has HI RES " << (hasAlternativeHiResVideo ? "YES" : "NO") << endl;
             cout << "has CALIBRATION " << (hasCalibration ? "YES" : "NO") << endl;
             cout << "has PAIRINGS " << (hasPairings ? "YES" : "NO") << endl;
+            if(hasPairings){
+                cout << "pairings! " << pairingsFile << endl;
+            }
         }
-        
     }
-    
     //////////////////////////////////////////////
     // END REPORT
     //////////////////////////////////////////////

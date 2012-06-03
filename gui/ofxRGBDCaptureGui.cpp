@@ -523,8 +523,7 @@ void ofxRGBDCaptureGui::updateTakeButtons(){
 		}
 		
 		btnTake->setPosAndSize(x, y, thirdWidth, btnheight*.66);
-		vector<string> components = ofSplitString(takes[i]->mediaFolder, "/");        
-        btnTake->setLabel( components[components.size()-1] );
+        btnTake->setLabel( takes[i]->name );
 		btnTake->setIdleColor(idleColor);
 		btnTake->setDownColor(downColor);
 		btnTake->setHoverColor(hoverColor);

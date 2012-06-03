@@ -19,13 +19,13 @@ class ofxRGBDMediaTake {
     bool hasCalibration;
     bool hasDepth;
     bool hasColor;
-    bool hasHiResVideo;
-    bool hasLoResVideo;
+    bool hasAlternativeHiResVideo;
 
+    string name;
     string mediaFolder;
     string calibrationFolder;
-    string lowResVideoPath;
-    string hiResVideoPath;
+    string videoPath;
+    string alternativeHiResVideoPath;
     string videoThumbsPath;
     string depthFolder;
     string pairingsFile;
