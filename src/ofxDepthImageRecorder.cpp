@@ -148,6 +148,10 @@ void ofxDepthImageRecorder::incrementTake(){
 	ofDirectory depthDir = ofDirectory(dir.getOriginalDirectory() + "/depth/");
     depthDir.create(true);
 	
+    //create a color folder for good measure
+	ofDirectory colorDir = ofDirectory(dir.getOriginalDirectory() + "/color/");
+    colorDir.create(true);
+    
     currentFrame = 0;	
     recordingStartTime = msaTimer.getAppTimeMillis();
 }
@@ -186,6 +190,10 @@ void ofxDepthImageRecorder::updateTakes(){
 	dir.sort();
     
 	for(int i = 0; i < dir.numFiles(); i++){
+        if(dir.getName(i) == "_calibration"){
+            continue;
+        }
+
         ofxRGBDMediaTake* t = new ofxRGBDMediaTake();
         t->loadFromFolder(dir.getPath(i));
         if(t->hasDepth){

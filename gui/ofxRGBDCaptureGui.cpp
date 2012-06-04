@@ -5,6 +5,12 @@
 //  Created by James George on 4/12/12.
 //
 
+//TODO: threaded alignment generation
+//TODO: feedback when alignment is saved
+//TODO: feedback when alignment is dirty
+//TODO: fix coloring with red/white checkerboards
+//TOOD: add in previews for selected objects
+
 #include "ofxRGBDCaptureGui.h"
 
 ofxRGBDCaptureGui::ofxRGBDCaptureGui(){
@@ -64,10 +70,29 @@ void ofxRGBDCaptureGui::setup(){
 	btnRenderPointCloud->setLabel("Pointcloud");
 	buttonSet.push_back(btnRenderPointCloud);
     
+    btnLoadRGBCalibration = new ofxMSAInteractiveObjectWithDelegate();
+    btnLoadRGBCalibration->setLabel("Load RGB Movie Folder");
+    btnLoadRGBCalibration->setPosAndSize(0, btnheight*2+frameheight, thirdWidth, btnheight);
+	buttonSet.push_back(btnLoadRGBCalibration);
+
+    btnGenerateCalibration = new ofxMSAInteractiveObjectWithDelegate();
+    btnGenerateCalibration->setLabel("Regenerate Calibration");
+	btnGenerateCalibration->setPosAndSize(thirdWidth, btnheight*2+frameheight, thirdWidth, btnheight);
+    buttonSet.push_back(btnGenerateCalibration);
+
+    btnExportCalibration = new ofxMSAInteractiveObjectWithDelegate();
+    btnExportCalibration->setLabel("Save Calibration");
+    btnExportCalibration->setPosAndSize(thirdWidth*2, btnheight*2+frameheight, thirdWidth, btnheight);
+	buttonSet.push_back(btnExportCalibration);
+    
 	btnRecordBtn = new ofxMSAInteractiveObjectWithDelegate();
 	btnRecordBtn->setPosAndSize(0, btnheight*3+frameheight, framewidth, btnheight);
 	btnRecordBtn->setLabel("Capture Chessboard");
     buttonSet.push_back(btnRecordBtn);
+    
+//	btnLoadRGBCalibration = new ofxMSAInteractiveObjectWithDelegate();
+//	btnLoadRGBCalibration->setPosAndSize(0, btnheight*4+frameheight, framewidth, btnheight);
+//    buttonSet.push_back(btnLoadRGBCalibration);
     
     for(int i = 0; i < buttonSet.size(); i++){
         buttonSet[i]->setIdleColor(idleColor);
@@ -130,7 +155,21 @@ void ofxRGBDCaptureGui::setImageProvider(ofxDepthImageProvider* imageProvider){
 }
 
 void ofxRGBDCaptureGui::update(ofEventArgs& args){
+
+    for(int i = 0; i < btnTakes.size(); i++){
+        btnTakes[i].button->enabled = (currentTab == TabRecord || currentTab == TabPlayback);
+    }
     
+    if(alignment.hasRGBImages()){
+        alignment.setupGui(0, btnheight*3+frameheight, ofGetWidth());
+    }
+
+    btnLoadRGBCalibration->enabled = btnGenerateCalibration->enabled = btnExportCalibration->enabled = (currentTab == TabCalibrate);
+    
+    btnRenderBW->enabled = btnRenderRainbow->enabled = btnRenderPointCloud->enabled = (currentTab != TabCalibrate);
+    btnRecordBtn->enabled = (currentTab != TabCalibrate);
+
+
 	if(!providerSet || !depthImageProvider->deviceFound()){
 		return;
 	}
@@ -170,8 +209,9 @@ void ofxRGBDCaptureGui::draw(ofEventArgs& args){
         else{
             depthImageProvider->getRawIRImage().draw(previewRect);
             calibrationPreview.draw(0, btnheight*2);
-            alignment.drawDepthImages();            
         }
+        //alignment.drawDepthImages();            
+        alignment.drawImagePairs();
 	}
 	else if(currentTab == TabRecord){
 
@@ -191,7 +231,6 @@ void ofxRGBDCaptureGui::draw(ofEventArgs& args){
                 ofLine(320, btnheight*2, 320, btnheight*2+480);
                 ofLine(0, btnheight*2+240, 640, btnheight*2+240);
                 ofPopStyle();
-                //depthImageProvider->getDepthImage().draw(previewRect);        
                 depthImage.draw(previewRect);
             }
         }
@@ -218,7 +257,7 @@ void ofxRGBDCaptureGui::draw(ofEventArgs& args){
         ofPopStyle();    	
     }
 
-    if(currentRenderModeObject != NULL){
+    if(currentRenderModeObject != NULL && currentTab != TabCalibrate){
         ofPushStyle();
         ofRectangle highlightRect = ofRectangle(currentRenderModeObject->x,currentRenderModeObject->y+currentRenderModeObject->height*.75,
                                                 currentRenderModeObject->width,currentRenderModeObject->height*.25);
@@ -227,26 +266,28 @@ void ofxRGBDCaptureGui::draw(ofEventArgs& args){
         ofPopStyle();    	    
     }
     
-    for(int i = 0; i < btnTakes.size(); i++){
-    	if(btnTakes[i].isSelected){
-        	ofPushStyle();
-            ofSetColor(timeline.getColors().highlightColor);
-            ofRectangle highlighRect(btnTakes[i].button->x,btnTakes[i].button->y,
-                                     btnTakes[i].button->width, btnTakes[i].button->height*.25);
-                                     
+    if(currentTab != TabCalibrate){
+        for(int i = 0; i < btnTakes.size(); i++){
+            if(btnTakes[i].isSelected){
+                ofPushStyle();
+                ofSetColor(timeline.getColors().highlightColor);
+                ofRectangle highlighRect(btnTakes[i].button->x,btnTakes[i].button->y,
+                                         btnTakes[i].button->width, btnTakes[i].button->height*.25);
+                                         
+                ofRect(highlighRect);
+                ofPopStyle();
+            }
+            
+            ofPushStyle();
+            ofSetColor(timeline.getColors().disabledColor);
+            float percentComplete = float(btnTakes[i].takeRef->compressedDepthFrameCount) / float(btnTakes[i].takeRef->totalDepthFrameCount);
+            float processedWidth = btnTakes[i].button->width*percentComplete;
+            ofRectangle highlighRect(btnTakes[i].button->x + processedWidth,
+                                     btnTakes[i].button->y,
+                                     btnTakes[i].button->width-processedWidth, btnTakes[i].button->height);
             ofRect(highlighRect);
             ofPopStyle();
         }
-    	
-        ofPushStyle();
-        ofSetColor(timeline.getColors().disabledColor);
-        float percentComplete = float(btnTakes[i].takeRef->compressedDepthFrameCount) / float(btnTakes[i].takeRef->totalDepthFrameCount);
-        float processedWidth = btnTakes[i].button->width*percentComplete;
-        ofRectangle highlighRect(btnTakes[i].button->x + processedWidth,
-                                 btnTakes[i].button->y,
-                                 btnTakes[i].button->width-processedWidth, btnTakes[i].button->height);
-        ofRect(highlighRect);
-        ofPopStyle();
     }
     
 	//draw save meter if buffer is getting full
@@ -323,6 +364,20 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
 		currentRenderMode = RenderPointCloud;
         currentRenderModeObject = btnRenderPointCloud;
 	}
+    else if(object == btnLoadRGBCalibration){
+        loadVideoFolder();
+    }
+    else if(object == btnGenerateCalibration){
+        alignment.generateAlignment();
+    }
+    else if(object == btnExportCalibration){
+        string matrixDir = workingDirectory+"/_calibration/matrices/";
+        ofDirectory dir(matrixDir);
+        if(!dir.exists()){
+            dir.create(true);
+        }
+        alignment.saveAlignment(matrixDir);
+    }
 	else {
 		for(int i = 0; i < btnTakes.size(); i++){
 			if(object == btnTakes[i].button){
@@ -334,6 +389,47 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
 			}
 		}
 	}
+}
+
+void ofxRGBDCaptureGui::loadVideoFolder(){
+    		
+	//TODO thread this
+    ofSystemAlertDialog("Select a Folder of Calibration MOVs");
+    ofFileDialogResult r = ofSystemLoadDialog("Calibration MOV's", true);
+    if(r.bSuccess){
+        ofDirectory files(r.getPath());
+        files.allowExt("mov");
+        files.allowExt("mpeg");
+        files.allowExt("mpg");
+        files.listDir();
+        files.sort();
+        
+        string pathPrefix = workingDirectory+"/_calibration/rgbCalibration/";
+        ofDirectory dir(pathPrefix);
+        if(!dir.exists()){
+            dir.create(true);
+        }
+        
+		alignment.clearRGBImages();
+        for(int i = 0; i < files.numFiles(); i++){
+            ofVideoPlayer p;
+            if(p.loadMovie(files.getPath(i))){
+                p.setFrame(p.getTotalNumFrames() / 2);
+                p.update();
+                ofImage toSave;
+                toSave.setFromPixels(p.getPixelsRef());
+                string pngFileName = pathPrefix+ofFilePath::getBaseName(files.getName(i)) + ".png";
+                toSave.saveImage(pngFileName);
+                alignment.addRGBCalibrationImage(pngFileName);
+                cout << "turned " << files.getPath(i) << " into " << pngFileName << " and loaded it " << endl;
+            }
+            else {
+                ofLogError("ofxRGBDCaptureGui::loadVideoFolder -- ERROR loading movie file " + files.getPath(i));
+            }
+        }
+//        alignment.generateAlignment();
+        alignment.saveState();
+    }
 }
 
 void ofxRGBDCaptureGui::exit(ofEventArgs& args){
@@ -362,8 +458,8 @@ void ofxRGBDCaptureGui::mouseReleased(ofMouseEventArgs& args){
 }
 
 void ofxRGBDCaptureGui::keyPressed(ofKeyEventArgs& args){
-    int key = args.key;
     
+    int key = args.key;
  	if(key == ' '){
 		if(currentTab == TabCalibrate){
 			captureCalibrationImage();
@@ -376,7 +472,7 @@ void ofxRGBDCaptureGui::keyPressed(ofKeyEventArgs& args){
 		}
 	}
     
-	if(key == OF_KEY_DEL && currentTab == TabCalibrate){
+	if( (key == OF_KEY_DEL || key == OF_KEY_BACKSPACE) && currentTab == TabCalibrate){
 		alignment.discardCurrentPair();
 		alignment.saveState();
 	}
@@ -443,12 +539,13 @@ void ofxRGBDCaptureGui::loadDirectory(string path){
         return;
     }
     
+    workingDirectory = path;
 	recorder.setRecordLocation(path, "frame");
-	ofDirectory dir(workingDirectory+"/calibration");
+	ofDirectory dir(workingDirectory+"/_calibration/depthCalibration");
 	if(!dir.exists()){
 		dir.create(true);
 	}
-	alignment.loadState(workingDirectory+"/calibration/alignmentsave.xml");
+	alignment.loadState(workingDirectory+"/_calibration/alignmentsave.xml");
 	
 	btnSetDirectory->setLabel(path);
 	updateTakeButtons();
@@ -481,16 +578,15 @@ void ofxRGBDCaptureGui::toggleRecord(){
 
 //--------------------------------------------------------------
 void ofxRGBDCaptureGui::captureCalibrationImage(){
-//    if(calibrationPreview.hasFoundBoard()){
 
     char filename[1024];
-    sprintf(filename, "%s/calibration/calibration_image_%02d_%02d_%02d_%02d_%02d.png", workingDirectory.c_str(), ofGetMonth(), ofGetDay(), ofGetHours(), ofGetMinutes(), ofGetSeconds());
-
+    sprintf(filename, "%s/_calibration/depthCalibration/calibration_image_%02d_%02d_%02d_%02d_%02d.png", workingDirectory.c_str(), ofGetMonth(), ofGetDay(), ofGetHours(), ofGetMinutes(), ofGetSeconds());
+	cout << "capture image file name " << filename << endl;
     ofSaveImage( depthImageProvider->getRawIRImage(), filename);
     alignment.addDepthCalibrationImage(filename);
     alignment.generateAlignment();
     alignment.saveState();
-//    }
+
 }
 
 //--------------------------------------------------------------

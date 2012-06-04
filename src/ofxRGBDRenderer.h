@@ -32,11 +32,12 @@ class ofxRGBDRenderer {
 	
 	bool setup(string calibrationDirectory);
 
-	void setRGBTexture(ofBaseHasTexture& rgbTexture); 
+	//void setRGBTexture(ofBaseHasTexture& rgbTexture); 
+    void setRGBTexture(ofBaseHasPixels& pix); 
     void setDepthImage(ofShortPixels& pix);
 	void setDepthImage(unsigned short* depthPixelsRaw);
 
-    ofBaseHasTexture& getRGBTexture();
+    ofBaseHasPixels& getRGBTexture();
 
 	void update();
 
@@ -62,6 +63,8 @@ class ofxRGBDRenderer {
     
     void unbindRenderer();
     
+    void drawProjectionDebug();
+    
 	void reloadShader();
     
     ofVec3f meshRotate;
@@ -78,7 +81,7 @@ class ofxRGBDRenderer {
 	
 	//populated with vertices, texture coords, and indeces
 	ofMesh& getMesh();
-	ofTexture& getTextureReference();
+//	ofTexture& getTextureReference();
 	
 	Calibration& getRGBCalibration();
 	Calibration& getDepthCalibration();
@@ -107,7 +110,9 @@ class ofxRGBDRenderer {
 
     bool calculateNormals;
 
-	ofBaseHasTexture* currentRGBImage;
+	//ofBaseHasTexture* currentRGBImage;
+    ofBaseHasPixels* currentRGBImage;
+    ofImage undistortedRGBImage;
 	ofShortImage currentDepthImage;
 	ofShortImage undistortedDepthImage;
 	

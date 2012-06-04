@@ -34,6 +34,14 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
     alternativeHiResVideoPath = "";
     pairingsFile = "";
 	
+    if(sourceMediaFolder.find("_calibration") != string::npos) {
+        ofLogWarning("ofxRGBDMediaTake::loadFromFolder -- Discarding _calibration folder");
+        return false;
+    }
+    if(sourceMediaFolder.find("_Renderbin/") != string::npos){
+    	ofLogWarning("ofxRGBDMediaTake::loadFromFolder -- Discarding Render Bin");
+        return false;
+    }
     ofDirectory dataDirectory(mediaFolder);
     if(!dataDirectory.exists()){
         ofLogWarning("ofxRGBDMediaTake::loadFromFolder -- folder " + mediaFolder + " -- Directory doesn't exist.");
@@ -56,11 +64,12 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
 
     bool depthFolderFound = false;
     for(int i = 0; i < dataDirectory.numFiles(); i++){
-        if(dataDirectory.getName(i).find("depth") != string::npos && dataDirectory.getFile(i).isDirectory()){
+        if(dataDirectory.getFile(i).isDirectory() && (dataDirectory.getName(i).find("depth") != string::npos || dataDirectory.getName(i).find("TAKE") != string::npos) ){
             depthFolder = dataDirectory.getPath(i);
             depthFolderFound = true;
         }
     }
+    
     if(!depthFolderFound){
 	    depthFolder = mediaFolder + "/depth/";
     }
@@ -213,7 +222,8 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
         hasCalibration = calibrationDirectory.exists();
         if(!hasCalibration){
             //look for it above!
-            calibrationDirectory = ofDirectory(sourceMediaFolder + "../calibration/");
+            calibrationFolder = mediaFolder + "/../_calibration/matrices/";
+            calibrationDirectory = ofDirectory(calibrationFolder);
             hasCalibration = calibrationDirectory.exists();
         }
     }
@@ -307,10 +317,5 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
 }
 
 bool ofxRGBDMediaTake::valid(){
-//    return  hasCalibrationDirectory && hasDepthFolder && hasSmallVideoFile;
-    return (hasDepth && !hasColor) || (hasDepth && hasColor && hasPairings && hasCalibration);
+    return (hasDepth && !hasColor) || (hasDepth && hasColor && hasCalibration);
 }
-
-//vector<ofxRGBDRenderSettings>& ofxRGBDMediaTake::getRenderSettings() {
-//    return renderSettings;
-//}

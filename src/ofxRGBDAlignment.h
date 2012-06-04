@@ -37,6 +37,9 @@ class ofxRGBDAlignment {
 	
 	void setup(int squaresWide, int squaresTall, int squareSize);
 	
+    bool hasRGBImages();
+    bool hasDepthImages();
+    
 	void addRGBCalibrationImage(string rgbCalibrationImagePath);
 	void addDepthCalibrationImage(string depthCalibrationImagePath);
 	void addCalibrationImagePair(string depthCalibrationImagePath, string rgbCalibrationPath);

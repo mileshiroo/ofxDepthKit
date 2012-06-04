@@ -63,7 +63,8 @@ bool ofxRGBDRenderer::setup(string calibrationDirectory){
     depthToRGBView = ofxCv::makeMatrix(rotationDepthToRGB, translationDepthToRGB);
 
     ofPushView();
-    rgbCalibration.getDistortedIntrinsics().loadProjectionMatrix();
+    //rgbCalibration.getDistortedIntrinsics().loadProjectionMatrix();
+    rgbCalibration.getUndistortedIntrinsics().loadProjectionMatrix();
     glGetFloatv(GL_PROJECTION_MATRIX, rgbProjection.getPtr());
     ofPopView();
 
@@ -146,12 +147,13 @@ int ofxRGBDRenderer::getSimplification(){
 }
 
 //-----------------------------------------------
-void ofxRGBDRenderer::setRGBTexture(ofBaseHasTexture& rgbImage) {
-	currentRGBImage = &rgbImage;
+void ofxRGBDRenderer::setRGBTexture(ofBaseHasPixels& pix) {
+	currentRGBImage = &pix;
+    undistortedRGBImage.setFromPixels(pix.getPixelsRef());
 	hasRGBImage = true;
 }
 
-ofBaseHasTexture& ofxRGBDRenderer::getRGBTexture() {
+ofBaseHasPixels& ofxRGBDRenderer::getRGBTexture() {
     return *currentRGBImage;
 }
 
@@ -200,16 +202,18 @@ void ofxRGBDRenderer::update(){
 	int start = ofGetElapsedTimeMillis();
 
 	Point2d fov = depthCalibration.getUndistortedIntrinsics().getFov();
-	
 	float fx = tanf(ofDegToRad(fov.x) / 2) * 2;
 	float fy = tanf(ofDegToRad(fov.y) / 2) * 2;
 	
 	Point2d principalPoint = depthCalibration.getUndistortedIntrinsics().getPrincipalPoint();
 	cv::Size imageSize = depthCalibration.getUndistortedIntrinsics().getImageSize();
 	
-
+    undistortedRGBImage.setFromPixels(currentRGBImage->getPixelsRef());
     if(!forceUndistortOff){
         depthCalibration.undistort( toCv(currentDepthImage), toCv(undistortedDepthImage), CV_INTER_NN);
+        rgbCalibration.undistort( toCv(undistortedRGBImage) );
+        cout << "undistorting RGB Image" << endl;
+        undistortedRGBImage.update();
     }
     else {
         undistortedDepthImage = currentDepthImage;
@@ -332,6 +336,18 @@ void ofxRGBDRenderer::reloadShader(){
     shader.load("shaders/unproject");
 }
 
+void ofxRGBDRenderer::drawProjectionDebug(){
+    ofPushStyle();
+    ofPushMatrix();
+    ofSetColor(255);
+    rgbMatrix = (depthToRGBView * rgbProjection);
+    glMultMatrixf(rgbMatrix.getInverse().getPtr());
+	ofNoFill();
+    ofBox(200.0f);
+    ofPopMatrix();
+    ofPopStyle();
+}
+
 bool ofxRGBDRenderer::bindRenderer(bool useShader){
 //	glEnable(GL_DEPTH_TEST);
 	if(!hasDepthImage){
@@ -354,13 +370,6 @@ bool ofxRGBDRenderer::bindRenderer(bool useShader){
     ofRotate(meshRotate.z,0,0,1);
 	
 
-//    ofPushStyle();
-//    ofPushMatrix();
-//    glMultMatrixf(rgbMatrix.getInverse().getPtr());
-//    ofNoFill();
-//    ofBox(2.0f);
-//    ofPopMatrix();
-//    ofPopStyle();
 
 //    if(ofGetKeyPressed('v'))
 //        cout << "view " <<depthToRGBView << endl;
@@ -369,7 +378,8 @@ bool ofxRGBDRenderer::bindRenderer(bool useShader){
 	//cout << rgbMatrix << endl;
     
 	if(hasRGBImage){
-		currentRGBImage->getTextureReference().bind();
+		//currentRGBImage->getTextureReference().bind();
+        undistortedRGBImage.getTextureReference().bind();
         if(useShader){
             shader.begin();	
             setupProjectionUniforms(shader);
@@ -390,7 +400,8 @@ void ofxRGBDRenderer::unbindRenderer(){
     }
     
     if(hasRGBImage){
-		currentRGBImage->getTextureReference().unbind();
+		//currentRGBImage->getTextureReference().unbind();
+         undistortedRGBImage.getTextureReference().bind();
         if(shaderBound){
             restortProjection();
             shader.end();
@@ -407,8 +418,8 @@ void ofxRGBDRenderer::unbindRenderer(){
 void ofxRGBDRenderer::setupProjectionUniforms(ofShader& theShader){
 
     rgbMatrix = (depthToRGBView * rgbProjection);
-    ofVec2f dims = ofVec2f(currentRGBImage->getTextureReference().getWidth(), 
-                           currentRGBImage->getTextureReference().getHeight());
+    ofVec2f dims = ofVec2f(undistortedRGBImage.getTextureReference().getWidth(), 
+                           undistortedRGBImage.getTextureReference().getHeight());
     theShader.setUniform2f("fudge", xmult, ymult);
     theShader.setUniform2f("dim", dims.x, dims.y);
     
@@ -439,7 +450,6 @@ void ofxRGBDRenderer::drawPointCloud(bool useShader) {
 	    simpleMesh.drawVertices();
         unbindRenderer();
     }
-    
 }
 
 void ofxRGBDRenderer::drawWireFrame(bool useShader) {
@@ -448,9 +458,8 @@ void ofxRGBDRenderer::drawWireFrame(bool useShader) {
 		simpleMesh.drawWireframe();
         unbindRenderer();
     }
-	
 }
 
-ofTexture& ofxRGBDRenderer::getTextureReference(){
-	return currentRGBImage->getTextureReference();
-}
+//ofTexture& ofxRGBDRenderer::getTextureReference(){
+//	return currentRGBImage->getTextureReference();
+//}

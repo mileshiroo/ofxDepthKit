@@ -115,6 +115,10 @@ class ofxRGBDCaptureGui : public ofxMSAInteractiveObjectDelegate {
 	ofxMSAInteractiveObjectWithDelegate* btnRenderRainbow;
 	ofxMSAInteractiveObjectWithDelegate* btnRenderPointCloud;
     
+    ofxMSAInteractiveObjectWithDelegate* btnLoadRGBCalibration;
+	ofxMSAInteractiveObjectWithDelegate* btnGenerateCalibration;
+	ofxMSAInteractiveObjectWithDelegate* btnExportCalibration;
+
 	vector<TakeButton> btnTakes;
 	
 	ofxGameCamera cam;
@@ -131,12 +135,14 @@ class ofxRGBDCaptureGui : public ofxMSAInteractiveObjectDelegate {
 	//unsigned short* frame;
 
   protected:
+    
     ofImage currentDepthImage;
     void createRainbowPallet();
 	unsigned char LUTR[256];
 	unsigned char LUTG[256];
 	unsigned char LUTB[256];
-
+    
+	void loadVideoFolder();
 	void updateDepthImage(ofShortPixels& pixels);
     ofImage depthImage;
 };
