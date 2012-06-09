@@ -198,7 +198,7 @@ void ofxRGBDRenderer::update(){
 	
 	Point2d principalPoint = depthCalibration.getUndistortedIntrinsics().getPrincipalPoint();
 	cv::Size imageSize = depthCalibration.getUndistortedIntrinsics().getImageSize();
-//	cout << "depth image pointer in renderer " << currentDepthImage << endl;
+
     if(!forceUndistortOff){
         depthCalibration.undistort( toCv(*currentDepthImage), toCv(undistortedDepthImage), CV_INTER_NN);
         rgbCalibration.undistort( toCv(*currentRGBImage), toCv(undistortedRGBImage) );
