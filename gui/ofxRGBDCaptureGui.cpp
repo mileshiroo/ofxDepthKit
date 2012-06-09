@@ -401,6 +401,7 @@ void ofxRGBDCaptureGui::loadVideoFolder(){
         files.allowExt("mov");
         files.allowExt("mpeg");
         files.allowExt("mpg");
+        files.allowExt("mp4");
         files.listDir();
         files.sort();
         

@@ -11,15 +11,13 @@
 #include <set>
 
 ofxRGBDRenderer::ofxRGBDRenderer(){
-	//come up with better names
-	xmult = 0;
-	ymult = 0;
+	xshift = 0;
+	yshift = 0;
 	
 	edgeCull = 4000;
 	simplify = 1;
 
 	farClip = 6000;
-	ZFuzz = 0;
     meshRotate = ofVec3f(0,0,0);
     
     calculateNormals = false;
@@ -212,7 +210,7 @@ void ofxRGBDRenderer::update(){
     if(!forceUndistortOff){
         depthCalibration.undistort( toCv(currentDepthImage), toCv(undistortedDepthImage), CV_INTER_NN);
         rgbCalibration.undistort( toCv(undistortedRGBImage) );
-        cout << "undistorting RGB Image" << endl;
+        //cout << "undistorting RGB Image" << endl;
         undistortedRGBImage.update();
     }
     else {
@@ -401,7 +399,7 @@ void ofxRGBDRenderer::unbindRenderer(){
     
     if(hasRGBImage){
 		//currentRGBImage->getTextureReference().unbind();
-         undistortedRGBImage.getTextureReference().bind();
+         undistortedRGBImage.getTextureReference().unbind();
         if(shaderBound){
             restortProjection();
             shader.end();
@@ -420,7 +418,7 @@ void ofxRGBDRenderer::setupProjectionUniforms(ofShader& theShader){
     rgbMatrix = (depthToRGBView * rgbProjection);
     ofVec2f dims = ofVec2f(undistortedRGBImage.getTextureReference().getWidth(), 
                            undistortedRGBImage.getTextureReference().getHeight());
-    theShader.setUniform2f("fudge", xmult, ymult);
+    theShader.setUniform2f("fudge", xshift, yshift);
     theShader.setUniform2f("dim", dims.x, dims.y);
     
     glMatrixMode(GL_TEXTURE);

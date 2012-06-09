@@ -42,14 +42,11 @@ class ofxRGBDRenderer {
 	void update();
 
 	//fudge factors to apply during alignment
-	float xmult;
-	float ymult;
+	float xshift;
+	float yshift;
 	float edgeCull;
 	float farClip;
-	
-	//helps diffuse "stairstep" looking patterns by adding a bit of randomness
-	float ZFuzz;
-	
+		
     bool calculateTextureCoordinates;
     bool forceUndistortOff;
     bool addColors;

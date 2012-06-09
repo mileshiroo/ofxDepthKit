@@ -51,6 +51,7 @@ void ofxRGBDAlignment::addRGBCalibrationImage(string rgbCalibrationImagePath){
 	ci.image.setImageType(OF_IMAGE_GRAYSCALE);
 	ci.subpixelRefinement = 11;
 	ci.reprojectionError = 0;
+    ci.hasCheckerboard = false;
 	rgbImages.push_back( ci );
 	recalculateImageDrawRects();
 }
@@ -66,6 +67,7 @@ void ofxRGBDAlignment::addDepthCalibrationImage(string depthCalibrationImagePath
 	ci.image.setImageType(OF_IMAGE_GRAYSCALE);
 	ci.subpixelRefinement = 11;
 	ci.reprojectionError = 0;
+    ci.hasCheckerboard = false;
 	depthImages.push_back( ci );	
 	recalculateImageDrawRects();
 }
@@ -339,7 +341,7 @@ void ofxRGBDAlignment::drawImagePairs(){
 }
 
 void ofxRGBDAlignment::drawDepthImages(){
-	ofPushStyle();
+
 	for(int i = 0; i < depthImages.size(); i++){
         ofPushStyle();
 		ofRectangle drawRect = depthImages[i].drawRect;
@@ -362,22 +364,23 @@ void ofxRGBDAlignment::drawDepthImages(){
 		ofRect(depthImages[selectedDepthImage].drawRect);
 		ofPopStyle();
 	}
-	ofPopStyle();
+
 }
 
 void ofxRGBDAlignment::drawRGBImages(){
-	ofPushStyle();
+
 	for(int i = 0; i < rgbImages.size(); i++){
+        ofPushStyle();
 		ofRectangle drawRect = rgbImages[i].drawRect;
-		rgbImages[i].image.draw(drawRect);
 		if(rgbImages[i].hasCheckerboard){
 			ofSetColor(255);
 		}
 		else{
 			ofSetColor(255, 0, 0);
 		}
-		
+		rgbImages[i].image.draw(drawRect);		
 		ofDrawBitmapString("Er " + ofToString(rgbImages[i].reprojectionError,3), drawRect.x, drawRect.y+drawRect.height+10);
+        ofPopStyle();
 	}
 	
 	if(selectedRgbImage != -1){
@@ -389,7 +392,7 @@ void ofxRGBDAlignment::drawRGBImages(){
 		ofPopStyle();
 	}
     
-	ofPopStyle();
+
 }
 
 ofImage& ofxRGBDAlignment::getCurrentDepthImage(){

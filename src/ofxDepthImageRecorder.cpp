@@ -164,12 +164,6 @@ void ofxDepthImageRecorder::compressCurrentTake(){
     }
     ofxRGBDMediaTake* t = new ofxRGBDMediaTake();
     t->loadFromFolder(targetDirectory + "/" + currentFolderPrefix);
-    /*
-    t->depthFolder = targetDirectory + "/" + currentFolderPrefix + "/depth/" ;
-    cout << "encoding take " << t->depthFolder << endl;
-    t->framesConverted = 0;
-    t->depthFrameCount = 1;
-     */
     
     takes.push_back( t );
     encoderThread.lock();
@@ -280,18 +274,8 @@ void ofxDepthImageRecorder::encoderThreadCallback(){
     }    
 
     if(!encodingBuffer.isAllocated()){
-        //encodingBuffer = new unsigned short[640*480];
         encodingBuffer.allocate(640,480, OF_IMAGE_GRAYSCALE);
     }
-
-    //if(encodingBuffer == NULL){
-    
-//    ofDirectory convertedDir(take->depthFolder);
-//    convertedDir.allowExt("png");
-//    convertedDir.listDir();
-    
-//    take->compressedDepthFrameCount = rawDir.numFiles() + convertedDir.numFiles();
-//    take->uncompressedDepthFrameCount = convertedDir.numFiles();
     
     ofLogVerbose("ofxDepthImageCompressor -- Starting to convert " + ofToString(take->uncompressedDepthFrameCount) + " in " + take->depthFolder);
     framesToCompress = take->uncompressedDepthFrameCount;

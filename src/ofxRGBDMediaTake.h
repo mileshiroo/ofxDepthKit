@@ -16,6 +16,7 @@ class ofxRGBDMediaTake {
     bool valid();
 
     bool hasPairings;
+    bool hasXYShift;
     bool hasCalibration;
     bool hasDepth;
     bool hasColor;
@@ -29,11 +30,14 @@ class ofxRGBDMediaTake {
     string videoThumbsPath;
     string depthFolder;
     string pairingsFile;
+    string xyshiftFile; //bogus file to save the xy fudge params
     
     int totalDepthFrameCount;
     int compressedDepthFrameCount;
     int uncompressedDepthFrameCount;
 
+    void clear();
+    
   protected:
 
     

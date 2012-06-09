@@ -8,32 +8,34 @@
 #include "ofxRGBDMediaTake.h"
 
 ofxRGBDMediaTake::ofxRGBDMediaTake(){
-    
+	clear();    
+}
+
+void ofxRGBDMediaTake::clear(){
     hasCalibration = false;
     hasPairings = false;
     hasDepth = false;
     hasColor = false;
+    hasXYShift = false;
     hasAlternativeHiResVideo = false;
     
     compressedDepthFrameCount = 0;
     uncompressedDepthFrameCount = 0;
+    
 }
 
 bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
 	
-	mediaFolder = sourceMediaFolder;
     
-    hasPairings = false;
-    hasCalibration = false;
-    hasDepth = false;
-    hasColor = false;
-    hasAlternativeHiResVideo = false;
-    
+    clear();
+        
     calibrationFolder = "";
     videoPath = "";
     alternativeHiResVideoPath = "";
     pairingsFile = "";
 	
+    mediaFolder = sourceMediaFolder;
+
     if(sourceMediaFolder.find("_calibration") != string::npos) {
         ofLogWarning("ofxRGBDMediaTake::loadFromFolder -- Discarding _calibration folder");
         return false;
@@ -92,8 +94,8 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
          //move all the files from the main folder into the depth directory
         for(int i = 0; i < mainDirectory.numFiles(); i++){
             string destinationPath = ofFilePath::getEnclosingDirectory(mainDirectory.getPath(i)) + "depth/" + mainDirectory.getName(i);
-            cout << "ofxRGBDMediaTake -- Legacy Format -- moved to " << destinationPath << endl;
-        	mainDirectory.getFile(i).moveTo( destinationPath );
+            //cout << "ofxRGBDMediaTake -- Legacy Format -- moved to " << destinationPath << endl;
+        	//mainDirectory.getFile(i).moveTo( destinationPath );
         }
     }
     
@@ -122,9 +124,11 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
     string colorFolder = mediaFolder + "/color/";
     ofDirectory colorDirectory = ofDirectory(colorFolder);
 	ofDirectory mainDirectoryColor = ofDirectory(sourceMediaFolder);
-    mainDirectoryColor.allowExt("mpeg");
+    //TODO: make an xml file for video formats
     mainDirectoryColor.allowExt("mov");
     mainDirectoryColor.allowExt("mpg");
+    mainDirectoryColor.allowExt("mepg");
+    mainDirectoryColor.allowExt("mp4");
     mainDirectoryColor.listDir();
     
     //move the movies into the color/ dir if they are hanging outside
@@ -135,16 +139,18 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
         
         for(int i = 0; i < mainDirectoryColor.numFiles(); i++){
             string destinationPath = ofFilePath::getEnclosingDirectory(mainDirectoryColor.getPath(i)) + "color/" + mainDirectoryColor.getName(i);
-            cout << "ofxRGBDMediaTake -- Legacy Format -- moved to " << destinationPath << endl;
-        	mainDirectoryColor.getFile(i).moveTo( destinationPath );
+//            cout << "ofxRGBDMediaTake -- Legacy Format -- moved to " << destinationPath << endl;
+//        	mainDirectoryColor.getFile(i).moveTo( destinationPath );
         }
 
     }
 
     if(colorDirectory.exists()){
+        //TODO: make an xml file for video formats
         colorDirectory.allowExt("mpeg");
         colorDirectory.allowExt("mov");
         colorDirectory.allowExt("mpg");
+        colorDirectory.allowExt("mp4");
 		colorDirectory.listDir();
         
         if(colorDirectory.numFiles() == 0){
@@ -181,9 +187,7 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
             if(!ofDirectory(videoThumbsPath).exists()){
                 ofDirectory(videoThumbsPath).create(true);
             }
-            
         }
-
     }    
     //////////////////////////////////////////////
     // END COLOR
@@ -200,14 +204,22 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
             if(mainDirectoryPairings.getName(i).find("pairings") != string::npos){
                 pairingsFile = mainDirectoryPairings.getPath(i);
                 hasPairings = true;
-                break;
+            }
+            
+            if(mainDirectoryPairings.getName(i).find("xyshift") != string::npos){
+            	xyshiftFile = mainDirectoryPairings.getPath(i);
+                hasXYShift = true;
             }
         }
 
         if(!hasPairings){
             pairingsFile = mediaFolder + "/pairings.xml";
         }
+        if(!hasXYShift){
+            xyshiftFile = mediaFolder + "/xyshift.xml";
+        }
     }
+    
     //////////////////////////////////////////////
     // END PAIRINGS FILE
     //////////////////////////////////////////////
@@ -230,6 +242,7 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
     //////////////////////////////////////////////
     // END CALIBRATION
     //////////////////////////////////////////////
+
 
     //////////////////////////////////////////////
     // REPORT
@@ -260,59 +273,6 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
     // END REPORT
     //////////////////////////////////////////////
 
-    /*
-	for(int i = 0; i < numFiles; i++){
-		string testFile = dataDirectory.getName(i);
-		if(testFile.find("calibration") != string::npos){
-			calibrationDirectory = dataDirectory.getPath(i);
-            hasCalibrationDirectory = true;
-		}
-		
-//		if(testFile.find("depth") != string::npos || testFile.find("TAKE") != string::npos){
-//			depthFolder = dataDirectory.getPath(i);
-//            hasDepthFolder = true;
-//		}
-		
-		if(testFile.find("mov") != string::npos || testFile.find("MOV") != string::npos ){
-			if(testFile.find("small") == string::npos){
-				hiResVideoPath = dataDirectory.getPath(i);
-                hasLargeVideoFile = true;
-			}
-			else {
-				lowResVideoPath = dataDirectory.getPath(i);
-                hasSmallVideoFile = true;
-                videoThumbsPath = ofFilePath::removeExt(lowResVideoPath);
-                if(!ofDirectory(videoThumbsPath).exists()){
-                    ofDirectory(videoThumbsPath).create(true);
-                }
-			}
-		}		
-		
-     */
-//		if(testFile.find("pairings") != string::npos){
-//			pairingsFile = dataDirectory.getPath(i);
-//		}
-//	}
-	
-//	if(!hasSmallVideoFile){
-//		//ofSystemAlertDialog("Error loading media folder " + mediaFolder + " no Small Video File found.");
-//		return false;
-//	}
-//    
-//	if(!hasCalibrationDirectory){
-//		//ofSystemAlertDialog("Error loading media folder " + mediaFolder + ". No calibration/ directory found.");
-//		return false;	
-//	}
-//    
-//	if(!hasDepthFolder){
-//		//ofSystemAlertDialog("Error loading media folder " + mediaFolder + ". No Depth directory found. Make sure the folder containing the depth images has 'depth' or 'take' in the name");
-//		return false;	
-//	}
-//	
-//	if(pairingsFile == ""){
-//		pairingsFile = ofFilePath::removeExt(lowResVideoPath) + "_pairings.xml";
-//	}
-  
 	return valid();
 }
 
