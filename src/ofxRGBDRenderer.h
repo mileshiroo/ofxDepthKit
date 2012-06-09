@@ -35,7 +35,7 @@ class ofxRGBDRenderer {
 	//void setRGBTexture(ofBaseHasTexture& rgbTexture); 
     void setRGBTexture(ofBaseHasPixels& pix); 
     void setDepthImage(ofShortPixels& pix);
-	void setDepthImage(unsigned short* depthPixelsRaw);
+//	void setDepthImage(unsigned short* depthPixelsRaw);
 
     ofBaseHasPixels& getRGBTexture();
 
@@ -110,8 +110,8 @@ class ofxRGBDRenderer {
 	//ofBaseHasTexture* currentRGBImage;
     ofBaseHasPixels* currentRGBImage;
     ofImage undistortedRGBImage;
-	ofShortImage currentDepthImage;
-	ofShortImage undistortedDepthImage;
+	ofShortPixels* currentDepthImage;
+	ofShortPixels undistortedDepthImage;
 	
 	vector<Point2f> imagePoints;    
 	vector<Point2f> undistortedPoints;

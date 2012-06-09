@@ -39,6 +39,7 @@ ofxRGBDRenderer::ofxRGBDRenderer(){
     forceUndistortOff = false;
     addColors = false;
     calculateTextureCoordinates = false;
+    currentDepthImage = NULL;
 }
 
 ofxRGBDRenderer::~ofxRGBDRenderer(){
@@ -156,15 +157,7 @@ ofBaseHasPixels& ofxRGBDRenderer::getRGBTexture() {
 }
 
 void ofxRGBDRenderer::setDepthImage(ofShortPixels& pix){
-	currentDepthImage.setFromPixels(pix);
-	if(!undistortedDepthImage.isAllocated()){
-		undistortedDepthImage.allocate(640,480,OF_IMAGE_GRAYSCALE);
-	}
-	hasDepthImage = true;
-}
-
-void ofxRGBDRenderer::setDepthImage(unsigned short* depthPixelsRaw){
-	currentDepthImage.setFromPixels(depthPixelsRaw, 640,480, OF_IMAGE_GRAYSCALE);
+    currentDepthImage = &pix;
 	if(!undistortedDepthImage.isAllocated()){
 		undistortedDepthImage.allocate(640,480,OF_IMAGE_GRAYSCALE);
 	}
@@ -205,16 +198,15 @@ void ofxRGBDRenderer::update(){
 	
 	Point2d principalPoint = depthCalibration.getUndistortedIntrinsics().getPrincipalPoint();
 	cv::Size imageSize = depthCalibration.getUndistortedIntrinsics().getImageSize();
-	
-    undistortedRGBImage.setFromPixels(currentRGBImage->getPixelsRef());
+//	cout << "depth image pointer in renderer " << currentDepthImage << endl;
     if(!forceUndistortOff){
-        depthCalibration.undistort( toCv(currentDepthImage), toCv(undistortedDepthImage), CV_INTER_NN);
-        rgbCalibration.undistort( toCv(undistortedRGBImage) );
-        //cout << "undistorting RGB Image" << endl;
+        depthCalibration.undistort( toCv(*currentDepthImage), toCv(undistortedDepthImage), CV_INTER_NN);
+        rgbCalibration.undistort( toCv(*currentRGBImage), toCv(undistortedRGBImage) );
         undistortedRGBImage.update();
     }
     else {
-        undistortedDepthImage = currentDepthImage;
+        undistortedDepthImage = *currentDepthImage;
+        undistortedRGBImage.setFromPixels(currentRGBImage->getPixelsRef());
     }
 	
     //start

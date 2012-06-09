@@ -1,5 +1,5 @@
 //
-//  ofxRGBDMediaTake.h
+//  ofxRGBDMediaScene.h
 //  ScreenLabRenderer
 //
 //  Created by James George on 4/16/12.
@@ -8,9 +8,9 @@
 #pragma once
 #include "ofMain.h"
 
-class ofxRGBDMediaTake {
+class ofxRGBDScene {
   public:
-    ofxRGBDMediaTake();
+    ofxRGBDScene();
     
     bool loadFromFolder(string sourceMediaFolder);
     bool valid();

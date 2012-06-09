@@ -1,17 +1,17 @@
 //
-//  ofxRGBDMediaTake.cpp
+//  ofxRGBDScene.cpp
 //  ScreenLabRenderer
 //
 //  Created by James George on 4/16/12.
 //
 
-#include "ofxRGBDMediaTake.h"
+#include "ofxRGBDScene.h"
 
-ofxRGBDMediaTake::ofxRGBDMediaTake(){
+ofxRGBDScene::ofxRGBDScene(){
 	clear();    
 }
 
-void ofxRGBDMediaTake::clear(){
+void ofxRGBDScene::clear(){
     hasCalibration = false;
     hasPairings = false;
     hasDepth = false;
@@ -24,7 +24,7 @@ void ofxRGBDMediaTake::clear(){
     
 }
 
-bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
+bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder){
 	
     
     clear();
@@ -37,23 +37,23 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
     mediaFolder = sourceMediaFolder;
 
     if(sourceMediaFolder.find("_calibration") != string::npos) {
-        ofLogWarning("ofxRGBDMediaTake::loadFromFolder -- Discarding _calibration folder");
+        ofLogWarning("ofxRGBDScene::loadFromFolder -- Discarding _calibration folder");
         return false;
     }
     if(sourceMediaFolder.find("_Renderbin/") != string::npos){
-    	ofLogWarning("ofxRGBDMediaTake::loadFromFolder -- Discarding Render Bin");
+    	ofLogWarning("ofxRGBDScene::loadFromFolder -- Discarding Render Bin");
         return false;
     }
     ofDirectory dataDirectory(mediaFolder);
     if(!dataDirectory.exists()){
-        ofLogWarning("ofxRGBDMediaTake::loadFromFolder -- folder " + mediaFolder + " -- Directory doesn't exist.");
+        ofLogWarning("ofxRGBDScene::loadFromFolder -- folder " + mediaFolder + " -- Directory doesn't exist.");
         return false;
     }
     
 	dataDirectory.listDir();    
 	int numFiles = dataDirectory.numFiles();
     if(numFiles == 0){
-        ofLogWarning("ofxRGBDMediaTake::loadFromFolder -- folder " + mediaFolder + " -- Directory is empty.");
+        ofLogWarning("ofxRGBDScene::loadFromFolder -- folder " + mediaFolder + " -- Directory is empty.");
         return false;        
     }
 
@@ -94,7 +94,7 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
          //move all the files from the main folder into the depth directory
         for(int i = 0; i < mainDirectory.numFiles(); i++){
             string destinationPath = ofFilePath::getEnclosingDirectory(mainDirectory.getPath(i)) + "depth/" + mainDirectory.getName(i);
-            //cout << "ofxRGBDMediaTake -- Legacy Format -- moved to " << destinationPath << endl;
+            //cout << "ofxRGBDScene -- Legacy Format -- moved to " << destinationPath << endl;
         	//mainDirectory.getFile(i).moveTo( destinationPath );
         }
     }
@@ -139,7 +139,7 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
         
         for(int i = 0; i < mainDirectoryColor.numFiles(); i++){
             string destinationPath = ofFilePath::getEnclosingDirectory(mainDirectoryColor.getPath(i)) + "color/" + mainDirectoryColor.getName(i);
-//            cout << "ofxRGBDMediaTake -- Legacy Format -- moved to " << destinationPath << endl;
+//            cout << "ofxRGBDScene -- Legacy Format -- moved to " << destinationPath << endl;
 //        	mainDirectoryColor.getFile(i).moveTo( destinationPath );
         }
 
@@ -165,13 +165,14 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
             int smallestIndex = 0;
             uint64_t largestSize = colorDirectory.getFile(0).getSize();
             uint64_t smallestSize = colorDirectory.getFile(0).getSize();
-            for(int i = i; i < colorDirectory.numFiles(); i++){
-                if(largestSize < colorDirectory.getFile(i).getSize()){
-                    largestSize = colorDirectory.getFile(i).getSize();
+            for(int i = 1; i < colorDirectory.numFiles(); i++){
+                uint64_t size = colorDirectory.getFile(i).getSize();
+                if(largestSize < size){
+                    largestSize = size;
                     largestIndex = i;
                 }
-                if(smallestSize > colorDirectory.getFile(i).getSize()){                    
-                    smallestSize = colorDirectory.getFile(i).getSize();
+                if(smallestSize > size){                    
+                    smallestSize = size;
                     smallestSize = i;
                 }
             }
@@ -276,6 +277,6 @@ bool ofxRGBDMediaTake::loadFromFolder(string sourceMediaFolder){
 	return valid();
 }
 
-bool ofxRGBDMediaTake::valid(){
+bool ofxRGBDScene::valid(){
     return (hasDepth && !hasColor) || (hasDepth && hasColor && hasCalibration);
 }
