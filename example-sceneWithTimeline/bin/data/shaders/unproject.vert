@@ -12,8 +12,6 @@ void main(void)
 	
 	texCd.xy += 1.;
 	texCd.xy /= 2.;
-	texCd.y = 1. - texCd.y;
-    texCd.x = 1. - texCd.x;
 	texCd.xy += fudge;
     
 	texCd.xy *= dim;
