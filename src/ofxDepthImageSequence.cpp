@@ -11,8 +11,6 @@
 ofxDepthImageSequence::ofxDepthImageSequence(){
     sequenceLoaded = false;
     framesHaveTimestamps = false;
-//    dummy.allocate(640, 480, 1);
-
 }
 
 ofxDepthImageSequence::~ofxDepthImageSequence(){

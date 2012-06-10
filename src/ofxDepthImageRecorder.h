@@ -10,7 +10,7 @@
 #pragma once
 #include "ofMain.h"
 #include "ofxDepthImageCompressor.h"
-#include "ofxRGBDMediaTake.h"
+#include "ofxRGBDScene.h"
 
 typedef struct {
 	unsigned short* pixels;
@@ -50,7 +50,7 @@ class ofxDepthImageRecorder {
 	ofxDepthImageRecorder();
 	~ofxDepthImageRecorder();
 
-    vector<ofxRGBDMediaTake*>& getTakes();
+    vector<ofxRGBDScene*>& getTakes();
 	
 	void setup();
 	void toggleRecord();
@@ -83,7 +83,7 @@ class ofxDepthImageRecorder {
     void incrementTake();
     
     //start converting the current directory
-    vector<ofxRGBDMediaTake*> takes;
+    vector<ofxRGBDScene*> takes;
 	void compressCurrentTake();
 	void updateTakes();
 	int compressingTakeIndex;    
@@ -104,5 +104,5 @@ class ofxDepthImageRecorder {
 	queue<QueuedFrame> saveQueue;
 	//queue<string> encodeDirectories;
     //queue<Take*> encodeDirectories;
-    queue<ofxRGBDMediaTake*> encodeDirectories;
+    queue<ofxRGBDScene*> encodeDirectories;
 };

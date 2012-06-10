@@ -35,10 +35,10 @@ class ofxRGBDRenderer {
 	//void setRGBTexture(ofBaseHasTexture& rgbTexture); 
     void setRGBTexture(ofBaseHasPixels& pix); 
     void setDepthImage(ofShortPixels& pix);
-//	void setDepthImage(unsigned short* depthPixelsRaw);
 
     ofBaseHasPixels& getRGBTexture();
 
+    void undistortImages();
 	void update();
 
 	//fudge factors to apply during alignment
@@ -83,7 +83,8 @@ class ofxRGBDRenderer {
 	Calibration& getRGBCalibration();
 	Calibration& getDepthCalibration();
 	
-
+	ofVec3f getWoldPoint(int x, int y);
+    
     bool isVertexValid(int index);
 	int vertexIndex(int sequenceIndex);
     int getTotalPoints();
@@ -101,6 +102,7 @@ class ofxRGBDRenderer {
     
 	Calibration depthCalibration, rgbCalibration;    
 	Mat rotationDepthToRGB, translationDepthToRGB;
+    float fx, fy;
 
 	bool hasDepthImage;
 	bool hasRGBImage;

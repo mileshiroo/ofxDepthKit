@@ -13,6 +13,7 @@
 #include "ofxTLElement.h"
 #include "ofxTLVideoThumb.h"
 #include "ofxDepthImageCompressor.h"
+//#include "ofxDepthImageSequence.h" //TODO!!
 
 class ofxTLDepthImageSequence : public ofxTLElement {
   public:	

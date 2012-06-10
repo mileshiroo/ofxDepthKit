@@ -9,9 +9,9 @@
 
 #include "ofMain.h"
 #include "ofxDepthImageCompressor.h"
+
 typedef struct {
     string path;
-//    ofShortPixels pix;
     long timestamp;
     int frameNumber;
 } DepthImage;

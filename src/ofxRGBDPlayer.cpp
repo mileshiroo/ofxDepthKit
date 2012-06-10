@@ -11,6 +11,7 @@
 ofxRGBDPlayer::ofxRGBDPlayer(){
 	player = NULL;    
     loaded = false;
+    shouldCreateMesh = true;
 }
 
 ofxRGBDPlayer::~ofxRGBDPlayer(){
@@ -62,7 +63,6 @@ bool ofxRGBDPlayer::setup(ofxRGBDScene scene){
     player->setSpeed(0);
     
     return (loaded = true);
-    
 }
                                                  
 void ofxRGBDPlayer::update(){
@@ -73,7 +73,9 @@ void ofxRGBDPlayer::update(){
         long videoTime = player->getPosition()*player->getDuration()*1000;
         depthSequence.selectTime(videoDepthAligment.getDepthFrameForVideoFrame(videoTime));
         depthSequence.updatePixels();            
-        renderer.update();
+        if(shouldCreateMesh){
+	        renderer.update();
+        }
     }
 }
 

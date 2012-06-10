@@ -27,6 +27,8 @@ class ofxRGBDPlayer {
     void drawWireframe();
     
     bool isLoaded();
+    //toggle mesh creation (renderer->update()) on and off
+    bool shouldCreateMesh;
     
     void play();
     void stop();

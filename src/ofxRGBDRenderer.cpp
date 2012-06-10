@@ -62,10 +62,13 @@ bool ofxRGBDRenderer::setup(string calibrationDirectory){
     depthToRGBView = ofxCv::makeMatrix(rotationDepthToRGB, translationDepthToRGB);
 
     ofPushView();
-    //rgbCalibration.getDistortedIntrinsics().loadProjectionMatrix();
     rgbCalibration.getUndistortedIntrinsics().loadProjectionMatrix();
     glGetFloatv(GL_PROJECTION_MATRIX, rgbProjection.getPtr());
     ofPopView();
+
+    Point2d fov = depthCalibration.getUndistortedIntrinsics().getFov();
+	fx = tanf(ofDegToRad(fov.x) / 2) * 2;
+	fy = tanf(ofDegToRad(fov.y) / 2) * 2;
 
     calibrationSetup = true;
 	return true;
@@ -192,22 +195,10 @@ void ofxRGBDRenderer::update(){
 	
 	int start = ofGetElapsedTimeMillis();
 
-	Point2d fov = depthCalibration.getUndistortedIntrinsics().getFov();
-	float fx = tanf(ofDegToRad(fov.x) / 2) * 2;
-	float fy = tanf(ofDegToRad(fov.y) / 2) * 2;
-	
 	Point2d principalPoint = depthCalibration.getUndistortedIntrinsics().getPrincipalPoint();
 	cv::Size imageSize = depthCalibration.getUndistortedIntrinsics().getImageSize();
-
-    if(!forceUndistortOff){
-        depthCalibration.undistort( toCv(*currentDepthImage), toCv(undistortedDepthImage), CV_INTER_NN);
-        rgbCalibration.undistort( toCv(*currentRGBImage), toCv(undistortedRGBImage) );
-        undistortedRGBImage.update();
-    }
-    else {
-        undistortedDepthImage = *currentDepthImage;
-        undistortedRGBImage.setFromPixels(currentRGBImage->getPixelsRef());
-    }
+    
+	undistortImages();
 	
     //start
 	int imageIndex = 0;
@@ -217,14 +208,16 @@ void ofxRGBDRenderer::update(){
     int vertexPointer = 0;
     hasVerts = false;
 	unsigned short* ptr = undistortedDepthImage.getPixels();
+
 	for(int y = 0; y < h; y += simplify) {
 		for(int x = 0; x < w; x += simplify) {
             vertexPointer = y*w+x;
 			unsigned short z = undistortedDepthImage.getPixels()[y*w+x];
 			IndexMap& indx = indexMap[indexPointer];
 			if(z != 0 && z < farClip){
-				xReal = (((float)x - principalPoint.x) / imageSize.width) * z * fx;
-				yReal = (((float)y - principalPoint.y) / imageSize.height) * z * fy;
+				xReal = (((float)principalPoint.x - x) / imageSize.width) * z * fx;
+				//yReal = (((float)y - principalPoint.y) / imageSize.height) * z * fy;
+                yReal = (((float)principalPoint.y - y) / imageSize.height) * z * fy;
                 indx.vertexIndex = vertexPointer;
 				indx.valid = true;
                 simpleMesh.setVertex(vertexPointer, ofVec3f(xReal, yReal, z));
@@ -278,6 +271,30 @@ void ofxRGBDRenderer::update(){
         generateTextureCoordinates();
 //		if(debug) cout << "gen tex coords took " << (ofGetElapsedTimeMillis() - start) << endl;
 	}
+}
+
+void ofxRGBDRenderer::undistortImages(){
+    if(!forceUndistortOff){
+        depthCalibration.undistort( toCv(*currentDepthImage), toCv(undistortedDepthImage), CV_INTER_NN);
+        rgbCalibration.undistort( toCv(*currentRGBImage), toCv(undistortedRGBImage) );
+        undistortedRGBImage.update();
+    }
+    else {
+        undistortedDepthImage = *currentDepthImage;
+        undistortedRGBImage.setFromPixels(currentRGBImage->getPixelsRef());
+    }
+}
+
+ofVec3f ofxRGBDRenderer::getWoldPoint(int x, int y){
+    Point2d principalPoint = depthCalibration.getUndistortedIntrinsics().getPrincipalPoint();
+	cv::Size imageSize = depthCalibration.getUndistortedIntrinsics().getImageSize();
+    unsigned short z = undistortedDepthImage.getPixels()[y*imageSize.width+x];
+
+    if(z != 0 && z < farClip){
+        return ofVec3f((((float)principalPoint.x - x) / imageSize.width) * z * fx,
+                       (((float)principalPoint.y - y) / imageSize.height) * z * fy,z);
+    }
+    return ofVec3f(0,0,0);
 }
 
 void ofxRGBDRenderer::generateTextureCoordinates(){
@@ -339,7 +356,7 @@ void ofxRGBDRenderer::drawProjectionDebug(){
 }
 
 bool ofxRGBDRenderer::bindRenderer(bool useShader){
-//	glEnable(GL_DEPTH_TEST);
+
 	if(!hasDepthImage){
      	ofLogError("ofxRGBDRenderer::update() -- no depth image");
         return false;
@@ -351,7 +368,6 @@ bool ofxRGBDRenderer::bindRenderer(bool useShader){
     }
 	
     ofPushMatrix();
-    ofScale(1, -1, 1);
     if(mirror){
 	    ofScale(-1, 1, 1);    
     }
@@ -408,6 +424,7 @@ void ofxRGBDRenderer::unbindRenderer(){
 void ofxRGBDRenderer::setupProjectionUniforms(ofShader& theShader){
 
     rgbMatrix = (depthToRGBView * rgbProjection);
+    
     ofVec2f dims = ofVec2f(undistortedRGBImage.getTextureReference().getWidth(), 
                            undistortedRGBImage.getTextureReference().getHeight());
     theShader.setUniform2f("fudge", xshift, yshift);
