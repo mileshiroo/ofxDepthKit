@@ -31,7 +31,9 @@ void testApp::setup(){
     //set up a video timeline element so we can see the video frames
     videoTimelineElement = new ofxTLVideoPlayer();
     timeline.addElement("Video", videoTimelineElement);
-
+	timeline.addKeyframes("xshift", "xshift.xml", ofRange(-.15, .15));
+    timeline.addKeyframes("yshift", "yshift.xml", ofRange(-.15, .15));
+    timeline.addKeyframes("farclip", "farclip.xml", ofRange(500, 6000));
     
     //set up the game camera
     cam.setup();
@@ -77,6 +79,10 @@ bool testApp::loadScene(string takeDirectory){
 
 //--------------------------------------------------------------
 void testApp::update(){
+    cam.applyRotation = cam.applyTranslation = !timeline.getDrawRect().inside(mouseX,mouseY);
+    player.getRenderer().xshift = timeline.getKeyframeValue("xshift");
+	player.getRenderer().yshift = timeline.getKeyframeValue("yshift");
+    player.getRenderer().farClip = timeline.getKeyframeValue("farclip");
     player.update();
 }
 

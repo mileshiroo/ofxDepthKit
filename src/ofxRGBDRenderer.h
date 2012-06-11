@@ -52,19 +52,21 @@ class ofxRGBDRenderer {
     bool addColors;
 	bool mirror;
     bool calibrationSetup;
-	
-    bool bindRenderer(bool useShader = true);
     
-    void setupProjectionUniforms(ofShader& shader);
-    void restortProjection();
-    
+    ofVec3f meshRotate;
+
+    bool bindRenderer(); //built in shader
+    bool bindRenderer(ofShader& customShader); //any custom shader    
     void unbindRenderer();
     
+    //called inside of bind/unbind
+    void setupProjectionUniforms(ofShader& shader);
+    void restortProjection();
+
     void drawProjectionDebug();
     
 	void reloadShader();
     
-    ofVec3f meshRotate;
     
 	//sets a level of simplification, 
 	//should be either 1 for none
@@ -72,10 +74,17 @@ class ofxRGBDRenderer {
 	void setSimplification(int level);
 	int getSimplification();
 	
-	void drawMesh(bool useShader = true);
-	void drawPointCloud(bool useSahder = true);
-	void drawWireFrame(bool useSahder = true);
-	
+//	void drawMesh(bool useShader = true);
+//	void drawPointCloud(bool useSahder = true);
+//	void drawWireFrame(bool useSahder = true);
+	void drawMesh();
+	void drawPointCloud();
+	void drawWireFrame();
+
+    void drawMesh(ofShader& customShader);
+	void drawPointCloud(ofShader& customShader);
+	void drawWireFrame(ofShader& customShader);
+
 	//populated with vertices, texture coords, and indeces
 	ofMesh& getMesh();
 //	ofTexture& getTextureReference();
@@ -96,9 +105,9 @@ class ofxRGBDRenderer {
 
 	int simplify;
 
-    bool shaderBound;
+    //bool shaderBound;
+    ofShader* currentlyBoundShader;
     bool rendererBound;
-    bool hasVerts;
     
 	Calibration depthCalibration, rgbCalibration;    
 	Mat rotationDepthToRGB, translationDepthToRGB;
@@ -109,17 +118,17 @@ class ofxRGBDRenderer {
 
     bool calculateNormals;
 
-	//ofBaseHasTexture* currentRGBImage;
     ofBaseHasPixels* currentRGBImage;
-    ofImage undistortedRGBImage;
 	ofShortPixels* currentDepthImage;
+    ofImage undistortedRGBImage;
 	ofShortPixels undistortedDepthImage;
 	
 	vector<Point2f> imagePoints;    
 	vector<Point2f> undistortedPoints;
 	
-	ofMesh simpleMesh;
-    //ofVboMesh simpleMesh; 
+	//ofMesh simpleMesh;
+    ofVboMesh simpleMesh; 
+    
     vector<ofIndexType> baseIndeces;
     vector<ofVec2f> texcoords;
     vector<ofVec3f> vertices;
@@ -129,7 +138,7 @@ class ofxRGBDRenderer {
 	ofMatrix4x4 rgbProjection;
     ofMatrix4x4 rgbMatrix;
 
-	ofShader shader;
-    ofVec3f center;
+	ofShader meshShader;
+    ofShader pointShader;  
     
 };

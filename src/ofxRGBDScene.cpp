@@ -220,7 +220,6 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder){
             xyshiftFile = mediaFolder + "/xyshift.xml";
         }
     }
-    
     //////////////////////////////////////////////
     // END PAIRINGS FILE
     //////////////////////////////////////////////
@@ -230,7 +229,7 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder){
     // CALIBRATION
     //////////////////////////////////////////////
 	if(hasColor){
-        calibrationFolder = mediaFolder + "/calibration/";
+        calibrationFolder = mediaFolder + "/_calibration/matrices/";
         ofDirectory calibrationDirectory = ofDirectory(calibrationFolder);
         hasCalibration = calibrationDirectory.exists();
         if(!hasCalibration){
