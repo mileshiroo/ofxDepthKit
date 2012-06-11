@@ -37,7 +37,7 @@ class ofxDepthImageSequence {
 	
     long getDurationInMillis();
     float getDurationInSeconds();
-
+    
     ofShortPixels& getPixels();
     vector<DepthImage>& getImageArray();
     

@@ -42,5 +42,7 @@ void ofxDepthHoleFiller::close(ofShortPixels& depthPixels){
         
         cv::compare(original, 0, filledMask, CMP_EQ);
         cv::add(original, dilated, original, filledMask);        
+        
+        cout << " closing depth image " << endl;
 	}	
 }
