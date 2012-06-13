@@ -12,7 +12,7 @@ class ofxRGBDScene {
   public:
     ofxRGBDScene();
     
-    bool loadFromFolder(string sourceMediaFolder);
+    bool loadFromFolder(string sourceMediaFolder, bool countFrames = true);
     bool valid();
 
     bool hasPairings;

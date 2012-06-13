@@ -24,7 +24,7 @@ void ofxRGBDScene::clear(){
     
 }
 
-bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder){
+bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder, bool countFrames){
 	
     
     clear();
@@ -47,6 +47,11 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder){
     ofDirectory dataDirectory(mediaFolder);
     if(!dataDirectory.exists()){
         ofLogWarning("ofxRGBDScene::loadFromFolder -- folder " + mediaFolder + " -- Directory doesn't exist.");
+        return false;
+    }
+    
+    if(!dataDirectory.isDirectory()){
+        ofLogWarning("ofxRGBDScene::loadFromFolder -- folder " + mediaFolder + " -- Isn't a directory!");
         return false;
     }
     
@@ -100,17 +105,22 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder){
     }
     
     if(depthDirectory.exists()){
-        
-        ofDirectory compresseDepthFrames(depthFolder);
-        compresseDepthFrames.allowExt("png");
-        compressedDepthFrameCount = compresseDepthFrames.listDir();
-        
-        ofDirectory uncompressedDepthFrames(depthFolder);
-        uncompressedDepthFrames.allowExt("raw");
-        uncompressedDepthFrameCount = uncompressedDepthFrames.listDir();
-        
-        totalDepthFrameCount = uncompressedDepthFrameCount + compressedDepthFrameCount;
-        hasDepth = (totalDepthFrameCount > 0);
+        if(countFrames){
+            ofDirectory compresseDepthFrames(depthFolder);
+            compresseDepthFrames.allowExt("png");
+            compressedDepthFrameCount = compresseDepthFrames.listDir();
+            
+            ofDirectory uncompressedDepthFrames(depthFolder);
+            uncompressedDepthFrames.allowExt("raw");
+            uncompressedDepthFrameCount = uncompressedDepthFrames.listDir();
+            
+            totalDepthFrameCount = uncompressedDepthFrameCount + compressedDepthFrameCount;
+            hasDepth = (totalDepthFrameCount > 0);
+        }
+        else {
+            //guess it
+            hasDepth = true;
+        }
     }
     
     //////////////////////////////////////////////
@@ -120,7 +130,6 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder){
     //////////////////////////////////////////////
     // COLOR
     //////////////////////////////////////////////
-  
     string colorFolder = mediaFolder + "/color/";
     ofDirectory colorDirectory = ofDirectory(colorFolder);
 	ofDirectory mainDirectoryColor = ofDirectory(sourceMediaFolder);
