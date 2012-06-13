@@ -15,7 +15,7 @@ ofxRGBDRenderer::ofxRGBDRenderer(){
 	yshift = 0;
 	
 	edgeCull = 4000;
-	simplify = 1;
+	simplify = -1;
 
 	farClip = 6000;
     meshRotate = ofVec3f(0,0,0);
@@ -75,6 +75,11 @@ bool ofxRGBDRenderer::setup(string calibrationDirectory){
 }
 
 void ofxRGBDRenderer::setSimplification(int level){
+    
+    if(simplify == level){
+        return;
+    }
+    
 	simplify = level;
 	if (simplify <= 0) {
 		simplify = 1;
@@ -83,7 +88,7 @@ void ofxRGBDRenderer::setSimplification(int level){
 		simplify = 8;
 	}
 	
-    simplify = 1;
+    //simplify = 1;
     
 	baseIndeces.clear();
     simpleMesh.clearIndices();
@@ -126,8 +131,8 @@ void ofxRGBDRenderer::setSimplification(int level){
 	}
 
 	simpleMesh.clearVertices();
-	for (int y = 0; y < 480; y++){
-		for (int x=0; x < 640; x++){
+	for (int y = 0; y < 480; y+=simplify){
+		for (int x = 0; x < 640; x+=simplify){
 			simpleMesh.addVertex(ofVec3f(x,y,0));
 		}
 	}
@@ -202,10 +207,19 @@ void ofxRGBDRenderer::update(){
 
     //feed the zed values into the mesh
     unsigned short* ptr = undistortedDepthImage.getPixels();    
+    /*
     for(int i = 0; i < simpleMesh.getNumVertices(); i++){
 	    simpleMesh.getVertices()[i].z = (*ptr++);
     }
-
+	*/
+    
+    int vertexIndex = 0;
+    for (int y = 0; y < 480; y+=simplify){
+		for (int x = 0; x < 640; x+=simplify){
+//			simpleMesh.getVertices()[vertexIndex++].z = (*ptr++);
+            simpleMesh.getVertices()[vertexIndex++].z = ptr[y*640+x];
+        }
+    }
     
     //TODO: convert this back into a way to generate the mesh on the CPUb
 //	int start = ofGetElapsedTimeMillis();
@@ -306,6 +320,8 @@ void ofxRGBDRenderer::undistortImages(){
     else {
         undistortedDepthImage = *currentDepthImage;
         undistortedRGBImage.setFromPixels(currentRGBImage->getPixelsRef());
+        undistortedRGBImage.update();
+//        cout << "undistortedRGBImage w h " << undistortedRGBImage.getWidth() << " " << undistortedRGBImage.getHeight() << endl;
     }
 }
 

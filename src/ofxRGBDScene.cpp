@@ -174,15 +174,16 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder, bool countFrames){
             int smallestIndex = 0;
             uint64_t largestSize = colorDirectory.getFile(0).getSize();
             uint64_t smallestSize = colorDirectory.getFile(0).getSize();
-            for(int i = 1; i < colorDirectory.numFiles(); i++){
+            for(int i = 0; i < colorDirectory.numFiles(); i++){
                 uint64_t size = colorDirectory.getFile(i).getSize();
+                cout << colorDirectory.getName(i) << " size is " << size << endl;
                 if(largestSize < size){
                     largestSize = size;
                     largestIndex = i;
                 }
-                if(smallestSize > size){                    
+                if(size < smallestSize){                    
                     smallestSize = size;
-                    smallestSize = i;
+                    smallestIndex = i;
                 }
             }
             
@@ -190,6 +191,8 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder, bool countFrames){
             hasAlternativeHiResVideo = true;
             alternativeHiResVideoPath = colorDirectory.getPath(largestIndex);
             videoPath = colorDirectory.getPath(smallestIndex); 
+//            cout << "video path is " << videoPath << " alternative is " << alternativeHiResVideoPath << endl;
+//            cout << "largest size is " << largestSize << " smallest size is " << smallestSize << endl;
         }
         
         if(hasColor){

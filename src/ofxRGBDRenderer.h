@@ -126,8 +126,8 @@ class ofxRGBDRenderer {
 	vector<Point2f> imagePoints;    
 	vector<Point2f> undistortedPoints;
 	
-	//ofMesh simpleMesh;
-    ofVboMesh simpleMesh; 
+	ofMesh simpleMesh;
+    //ofVboMesh simpleMesh; 
     
     vector<ofIndexType> baseIndeces;
     vector<ofVec2f> texcoords;
