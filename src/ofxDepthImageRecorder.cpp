@@ -75,7 +75,7 @@ void ofxDepthImageRecorder::setRecordLocation(string directory, string filePrefi
     updateTakes();
 }
 
-vector<ofxRGBDMediaTake*>& ofxDepthImageRecorder::getTakes(){
+vector<ofxRGBDScene*>& ofxDepthImageRecorder::getScenes(){
 	return takes;
 }
 
@@ -162,7 +162,7 @@ void ofxDepthImageRecorder::compressCurrentTake(){
     	ofLogError("ofxDepthImageRecorder::compressCurrentTake -- working directory not set");
         return;
     }
-    ofxRGBDMediaTake* t = new ofxRGBDMediaTake();
+    ofxRGBDScene* t = new ofxRGBDScene();
     t->loadFromFolder(targetDirectory + "/" + currentFolderPrefix);
     
     takes.push_back( t );
@@ -188,7 +188,7 @@ void ofxDepthImageRecorder::updateTakes(){
             continue;
         }
 
-        ofxRGBDMediaTake* t = new ofxRGBDMediaTake();
+        ofxRGBDScene* t = new ofxRGBDScene();
         t->loadFromFolder(dir.getPath(i));
         if(t->hasDepth){
             takes.push_back(t);
@@ -246,7 +246,7 @@ void ofxDepthImageRecorder::recorderThreadCallback(){
 
 void ofxDepthImageRecorder::encoderThreadCallback(){
 
-    ofxRGBDMediaTake* take = NULL;
+    ofxRGBDScene* take = NULL;
 	bool foundDir = false;
 
 	encoderThread.lock();

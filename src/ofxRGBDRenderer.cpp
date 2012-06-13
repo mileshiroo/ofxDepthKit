@@ -401,6 +401,7 @@ bool ofxRGBDRenderer::bindRenderer(ofShader& shader){
 	
     ofPushMatrix();
     
+    ofScale(1, -1, 1);
     if(mirror){
 	    ofScale(-1, 1, 1);    
     }

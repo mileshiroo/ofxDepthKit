@@ -60,7 +60,9 @@ bool testApp::loadNewScene(){
 bool testApp::loadDefaultScene(){
     ofxXmlSettings settings;
     if(settings.loadFile("RGBDSimpleSceneDefaults.xml")){
-        return loadScene(settings.getValue("defaultScene", ""));
+        if(!loadScene(settings.getValue("defaultScene", ""))){
+            return loadNewScene();
+        }
     }
     return loadNewScene();
 }

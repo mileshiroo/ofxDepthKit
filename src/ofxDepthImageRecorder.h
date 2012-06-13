@@ -50,7 +50,7 @@ class ofxDepthImageRecorder {
 	ofxDepthImageRecorder();
 	~ofxDepthImageRecorder();
 
-    vector<ofxRGBDScene*>& getTakes();
+    vector<ofxRGBDScene*>& getScenes();
 	
 	void setup();
 	void toggleRecord();

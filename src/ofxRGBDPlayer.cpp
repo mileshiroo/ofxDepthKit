@@ -86,8 +86,8 @@ bool ofxRGBDPlayer::isLoaded(){
 void ofxRGBDPlayer::drawWireframe(){
     if(loaded){
         ofEnableAlphaBlending();
-        renderer.drawWireFrame();
-        //renderer.drawPointCloud();
+        //renderer.drawWireFrame();
+        renderer.drawPointCloud();
     }
 }
 

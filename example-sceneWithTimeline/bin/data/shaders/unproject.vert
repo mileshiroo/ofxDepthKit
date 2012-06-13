@@ -16,8 +16,8 @@ void main(void)
 
 //    float depthValue = texture2DRect(tex0, gl_TexCoord[0].st);
 	if(gl_Vertex.z < farClip && gl_Vertex.z > 200.){
-        vec4 pos = vec4( ((principalPoint.x - gl_Vertex.x) / imageSize.x) * gl_Vertex.z * fov.x,
-                         ((principalPoint.y - gl_Vertex.y) / imageSize.y) * gl_Vertex.z * fov.y,
+        vec4 pos = vec4( ((gl_Vertex.x - principalPoint.x) / imageSize.x) * gl_Vertex.z * fov.x,
+                         ((gl_Vertex.y - principalPoint.y) / imageSize.y) * gl_Vertex.z * fov.y,
                           gl_Vertex.z, 1.0);
         
         //projective texture on the 
@@ -30,8 +30,8 @@ void main(void)
         vec4 texCd = tTex * pos;
         texCd.xyz /= texCd.w;
         
-//        texCd.x *= -1.;
-//        texCd.y *= -1.;
+        texCd.x *= -1.;
+        texCd.y *= -1.;
         texCd.xy += 1.;
         texCd.xy /= 2.;
         texCd.xy += fudge;
