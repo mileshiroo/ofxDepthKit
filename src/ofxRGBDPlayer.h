@@ -1,10 +1,19 @@
-//
-//  ofxRGBDPlayer.h
-//  FeatureTriangulation
-//
-//  Created by James George on 6/8/12.
-//  Copyright (c) 2012 FlightPhase. All rights reserved.
-//
+/**
+ * ofxRGBDPlayer 
+ 
+ * Class to play an RGBDScene -- keeps the video and depth in sync based on a pairings file
+ * set by the visualizer.
+ *
+ *
+ * Most commonly used with the ofxRGBDRenderer or ofxRGBDMeshBuilder. An example use looks like this:
+ *
+ * ofxRGBDPlayer player;
+ * player.setup("/path/to/my/MediaBin/scene1/"); //this is one folder inside of a MediaBin, called a scene
+ * renderer.setup(player.getScene().calibrationFolder);
+ * renderer.setRGBTexture(player.getVideoPlayer());
+ * renderer.setDepthImage(player.getCurrentDepthPixels.getPixels());
+ * 
+ */
 
 #pragma once 
 
@@ -12,7 +21,6 @@
 #include "ofxXmlSettings.h"
 #include "ofxRGBDAlignment.h"
 #include "ofxRGBDScene.h"
-#include "ofxRGBDRenderer.h"
 #include "ofxRGBDVideoDepthSequence.h"
 #include "ofxDepthImageSequence.h"
 
@@ -22,32 +30,32 @@ class ofxRGBDPlayer {
     ~ofxRGBDPlayer();
     
     bool setup(string sceneDirectory);
-    bool setup(ofxRGBDScene take);
+    bool setup(ofxRGBDScene scene);
     void update();
-    void drawWireframe();
     
     bool isLoaded();
-    //toggle mesh creation (renderer->update()) on and off
-    bool shouldCreateMesh;
+    bool isFrameNew();
     
     void play();
     void stop();
     void togglePlay();
     
+    ofVec2f getXYShift();
+    
     int getDurationInFrames();
     float getDurationInSeconds();
     
-    ofShortPixels& getCurrentDepthPixels();
-    ofVideoPlayer& getVideoPlayer();
-    ofxRGBDRenderer& getRenderer();
     ofxRGBDScene& getScene();
+    ofShortPixels& getDepthPixels();
+    ofVideoPlayer& getVideoPlayer();
     
   protected:
     bool loaded;
+    bool frameIsNew;
+    ofVec2f shift;
     ofVideoPlayer* player;
-    ofxRGBDRenderer renderer;
 	ofxRGBDScene scene;
     ofxDepthImageSequence depthSequence;
     ofxRGBDVideoDepthSequence videoDepthAligment;
-
+    
 };

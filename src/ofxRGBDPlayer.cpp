@@ -11,7 +11,8 @@
 ofxRGBDPlayer::ofxRGBDPlayer(){
 	player = NULL;    
     loaded = false;
-    shouldCreateMesh = true;
+    frameIsNew = false;
+    shift = ofVec2f(0,0);
 }
 
 ofxRGBDPlayer::~ofxRGBDPlayer(){
@@ -47,22 +48,29 @@ bool ofxRGBDPlayer::setup(ofxRGBDScene scene){
     depthSequence.loadSequence(scene.depthFolder);
     videoDepthAligment.loadPairingFile(scene.pairingsFile);
     
-    renderer.setup(scene.calibrationFolder);
-    renderer.setRGBTexture(*player);
-    renderer.setDepthImage(depthSequence.getPixels());
-    renderer.setSimplification(2); //default simplification
+//    renderer.setup(scene.calibrationFolder);
+//    renderer.setRGBTexture(*player);
+//    renderer.setDepthImage(depthSequence.getPixels());
+//    renderer.setSimplification(2); //default simplification
     
     if(scene.hasXYShift){
     	ofxXmlSettings xyshift;
         xyshift.loadFile(scene.xyshiftFile);
-        renderer.xshift = xyshift.getValue("xshift", 0.);
-        renderer.yshift = xyshift.getValue("yshift", 0.);
+        shift = ofVec2f(xyshift.getValue("xshift", 0.),
+                        xyshift.getValue("yshift", 0.));
+    }
+    else{
+        shift = ofVec2f(0,0);
     }
     
     player->play();
     player->setSpeed(0);
     
     return (loaded = true);
+}
+
+ofVec2f ofxRGBDPlayer::getXYShift(){
+    return shift;
 }
                                                  
 void ofxRGBDPlayer::update(){
@@ -73,9 +81,7 @@ void ofxRGBDPlayer::update(){
         long videoTime = player->getPosition()*player->getDuration()*1000;
         depthSequence.selectTime(videoDepthAligment.getDepthFrameForVideoFrame(videoTime));
         depthSequence.updatePixels();            
-        if(shouldCreateMesh){
-	        renderer.update();
-        }
+        frameIsNew = true;
     }
 }
 
@@ -83,19 +89,19 @@ bool ofxRGBDPlayer::isLoaded(){
     return loaded;
 }
 
-void ofxRGBDPlayer::drawWireframe(){
-    if(loaded){
-        ofEnableAlphaBlending();
-        //renderer.drawWireFrame();
-        renderer.drawPointCloud();
-    }
+bool ofxRGBDPlayer::isFrameNew(){
+    bool isNew = frameIsNew;
+    frameIsNew = false;
+    return isNew;
 }
 
 void ofxRGBDPlayer::play(){
+    if(!loaded) return;
     player->setSpeed(1.0);
 }
 
 void ofxRGBDPlayer::stop(){
+    if(!loaded) return;
     player->setSpeed(0.0);
 }
                            
@@ -104,10 +110,10 @@ void ofxRGBDPlayer::togglePlay(){
     if(!loaded) return;
     
     if(player->getSpeed() == 0.0){
-        player->setSpeed(1.0);
+        play();
     }
     else{
-        player->setSpeed(0.0);
+        stop();
     }
 }
 
@@ -125,7 +131,7 @@ float ofxRGBDPlayer::getDurationInSeconds(){
     return 0;
 }
 
-ofShortPixels& ofxRGBDPlayer::getCurrentDepthPixels(){
+ofShortPixels& ofxRGBDPlayer::getDepthPixels(){
 	return depthSequence.getPixels();    
 }
 
@@ -133,9 +139,9 @@ ofVideoPlayer& ofxRGBDPlayer::getVideoPlayer(){
 	return *player;
 }
 
-ofxRGBDRenderer& ofxRGBDPlayer::getRenderer(){
-	return renderer;    
-}
+//ofxRGBDRenderer& ofxRGBDPlayer::getRenderer(){
+//	return renderer;    
+//}
 
 ofxRGBDScene& ofxRGBDPlayer::getScene(){
 	return scene;    

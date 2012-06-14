@@ -8,7 +8,7 @@
  */
 
 #include "ofxRGBDRenderer.h"
-#include <set>
+
 
 ofxRGBDRenderer::ofxRGBDRenderer(){
 	xshift = 0;
@@ -25,7 +25,6 @@ ofxRGBDRenderer::ofxRGBDRenderer(){
 	hasDepthImage = false;
 	hasRGBImage = false;
 
-//    shaderBound = false;
     rendererBound = false;
     currentlyBoundShader = NULL;
 
@@ -91,7 +90,7 @@ void ofxRGBDRenderer::setSimplification(int level){
     //simplify = 1;
     
 	baseIndeces.clear();
-    simpleMesh.clearIndices();
+    mesh.clearIndices();
 	int w = 640 / simplify;
 	int h = 480 / simplify;
 	for (int y = 0; y < h-1; y++){
@@ -104,9 +103,9 @@ void ofxRGBDRenderer::setSimplification(int level){
 			baseIndeces.push_back(b);
 			baseIndeces.push_back(c);
 			
-            simpleMesh.addIndex(a);
-            simpleMesh.addIndex(b);
-            simpleMesh.addIndex(c);
+            mesh.addIndex(a);
+            mesh.addIndex(b);
+            mesh.addIndex(c);
             
 			a = (x+1)+y*w;
 			b = x+(y+1)*w;
@@ -115,9 +114,9 @@ void ofxRGBDRenderer::setSimplification(int level){
 			baseIndeces.push_back(b);
 			baseIndeces.push_back(c);
             
-            simpleMesh.addIndex(a);
-            simpleMesh.addIndex(b);
-            simpleMesh.addIndex(c);
+            mesh.addIndex(a);
+            mesh.addIndex(b);
+            mesh.addIndex(c);
 		}
 	}		
 	
@@ -130,27 +129,27 @@ void ofxRGBDRenderer::setSimplification(int level){
 		}
 	}
 
-	simpleMesh.clearVertices();
+	mesh.clearVertices();
 	for (int y = 0; y < 480; y+=simplify){
 		for (int x = 0; x < 640; x+=simplify){
-			simpleMesh.addVertex(ofVec3f(x,y,0));
+			mesh.addVertex(ofVec3f(x,y,0));
 		}
 	}
     
     if(addColors){
-        simpleMesh.clearColors();
+        mesh.clearColors();
         for (int y = 0; y < 480; y++){
             for (int x=0; x < 640; x++){
-                simpleMesh.addColor(ofFloatColor(1.0,1.0,1.0,1.0));
+                mesh.addColor(ofFloatColor(1.0,1.0,1.0,1.0));
             }
         }        
     }
     
     if(calculateTextureCoordinates){
-        simpleMesh.clearTexCoords();
+        mesh.clearTexCoords();
         for (int y = 0; y < 480; y++){
             for (int x=0; x < 640; x++){
-                simpleMesh.addTexCoord(ofVec2f(0,0));
+                mesh.addTexCoord(ofVec2f(0,0));
             }
         }        
     }
@@ -166,7 +165,9 @@ int ofxRGBDRenderer::getSimplification(){
 //-----------------------------------------------
 void ofxRGBDRenderer::setRGBTexture(ofBaseHasPixels& pix) {
 	currentRGBImage = &pix;
-    undistortedRGBImage.setFromPixels(pix.getPixelsRef());
+    if(!undistortedRGBImage.isAllocated() || pix.getPixelsRef().getWidth() != undistortedRGBImage.getWidth() || pix.getPixelsRef().getHeight() != undistortedRGBImage.getHeight()){
+        undistortedRGBImage.setFromPixels(pix.getPixelsRef());
+    }
 	hasRGBImage = true;
 }
 
@@ -208,16 +209,16 @@ void ofxRGBDRenderer::update(){
     //feed the zed values into the mesh
     unsigned short* ptr = undistortedDepthImage.getPixels();    
     /*
-    for(int i = 0; i < simpleMesh.getNumVertices(); i++){
-	    simpleMesh.getVertices()[i].z = (*ptr++);
+    for(int i = 0; i < mesh.getNumVertices(); i++){
+	    mesh.getVertices()[i].z = (*ptr++);
     }
 	*/
     
     int vertexIndex = 0;
     for (int y = 0; y < 480; y+=simplify){
 		for (int x = 0; x < 640; x+=simplify){
-//			simpleMesh.getVertices()[vertexIndex++].z = (*ptr++);
-            simpleMesh.getVertices()[vertexIndex++].z = ptr[y*640+x];
+//			mesh.getVertices()[vertexIndex++].z = (*ptr++);
+            mesh.getVertices()[vertexIndex++].z = ptr[y*640+x];
         }
     }
     
@@ -239,7 +240,7 @@ void ofxRGBDRenderer::update(){
 //	for(int y = 0; y < h; y += simplify) {
 //		for(int x = 0; x < w; x += simplify) {
 //            
-//            //simpleMesh.setVertex(y*w+x, ofVec3f(x,y,undistortedDepthImage.getPixels()[y*w+x]));
+//            //mesh.setVertex(y*w+x, ofVec3f(x,y,undistortedDepthImage.getPixels()[y*w+x]));
 //        }
 //    }
     
@@ -255,7 +256,7 @@ void ofxRGBDRenderer::update(){
                 //yReal = (((float)principalPoint.y - y) / imageSize.height) * z * fy;
                 indx.vertexIndex = vertexPointer;
 				indx.valid = true;
-                simpleMesh.setVertex(vertexPointer, ofVec3f(xReal, yReal, z));
+                mesh.setVertex(vertexPointer, ofVec3f(xReal, yReal, z));
                 hasVerts = true;
 			}
 			else {
@@ -269,13 +270,13 @@ void ofxRGBDRenderer::update(){
 
     /*
     if(debug && !hasVerts) cout << "warning no verts with far clip " << farClip << endl; 
-	if(debug) cout << "unprojection " << simpleMesh.getVertices().size() << " took " << ofGetElapsedTimeMillis() - start << endl;
+	if(debug) cout << "unprojection " << mesh.getVertices().size() << " took " << ofGetElapsedTimeMillis() - start << endl;
 	
-	simpleMesh.clearIndices();
+	mesh.clearIndices();
 	set<ofIndexType> calculatedNormals;
 	start = ofGetElapsedTimeMillis();
     if(calculateNormals){
-		simpleMesh.getNormals().resize(simpleMesh.getVertices().size());
+		mesh.getNormals().resize(mesh.getVertices().size());
 	}
     
 	for(int i = 0; i < baseIndeces.size(); i+=3){
@@ -284,17 +285,17 @@ void ofxRGBDRenderer::update(){
 		   indexMap[baseIndeces[i+2]].valid){
 			
 			ofVec3f a,b,c;
-			a = simpleMesh.getVertices()[indexMap[baseIndeces[i]].vertexIndex]; 
-			b = simpleMesh.getVertices()[indexMap[baseIndeces[i+1]].vertexIndex]; 
-			c = simpleMesh.getVertices()[indexMap[baseIndeces[i+2]].vertexIndex]; 
+			a = mesh.getVertices()[indexMap[baseIndeces[i]].vertexIndex]; 
+			b = mesh.getVertices()[indexMap[baseIndeces[i+1]].vertexIndex]; 
+			c = mesh.getVertices()[indexMap[baseIndeces[i+2]].vertexIndex]; 
 			if(fabs(a.z - b.z) < edgeCull && fabs(a.z - c.z) < edgeCull){
-				simpleMesh.addTriangle(indexMap[baseIndeces[i]].vertexIndex, 
+				mesh.addTriangle(indexMap[baseIndeces[i]].vertexIndex, 
 									   indexMap[baseIndeces[i+1]].vertexIndex,
 									   indexMap[baseIndeces[i+2]].vertexIndex);
 				
 				if(calculateNormals && calculatedNormals.find(indexMap[baseIndeces[i]].vertexIndex) == calculatedNormals.end()){
 					//calculate normal
-					simpleMesh.setNormal(indexMap[baseIndeces[i]].vertexIndex, (b-a).getCrossed(b-c).getNormalized());
+					mesh.setNormal(indexMap[baseIndeces[i]].vertexIndex, (b-a).getCrossed(b-c).getNormalized());
 					calculatedNormals.insert(indexMap[baseIndeces[i]].vertexIndex);
 				}
 			}
@@ -302,7 +303,7 @@ void ofxRGBDRenderer::update(){
 	}
 	*/
     
-	//if(debug) cout << "indexing  " << simpleMesh.getIndices().size() << " took " << ofGetElapsedTimeMillis() - start << endl;
+	//if(debug) cout << "indexing  " << mesh.getIndices().size() << " took " << ofGetElapsedTimeMillis() - start << endl;
     
     //normally this is done in the shader, but sometimes we want to have them on the CPU for doing special processing
 //	if(calculateTextureCoordinates){
@@ -315,13 +316,12 @@ void ofxRGBDRenderer::undistortImages(){
     if(!forceUndistortOff){
         depthCalibration.undistort( toCv(*currentDepthImage), toCv(undistortedDepthImage), CV_INTER_NN);
         rgbCalibration.undistort( toCv(*currentRGBImage), toCv(undistortedRGBImage) );
+        //cout << "undistortedRGBImage w h " << undistortedRGBImage.getWidth() << " " << undistortedRGBImage.getHeight() << endl;
         undistortedRGBImage.update();
     }
     else {
         undistortedDepthImage = *currentDepthImage;
         undistortedRGBImage.setFromPixels(currentRGBImage->getPixelsRef());
-        undistortedRGBImage.update();
-//        cout << "undistortedRGBImage w h " << undistortedRGBImage.getWidth() << " " << undistortedRGBImage.getHeight() << endl;
     }
 }
 
@@ -343,13 +343,13 @@ void ofxRGBDRenderer::generateTextureCoordinates(){
         return;
     }
     
-    if(!simpleMesh.hasTexCoords()){
+    if(!mesh.hasTexCoords()){
         for (int y = 0; y < 640*480; y++){
-            simpleMesh.addTexCoord(ofVec2f(0,0));
+            mesh.addTexCoord(ofVec2f(0,0));
         } 
     }
     
-    Mat pcMat = Mat(toCv(simpleMesh));		
+    Mat pcMat = Mat(toCv(mesh));		
     imagePoints.clear();
        
    projectPoints(pcMat,
@@ -360,7 +360,7 @@ void ofxRGBDRenderer::generateTextureCoordinates(){
     
     for(int i = 0; i < imagePoints.size(); i++) {
 	    //TODO account for fudge factor that the shader listens to
-        simpleMesh.setTexCoord(i, ofVec2f(imagePoints[i].x, imagePoints[i].y));			
+        mesh.setTexCoord(i, ofVec2f(imagePoints[i].x, imagePoints[i].y));			
 	}
 }
 
@@ -375,12 +375,17 @@ int ofxRGBDRenderer::vertexIndex(int sequenceIndex){
 int ofxRGBDRenderer::getTotalPoints(){
 	return indexMap.size();
 }
-ofMesh& ofxRGBDRenderer::getMesh(){
-	return simpleMesh;
+
+ofVboMesh& ofxRGBDRenderer::getMesh(){
+	return mesh;
+}
+
+void ofxRGBDRenderer::setXYShift(ofVec2f shift){
+    xshift = shift.x;
+    yshift = shift.y;
 }
 
 void ofxRGBDRenderer::reloadShader(){
-//    shader.load("shaders/unproject");
     meshShader.setGeometryInputType(GL_TRIANGLES);
     meshShader.setGeometryOutputType(GL_TRIANGLE_STRIP);
     meshShader.setGeometryOutputCount(3);
@@ -418,7 +423,7 @@ bool ofxRGBDRenderer::bindRenderer(ofShader& shader){
     ofPushMatrix();
     
     ofScale(1, -1, 1);
-    if(mirror){
+    if(!mirror){
 	    ofScale(-1, 1, 1);    
     }
     
@@ -514,7 +519,7 @@ void ofxRGBDRenderer::drawWireFrame(){
 void ofxRGBDRenderer::drawMesh(ofShader& shader){
     
     if(bindRenderer(shader)){
-		simpleMesh.drawFaces();
+		mesh.drawFaces();
         unbindRenderer();
     }
 }
@@ -522,7 +527,7 @@ void ofxRGBDRenderer::drawMesh(ofShader& shader){
 void ofxRGBDRenderer::drawPointCloud(ofShader& shader){
 
     if(bindRenderer(shader)){
-	    simpleMesh.drawVertices();
+	    mesh.drawVertices();
         unbindRenderer();
     }
 }
@@ -530,7 +535,7 @@ void ofxRGBDRenderer::drawPointCloud(ofShader& shader){
 void ofxRGBDRenderer::drawWireFrame(ofShader& shader){
 
 	if(bindRenderer(shader)){
-		simpleMesh.drawWireframe();
+		mesh.drawWireframe();
         unbindRenderer();
     }
 }

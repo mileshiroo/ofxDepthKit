@@ -1,8 +1,7 @@
 /*
  *  ofxRGBDRenderer.h
- *  ofxRGBDepthCaptureOpenNI
  *
- *  Created by Jim on 12/17/11.
+ *  Created by James George on 12/17/11.
  *  
  *  The ofxRGBDRenderer is capable of actually rendering a depth image aligned to a
  *  an RGB image from an external camera.
@@ -41,9 +40,11 @@ class ofxRGBDRenderer {
     void undistortImages();
 	void update();
 
-	//fudge factors to apply during alignment
-	float xshift;
+    //fudge factors to apply during alignment
+    void setXYShift(ofVec2f shift);
+    float xshift;
 	float yshift;
+	
 	float edgeCull;
 	float farClip;
 		
@@ -67,16 +68,12 @@ class ofxRGBDRenderer {
     
 	void reloadShader();
     
-    
 	//sets a level of simplification, 
 	//should be either 1 for none
 	//2 for half, or 4 for quarter;
 	void setSimplification(int level);
 	int getSimplification();
 	
-//	void drawMesh(bool useShader = true);
-//	void drawPointCloud(bool useSahder = true);
-//	void drawWireFrame(bool useSahder = true);
 	void drawMesh();
 	void drawPointCloud();
 	void drawWireFrame();
@@ -86,8 +83,7 @@ class ofxRGBDRenderer {
 	void drawWireFrame(ofShader& customShader);
 
 	//populated with vertices, texture coords, and indeces
-	ofMesh& getMesh();
-//	ofTexture& getTextureReference();
+	ofVboMesh& getMesh();
 	
 	Calibration& getRGBCalibration();
 	Calibration& getDepthCalibration();
@@ -101,8 +97,8 @@ class ofxRGBDRenderer {
     //one shot texture coordinate generation if you need it for something
     //call this after a call to update()
     void generateTextureCoordinates();
+    
   protected:	
-
 	int simplify;
 
     //bool shaderBound;
@@ -126,8 +122,7 @@ class ofxRGBDRenderer {
 	vector<Point2f> imagePoints;    
 	vector<Point2f> undistortedPoints;
 	
-	ofMesh simpleMesh;
-    //ofVboMesh simpleMesh; 
+    ofVboMesh mesh; 
     
     vector<ofIndexType> baseIndeces;
     vector<ofVec2f> texcoords;
