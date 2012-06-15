@@ -19,12 +19,13 @@ ofxRGBDMeshBuilder::ofxRGBDMeshBuilder(){
     normalizeTextureCoordinates = false;
     hasTriangles = false;
     simplify = -1;
+    textureScale = ofVec2f(1.0, 1.0);
 }
 
 ofxRGBDMeshBuilder::~ofxRGBDMeshBuilder(){
 }
 
-void ofxRGBDMeshBuilder::setup(string calibrationDirectory){
+bool ofxRGBDMeshBuilder::setup(string calibrationDirectory){
  	if(!ofDirectory(calibrationDirectory).exists()){
 		ofLogError("ofxRGBDRenderer --- Calibration directory doesn't exist: " + calibrationDirectory);
 		return false;
@@ -44,8 +45,11 @@ void ofxRGBDMeshBuilder::setup(string calibrationDirectory){
 	principalPoint = depthCalibration.getUndistortedIntrinsics().getPrincipalPoint();
 	imageSize = depthCalibration.getUndistortedIntrinsics().getImageSize();
 
-    calibrationSetup = true;
-	return true;   
+	return (calibrationSetup = true);   
+}
+
+int ofxRGBDMeshBuilder::getSimplification(){
+    return simplify;
 }
 
 void ofxRGBDMeshBuilder::setSimplification(int simplifyLevel){
@@ -57,8 +61,6 @@ void ofxRGBDMeshBuilder::setSimplification(int simplifyLevel){
     if(simplify == simplifyLevel){
         return;
     }
-    
-    
     
 	simplify = simplifyLevel;
 	if (simplify <= 0) {
@@ -116,7 +118,6 @@ void ofxRGBDMeshBuilder::setSimplification(int simplifyLevel){
     }
     
     cout << "set simplification level to " << simplifyLevel << " for image size " << imageSize.width << " x " << imageSize.height << " #verts " << mesh.getNumVertices() << endl;
-
 }
 
 void ofxRGBDMeshBuilder::updateMesh(ofShortPixels& depthImage){
@@ -180,7 +181,7 @@ void ofxRGBDMeshBuilder::updateMesh(ofShortPixels& depthImage){
         generateTextureCoordinates();
 	}
     
-//baseIndeces[    cout << "updated mesh has " << mesh.getNumIndices()/3 << " triangles " << endl;
+    //cout << "updated mesh has " << mesh.getNumIndices()/3 << " triangles " << endl;
 }
 
 void ofxRGBDMeshBuilder::generateTextureCoordinates(){
@@ -197,7 +198,6 @@ void ofxRGBDMeshBuilder::generateTextureCoordinates(){
         }        
     }
     
-
     Mat pcMat = Mat(toCv(mesh));		
     vector<cv::Point2f> imagePoints;    
     projectPoints(pcMat,
@@ -205,23 +205,40 @@ void ofxRGBDMeshBuilder::generateTextureCoordinates(){
                   rgbCalibration.getDistortedIntrinsics().getCameraMatrix(),
                   rgbCalibration.getDistCoeffs(),
                   imagePoints);
-    
+    cv::Size rgbImage = rgbCalibration.getDistortedIntrinsics().getImageSize();
     for(int i = 0; i < imagePoints.size(); i++) {
-        mesh.setTexCoord(i, ofVec2f(imagePoints[i].x, imagePoints[i].y));			
+        ofVec2f texCd = ofVec2f(imagePoints[i].x, imagePoints[i].y);
+        texCd /= ofVec2f(rgbImage.width,rgbImage.height);
+        texCd += shift;
+        texCd *= ofVec2f(rgbImage.width,rgbImage.height) * textureScale;
+        mesh.setTexCoord(i, texCd);			
 	}
 }
 
-
 ofVec3f ofxRGBDMeshBuilder::getWorldPoint(float x, float y, unsigned short z){
-    return ofVec3f(((principalPoint.x - x) / imageSize.width) * z * fx, ((principalPoint.y - y) / imageSize.height) * z * fy, z);
+    //return ofVec3f(((principalPoint.x - x) / imageSize.width) * z * fx, ((principalPoint.y - y) / imageSize.height) * z * fy, z);
+    return ofVec3f(((x - principalPoint.x) / imageSize.width) * z * fx, 
+                   ((y - principalPoint.y) / imageSize.height) * z * fy, z);
 }
 
 void ofxRGBDMeshBuilder::draw(ofBaseHasTexture& texture){
     if(!calibrationSetup || !hasTriangles){
         return;
     }
+    ofPushMatrix();
+    ofScale(1,-1, 1);
     texture.getTextureReference().bind();
     mesh.drawWireframe();
     texture.getTextureReference().unbind();
+    ofPopMatrix();
 }
 
+void ofxRGBDMeshBuilder::setTextureScaleForImage(ofBaseHasTexture& texture){
+    cv::Size rgbImage = rgbCalibration.getDistortedIntrinsics().getImageSize();
+    textureScale = ofVec2f(float(texture.getTextureReference().getWidth() / float(rgbImage.width)  ),
+                           float(texture.getTextureReference().getHeight()) / float(rgbImage.height) );    
+}
+
+void ofxRGBDMeshBuilder::setXYShift(ofVec2f newShift){
+    shift = newShift;
+}

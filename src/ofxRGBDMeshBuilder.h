@@ -2,6 +2,7 @@
  * ofxRGBDMeshBuilder
  *
  * Utility to build stitched ofMesh out of a depth image
+ * Creates texture coords using the calibration image supplied.
  *
  */
 
@@ -17,11 +18,12 @@ class ofxRGBDMeshBuilder {
     ofxRGBDMeshBuilder();
     ~ofxRGBDMeshBuilder();    
     
-    void setup(string calibrationDirectory);                       
+    bool setup(string calibrationDirectory);                       
     void updateMesh(ofShortPixels& depthImage);
     void draw(ofBaseHasTexture& texture);
     void setSimplification(int simplifyLevel);
-
+    int getSimplification();
+    
     void setXYShift(ofVec2f shift);
     ofVec2f shift;
     ofMesh& getMesh();
@@ -34,6 +36,9 @@ class ofxRGBDMeshBuilder {
     bool calculateTextureCoordinates;
     bool normalizeTextureCoordinates;
     
+    void setTextureScaleForImage(ofBaseHasTexture& texture);
+    
+    ofVec2f textureScale;
     ofVec3f getWorldPoint(float x, float y, unsigned short z);
         
   private:

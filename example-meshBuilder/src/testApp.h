@@ -19,6 +19,7 @@
 #include "ofxGameCamera.h"
 #include "ofxRGBDPlayer.h"
 #include "ofxRGBDMeshBuilder.h"
+#include "ofxGui.h"
 
 class testApp : public ofBaseApp{
   public:
@@ -36,11 +37,18 @@ class testApp : public ofBaseApp{
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
     
+    void exit();
+    
     ofxRGBDPlayer player;
     ofxRGBDMeshBuilder meshBuilder;
-    
     ofxGameCamera cam;
 
+    ofxPanel gui;
+    ofxFloatSlider xshift;
+    ofxFloatSlider yshift;
+    ofxIntSlider simplify;
+    ofxButton loadNew;
+    
     bool loadNewScene();
     bool loadDefaultScene();
     bool loadScene(string takeDirectory);

@@ -30,9 +30,22 @@ void testApp::setup(){
     cam.targetXRot = -180;
     cam.targetYRot = 0;
     cam.rotationZ = 0;    
-
+    
+    simplify = 1;
+    xshift = 0;
+    yshift = 0;
+    
+    gui.setup("tests");
+    gui.add(xshift.setup("xshift", ofxParameter<float>(), -.15, .15));
+    gui.add(yshift.setup("yshift", ofxParameter<float>(), -.15, .15));
+    gui.add(simplify.setup("simplify", ofxParameter<int>(), 1, 8));
+    gui.add(loadNew.setup("load new"));
+           
+    gui.loadFromFile("defaultSettings.xml");
+    
     //load 
     loadDefaultScene();
+    //loadNewScene();
 }
 
 //--------------------------------------------------------------
@@ -68,6 +81,11 @@ bool testApp::loadScene(string takeDirectory){
         //populate
         player.getVideoPlayer().setPosition(.5);
         player.update();
+        
+        meshBuilder.setXYShift(player.getXYShift());
+        //this will compensate if we are using an offline video that is of a different scale
+        meshBuilder.setTextureScaleForImage(player.getVideoPlayer()); 
+        //update the first mesh
         meshBuilder.updateMesh(player.getDepthPixels());
         return true;
     }
@@ -76,6 +94,16 @@ bool testApp::loadScene(string takeDirectory){
 
 //--------------------------------------------------------------
 void testApp::update(){
+    if(loadNew){
+        loadNewScene();
+    }
+    if(meshBuilder.shift.x != xshift || meshBuilder.shift.y != yshift || meshBuilder.getSimplification() != simplify){
+        meshBuilder.setXYShift(ofVec2f(xshift,yshift));
+        meshBuilder.setSimplification(simplify);
+        simplify = meshBuilder.getSimplification();
+        meshBuilder.updateMesh(player.getDepthPixels());
+    }
+        
     player.update();
     if(player.isFrameNew()){
         meshBuilder.updateMesh(player.getDepthPixels());
@@ -91,6 +119,7 @@ void testApp::draw(){
         glDisable(GL_DEPTH_TEST);
         cam.end();
     }
+    gui.draw();
 }
 
 //--------------------------------------------------------------
@@ -98,6 +127,11 @@ void testApp::keyPressed(int key){
     if(key == ' '){
         player.togglePlay();
     }
+}
+
+//--------------------------------------------------------------
+void testApp::exit(){
+    gui.saveToFile("defaultSettings.xml");
 }
 
 //--------------------------------------------------------------
