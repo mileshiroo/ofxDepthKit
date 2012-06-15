@@ -9,9 +9,9 @@
 
 #include "ofMain.h"
 #include "ofxDepthImageCompressor.h"
+
 typedef struct {
     string path;
-//    ofShortPixels pix;
     long timestamp;
     int frameNumber;
 } DepthImage;
@@ -24,7 +24,7 @@ class ofxDepthImageSequence {
     bool loadSequence(string sequenceDirectory);
     bool isLoaded();
     bool doFramesHaveTimestamps();
-        
+    
     int getCurrentFrame();
     long getCurrentMilliseconds();
     float getCurrentSeconds();
@@ -37,7 +37,8 @@ class ofxDepthImageSequence {
 	
     long getDurationInMillis();
     float getDurationInSeconds();
-    
+
+    void updatePixels();
     ofShortPixels& getPixels();
     vector<DepthImage>& getImageArray();
     

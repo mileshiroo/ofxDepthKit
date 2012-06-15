@@ -13,6 +13,7 @@
 #include "ofxTLElement.h"
 #include "ofxTLVideoThumb.h"
 #include "ofxDepthImageCompressor.h"
+//#include "ofxDepthImageSequence.h" //TODO!!
 
 class ofxTLDepthImageSequence : public ofxTLElement {
   public:	
@@ -50,9 +51,7 @@ class ofxTLDepthImageSequence : public ofxTLElement {
 	void playbackLooped(ofxTLPlaybackEventArgs& args);
 	
 	ofImage currentDepthImage;
-	//unsigned short* currentDepthRaw;
     ofShortPixels currentDepthRaw;
-	//unsigned short* thumbnailDepthRaw;
     ofShortPixels thumbnailDepthRaw;
 	
 	int getSelectedFrame();

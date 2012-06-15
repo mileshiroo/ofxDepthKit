@@ -75,7 +75,7 @@ void ofxDepthImageRecorder::setRecordLocation(string directory, string filePrefi
     updateTakes();
 }
 
-vector<Take*>& ofxDepthImageRecorder::getTakes(){
+vector<ofxRGBDScene*>& ofxDepthImageRecorder::getScenes(){
 	return takes;
 }
 
@@ -88,7 +88,7 @@ bool ofxDepthImageRecorder::addImage(unsigned short* image){
 	int framebytes = 640*480*sizeof(unsigned short);
 	if(0 != memcmp(image, lastFramePixs.getPixels(), framebytes)){
 		QueuedFrame frame;
-        //TODO use high res timer!!!
+        
 		frame.timestamp = msaTimer.getAppTimeMillis() - recordingStartTime;
 		frame.pixels = new unsigned short[640*480];
 		memcpy(frame.pixels, image, framebytes);
@@ -100,7 +100,7 @@ bool ofxDepthImageRecorder::addImage(unsigned short* image){
 		char millisstring[512];
 		sprintf(millisstring, "%010d", frame.timestamp);
 		frame.filename = targetFilePrefix + "_" + filenumber +  "_millis_" + millisstring + ".raw";
-		frame.directory = targetDirectory +  "/" + currentFolderPrefix + "/";
+		frame.directory = targetDirectory +  "/" + currentFolderPrefix + "/depth/";
 				
 		recorderThread.lock();
 		saveQueue.push( frame );
@@ -134,7 +134,6 @@ void ofxDepthImageRecorder::toggleRecord(){
 	}
 }
 
-
 bool ofxDepthImageRecorder::isRecording(){
 	return recording;
 }
@@ -145,28 +144,31 @@ void ofxDepthImageRecorder::incrementTake(){
     currentFolderPrefix = string(takeString);
     ofDirectory dir(targetDirectory + "/" + currentFolderPrefix);
     
-	if(!dir.exists()){
-		dir.create(true);
-	}
+    dir.create(true);
+	ofDirectory depthDir = ofDirectory(dir.getOriginalDirectory() + "/depth/");
+    depthDir.create(true);
 	
+    //create a color folder for good measure
+	ofDirectory colorDir = ofDirectory(dir.getOriginalDirectory() + "/color/");
+    colorDir.create(true);
+    
     currentFrame = 0;	
-	//recordingStartTime = ofGetElapsedTimeMillis();
     recordingStartTime = msaTimer.getAppTimeMillis();
 }
 
 //start converting the current directory
 void ofxDepthImageRecorder::compressCurrentTake(){
-	if(currentFolderPrefix != ""){
-		encoderThread.lock();
-        Take* t = new Take();
-        t->path = targetDirectory + "/" + currentFolderPrefix;
-        cout << "encoding take " << t->path << endl;
-        t->framesConverted = 0;
-        t->numFrames = 1;
-        takes.push_back(t);
-		encodeDirectories.push( t );
-		encoderThread.unlock();
-	}	
+	if(currentFolderPrefix == ""){
+    	ofLogError("ofxDepthImageRecorder::compressCurrentTake -- working directory not set");
+        return;
+    }
+    ofxRGBDScene* t = new ofxRGBDScene();
+    t->loadFromFolder(targetDirectory + "/" + currentFolderPrefix);
+    
+    takes.push_back( t );
+    encoderThread.lock();
+    encodeDirectories.push( t );
+    encoderThread.unlock();
 }
 
 void ofxDepthImageRecorder::updateTakes(){
@@ -175,22 +177,27 @@ void ofxDepthImageRecorder::updateTakes(){
     }
     takes.clear();
     
+    cout << "updating takes " << endl;
+    
     ofDirectory dir = ofDirectory(targetDirectory);
 	dir.listDir();
 	dir.sort();
     
-
 	for(int i = 0; i < dir.numFiles(); i++){
-        Take* t = new Take();
-        t->framesConverted = 0;
-        t->numFrames = 1;
-        t->path = dir.getPath(i);
-        ofDirectory dir(t->path);
-        if(dir.exists() && dir.isDirectory()){
-			takes.push_back(t);
+        if(dir.getName(i) == "_calibration"){
+            continue;
+        }
+
+        ofxRGBDScene* t = new ofxRGBDScene();
+        t->loadFromFolder(dir.getPath(i));
+        if(t->hasDepth){
+            takes.push_back(t);
+        }
+        else{
+            ofLogWarning("ofxDepthImageRecorder::updateTakes -- Take " + dir.getPath(i) + " has no depth images");
+            delete t;
         }
 	}
-    
     
 	encoderThread.lock();
 	for(int i = 0; i < takes.size(); i++){
@@ -239,7 +246,7 @@ void ofxDepthImageRecorder::recorderThreadCallback(){
 
 void ofxDepthImageRecorder::encoderThreadCallback(){
 
-    Take* take = NULL;
+    ofxRGBDScene* take = NULL;
 	bool foundDir = false;
 
 	encoderThread.lock();
@@ -255,39 +262,31 @@ void ofxDepthImageRecorder::encoderThreadCallback(){
     }
     
     //start to convert
-    if(take->path == ""){
+    if(take->depthFolder == ""){
         ofLogError("ofxDepthImageCompressor -- Take has empty path string");
         return;
     }
     
-    ofDirectory rawDir(take->path);
+    ofDirectory rawDir(take->depthFolder);
     if(!rawDir.exists() || !rawDir.isDirectory()){
-        ofLogError("ofxDepthImageRecorder::encoderThreadCallback() -- Does not exist or is not directory " + take->path);
+        ofLogError("ofxDepthImageRecorder::encoderThreadCallback() -- Does not exist or is not directory " + take->depthFolder);
         return;
     }    
-        
-    rawDir.allowExt("raw");
-    rawDir.allowExt("xkcd");
-    rawDir.listDir();
-    //if(encodingBuffer == NULL){
+
     if(!encodingBuffer.isAllocated()){
-        //encodingBuffer = new unsigned short[640*480];
         encodingBuffer.allocate(640,480, OF_IMAGE_GRAYSCALE);
     }
     
-    ofDirectory convertedDir(take->path);
-    convertedDir.allowExt("png");
-    convertedDir.listDir();
+    ofLogVerbose("ofxDepthImageCompressor -- Starting to convert " + ofToString(take->uncompressedDepthFrameCount) + " in " + take->depthFolder);
+    framesToCompress = take->uncompressedDepthFrameCount;
+    rawDir.allowExt("raw");
+    rawDir.listDir();
     
-    take->numFrames = rawDir.numFiles() + convertedDir.numFiles();
-    take->framesConverted = convertedDir.numFiles();
-    ofLogVerbose("ofxDepthImageCompressor -- Starting to convert " + ofToString(rawDir.numFiles()) + " in " + take->path);
-    framesToCompress = rawDir.numFiles();
     for(int i = 0; i < rawDir.numFiles(); i++){
         
         //don't do this while recording
         while(recording){
-//                ofLogWarning("ofxDepthImageRecorder -- paused converting while recording...");
+//          ofLogWarning("ofxDepthImageRecorder -- paused converting while recording...");
             ofSleepMillis(25);
         }
         
@@ -302,11 +301,11 @@ void ofxDepthImageRecorder::encoderThreadCallback(){
         //COMPRESS TO PNG
         compressor.saveToCompressedPng(ofFilePath::removeExt(path)+".png", encodingBuffer.getPixels());
         //DELETE the file
-        //rawDir.getFile(i, ofFile::ReadOnly, true).remove();
         ofFile::removeFile(rawDir.getPath(i));
         //UPDATE COUNTS
-        framesToCompress--;
-        take->framesConverted++;
+        framesToCompress = take->uncompressedDepthFrameCount;
+        take->uncompressedDepthFrameCount--;
+        take->compressedDepthFrameCount++;
     }
 }
 

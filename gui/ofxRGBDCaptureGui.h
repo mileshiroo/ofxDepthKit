@@ -17,6 +17,7 @@
 #include "ofxCvCheckerboardPreview.h"
 #include "ofxRGBDAlignment.h"
 #include "ofxDepthImageProvider.h"
+#include "ofxRGBDScene.h"
 
 typedef enum {
 	TabCalibrate,
@@ -31,10 +32,10 @@ typedef enum {
 } DepthRenderMode;
 
 typedef struct {
-	Take* takeRef;
+	ofxRGBDScene* sceneRef;
     ofxMSAInteractiveObjectWithDelegate* button;
     bool isSelected;
-} TakeButton;
+} SceneButton;
 
 class ofxRGBDCaptureGui : public ofxMSAInteractiveObjectDelegate {
   public:
@@ -76,7 +77,7 @@ class ofxRGBDCaptureGui : public ofxMSAInteractiveObjectDelegate {
 	void loadDefaultDirectory();
     
 	void loadSequenceForPlayback( int index );
-	void updateTakeButtons();
+	void updateSceneButtons();
 	
 	void toggleRecord();
 	void captureCalibrationImage();
@@ -96,9 +97,9 @@ class ofxRGBDCaptureGui : public ofxMSAInteractiveObjectDelegate {
 	float frameheight;
 	float thirdWidth;
 	float btnheight;
-	float takeWidth;
+	float sceneWidth;
 	
-    vector<ofxMSAInteractiveObjectWithDelegate*> buttonSet; //all non take buttons
+    vector<ofxMSAInteractiveObjectWithDelegate*> buttonSet; //all non scene buttons
     
 	ofxMSAInteractiveObjectWithDelegate* btnSetDirectory;
 	
@@ -114,7 +115,11 @@ class ofxRGBDCaptureGui : public ofxMSAInteractiveObjectDelegate {
 	ofxMSAInteractiveObjectWithDelegate* btnRenderRainbow;
 	ofxMSAInteractiveObjectWithDelegate* btnRenderPointCloud;
     
-	vector<TakeButton> btnTakes;
+    ofxMSAInteractiveObjectWithDelegate* btnLoadRGBCalibration;
+	ofxMSAInteractiveObjectWithDelegate* btnGenerateCalibration;
+	ofxMSAInteractiveObjectWithDelegate* btnExportCalibration;
+
+	vector<SceneButton> btnScenes;
 	
 	ofxGameCamera cam;
 	
@@ -130,12 +135,14 @@ class ofxRGBDCaptureGui : public ofxMSAInteractiveObjectDelegate {
 	//unsigned short* frame;
 
   protected:
+    
     ofImage currentDepthImage;
     void createRainbowPallet();
 	unsigned char LUTR[256];
 	unsigned char LUTG[256];
 	unsigned char LUTB[256];
-
+    
+	void loadVideoFolder();
 	void updateDepthImage(ofShortPixels& pixels);
     ofImage depthImage;
 };

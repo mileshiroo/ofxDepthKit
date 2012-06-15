@@ -1,8 +1,7 @@
 /*
  *  ofxRGBDRenderer.h
- *  ofxRGBDepthCaptureOpenNI
  *
- *  Created by Jim on 12/17/11.
+ *  Created by James George on 12/17/11.
  *  
  *  The ofxRGBDRenderer is capable of actually rendering a depth image aligned to a
  *  an RGB image from an external camera.
@@ -17,11 +16,6 @@
 #include "ofMain.h"
 #include "ofxCv.h"
 
-typedef struct{
-	int vertexIndex;
-	bool valid;
-} IndexMap;
-
 using namespace ofxCv;
 using namespace cv;
 
@@ -32,37 +26,40 @@ class ofxRGBDRenderer {
 	
 	bool setup(string calibrationDirectory);
 
-	void setRGBTexture(ofBaseHasTexture& rgbTexture); 
+    void setRGBTexture(ofBaseHasPixels& pix); 
     void setDepthImage(ofShortPixels& pix);
-//	void setDepthImage(unsigned short* depthPixelsRaw);
 
-    ofBaseHasTexture& getRGBTexture();
+    ofBaseHasPixels& getRGBTexture();
 
+    void undistortImages();
 	void update();
 
-	//fudge factors to apply during alignment
-	float xmult;
-	float ymult;
+    //fudge factors to apply during alignment
+    void setXYShift(ofVec2f shift);
+    float xshift;
+	float yshift;
+	
 	float edgeCull;
 	float farClip;
-	
-	
     bool calculateTextureCoordinates;
     bool forceUndistortOff;
     bool addColors;
 	bool mirror;
     bool calibrationSetup;
-	
-    bool bindRenderer(bool useShader = true);
-    
-    void setupProjectionUniforms(ofShader& shader);
-    void restortProjection();
-    
-    void unbindRenderer();
-    
-	void reloadShader();
     
     ofVec3f meshRotate;
+
+    bool bindRenderer(); //built in shader
+    bool bindRenderer(ofShader& customShader); //any custom shader    
+    void unbindRenderer();
+    
+    //called inside of bind/unbind
+    void setupProjectionUniforms(ofShader& shader);
+    void restortProjection();
+
+    void drawProjectionDebug();
+    
+	void reloadShader();
     
 	//sets a level of simplification, 
 	//should be either 1 for none
@@ -70,61 +67,49 @@ class ofxRGBDRenderer {
 	void setSimplification(int level);
 	int getSimplification();
 	
-	void drawMesh(bool useShader = true);
-	void drawPointCloud(bool useSahder = true);
-	void drawWireFrame(bool useSahder = true);
-	
+	void drawMesh();
+	void drawPointCloud();
+	void drawWireFrame();
+
+    void drawMesh(ofShader& customShader);
+	void drawPointCloud(ofShader& customShader);
+	void drawWireFrame(ofShader& customShader);
+
 	//populated with vertices, texture coords, and indeces
-	ofMesh& getMesh();
-	ofTexture& getTextureReference();
+	ofVboMesh& getMesh();
 	
 	Calibration& getRGBCalibration();
 	Calibration& getDepthCalibration();
-	
-
-    bool isVertexValid(int index);
-	int vertexIndex(int sequenceIndex);
-    int getTotalPoints();
-    
-    //one shot texture coordinate generation if you need it for something
-    //call this after a call to update()
-    void generateTextureCoordinates();
+	    
   protected:	
-
 	int simplify;
 
-    bool shaderBound;
+    //bool shaderBound;
+    ofShader* currentlyBoundShader;
     bool rendererBound;
-    bool hasVerts;
     
+    Point2d principalPoint;
+    cv::Size imageSize;
 	Calibration depthCalibration, rgbCalibration;    
 	Mat rotationDepthToRGB, translationDepthToRGB;
+    float fx, fy;
 
 	bool hasDepthImage;
 	bool hasRGBImage;
+    
 
-    bool calculateNormals;
-
-	ofBaseHasTexture* currentRGBImage;
-    ofShortPixels* currentDepthImage;
-	//ofShortImage currentDepthImage;
-	//ofShortImage undistortedDepthImage;
+    ofBaseHasPixels* currentRGBImage;
+	ofShortPixels* currentDepthImage;
+    ofImage undistortedRGBImage;
+	ofShortPixels undistortedDepthImage;
 	
-	vector<Point2f> imagePoints;    
-	vector<Point2f> undistortedPoints;
-	
-	ofMesh simpleMesh;
-    //ofVboMesh simpleMesh; 
-    vector<ofIndexType> baseIndeces;
-    vector<ofVec2f> texcoords;
-    vector<ofVec3f> vertices;
-	vector<IndexMap> indexMap;
-
+    ofVboMesh mesh; 
+    
 	ofMatrix4x4 depthToRGBView;
 	ofMatrix4x4 rgbProjection;
     ofMatrix4x4 rgbMatrix;
 
-	ofShader shader;
-    ofVec3f center;
+	ofShader meshShader;
+    ofShader pointShader;  
     
 };

@@ -82,6 +82,7 @@ void ofxRGBDVideoDepthSequence::addAlignedFrames(int videoFrame, int depthFrame)
 
 void ofxRGBDVideoDepthSequence::addAlignedTime(int videoMillis, int depthMillis){
 	cout << "added aligned time of video " << videoMillis << " to depth " << depthMillis << endl;
+
 	VideoDepthPair pair;
 	pair.isTimeBased = true;
 	pair.videoFrame = videoMillis;
@@ -97,6 +98,13 @@ bool ofxRGBDVideoDepthSequence::isSequenceTimebased(){
 }
 
 void ofxRGBDVideoDepthSequence::addAlignedPair(VideoDepthPair pair){
+    //exclude dupes
+    for(int i = 0; i < alignedFrames.size(); i++){
+        if(pair.videoFrame == alignedFrames[i].videoFrame || pair.depthFrame == alignedFrames[i].depthFrame){
+            return;
+        }
+    }
+    
 	alignedFrames.push_back(pair);
 	sort(alignedFrames.begin(), alignedFrames.end(), pairsort);
 }

@@ -11,8 +11,6 @@
 ofxDepthImageSequence::ofxDepthImageSequence(){
     sequenceLoaded = false;
     framesHaveTimestamps = false;
-//    dummy.allocate(640, 480, 1);
-
 }
 
 ofxDepthImageSequence::~ofxDepthImageSequence(){
@@ -65,7 +63,7 @@ bool ofxDepthImageSequence::loadSequence(string sequenceDirectory){
 				}
 			}
 		}
-//        cout << "loaded frame " << i << " with path " << img.path << endl;
+
 		images.push_back( img );
 	}
     
@@ -81,15 +79,11 @@ bool ofxDepthImageSequence::loadSequence(string sequenceDirectory){
 }
 
 long ofxDepthImageSequence::getDurationInMillis(){
-    if(!sequenceLoaded){
-        ofLogError("ofxDepthImageSequence::getDurationInMillis() -- sequence not loaded");
-        return 0;
-    }
     return durationInMillis;
 }
 
 float ofxDepthImageSequence::getDurationInSeconds(){
-    return getDurationInMillis() / 1000.0;
+    return durationInMillis / 1000.0;
 }
 
 int ofxDepthImageSequence::getCurrentFrame(){
@@ -148,10 +142,6 @@ void ofxDepthImageSequence::selectFrame(int frame){
 }
 
 void ofxDepthImageSequence::selectTime(float timeInSeconds){
-    if(!sequenceLoaded){
-        ofLogError("ofxDepthImageSequence::selectTime(int) -- sequence not loaded");
-        return;
-    }
     if(!framesHaveTimestamps){
         ofLogError("ofxDepthImageSequence::selectTime() -- no timestamps!");
         return;        
@@ -166,10 +156,7 @@ void ofxDepthImageSequence::selectTime(float timeInSeconds){
 }
 
 void ofxDepthImageSequence::selectTime(long timeInMillis){
-    if(!sequenceLoaded){
-        ofLogError("ofxDepthImageSequence::selectTime(long) -- sequence not loaded");
-        return;
-    }
+    
     if(!framesHaveTimestamps){
         ofLogError("ofxDepthImageSequence::selectTime() -- no timestamps!");
         return;        
@@ -182,13 +169,16 @@ void ofxDepthImageSequence::selectTime(long timeInMillis){
     selectFrame(frameForTime(timeInMillis));
 }
 
-ofShortPixels& ofxDepthImageSequence::getPixels(){
+void ofxDepthImageSequence::updatePixels(){
     if(!sequenceLoaded){
-        ofLogError("ofxDepthImageSequence::getPixels() -- sequence not loaded");
+        ofLogError("ofxDepthImageSequence::updatePixels() -- sequence not loaded");
     }
-    else {
-    	compressor.readCompressedPng(images[currentFrame].path, pixels);
-    }
+//    cout << "updating pixels to " << currentFrame << endl;
+    compressor.readCompressedPng(images[currentFrame].path, pixels);
+}
+
+ofShortPixels& ofxDepthImageSequence::getPixels(){
+    updatePixels();
     return pixels;
 }
 
