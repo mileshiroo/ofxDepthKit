@@ -16,11 +16,6 @@
 #include "ofMain.h"
 #include "ofxCv.h"
 
-typedef struct{
-	int vertexIndex;
-	bool valid;
-} IndexMap;
-
 using namespace ofxCv;
 using namespace cv;
 
@@ -31,7 +26,6 @@ class ofxRGBDRenderer {
 	
 	bool setup(string calibrationDirectory);
 
-	//void setRGBTexture(ofBaseHasTexture& rgbTexture); 
     void setRGBTexture(ofBaseHasPixels& pix); 
     void setDepthImage(ofShortPixels& pix);
 
@@ -47,7 +41,6 @@ class ofxRGBDRenderer {
 	
 	float edgeCull;
 	float farClip;
-		
     bool calculateTextureCoordinates;
     bool forceUndistortOff;
     bool addColors;
@@ -87,17 +80,7 @@ class ofxRGBDRenderer {
 	
 	Calibration& getRGBCalibration();
 	Calibration& getDepthCalibration();
-	
-	ofVec3f getWoldPoint(int x, int y);
-    
-    bool isVertexValid(int index);
-	int vertexIndex(int sequenceIndex);
-    int getTotalPoints();
-    
-    //one shot texture coordinate generation if you need it for something
-    //call this after a call to update()
-    void generateTextureCoordinates();
-    
+	    
   protected:	
 	int simplify;
 
@@ -105,30 +88,23 @@ class ofxRGBDRenderer {
     ofShader* currentlyBoundShader;
     bool rendererBound;
     
+    Point2d principalPoint;
+    cv::Size imageSize;
 	Calibration depthCalibration, rgbCalibration;    
 	Mat rotationDepthToRGB, translationDepthToRGB;
     float fx, fy;
 
 	bool hasDepthImage;
 	bool hasRGBImage;
-
-    bool calculateNormals;
+    
 
     ofBaseHasPixels* currentRGBImage;
 	ofShortPixels* currentDepthImage;
     ofImage undistortedRGBImage;
 	ofShortPixels undistortedDepthImage;
 	
-	vector<Point2f> imagePoints;    
-	vector<Point2f> undistortedPoints;
-	
     ofVboMesh mesh; 
     
-    vector<ofIndexType> baseIndeces;
-    vector<ofVec2f> texcoords;
-    vector<ofVec3f> vertices;
-	vector<IndexMap> indexMap;
-
 	ofMatrix4x4 depthToRGBView;
 	ofMatrix4x4 rgbProjection;
     ofMatrix4x4 rgbMatrix;

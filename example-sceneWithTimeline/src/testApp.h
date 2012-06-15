@@ -20,6 +20,7 @@
 #include "ofxTLVideoPlayer.h"
 #include "ofxGameCamera.h"
 #include "ofxRGBDPlayer.h"
+#include "ofxRGBDRenderer.h"
 
 class testApp : public ofBaseApp{
   public:
@@ -38,6 +39,7 @@ class testApp : public ofBaseApp{
     void gotMessage(ofMessage msg);
     
     ofxRGBDPlayer player;
+    ofxRGBDRenderer renderer;
     
     ofxGameCamera cam;
     ofxTimeline timeline;

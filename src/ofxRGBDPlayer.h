@@ -1,18 +1,23 @@
 /**
  * ofxRGBDPlayer 
- 
+ *
  * Class to play an RGBDScene -- keeps the video and depth in sync based on a pairings file
  * set by the visualizer.
  *
  *
  * Most commonly used with the ofxRGBDRenderer or ofxRGBDMeshBuilder. An example use looks like this:
  *
- * ofxRGBDPlayer player;
+ * in setup:
  * player.setup("/path/to/my/MediaBin/scene1/"); //this is one folder inside of a MediaBin, called a scene
  * renderer.setup(player.getScene().calibrationFolder);
  * renderer.setRGBTexture(player.getVideoPlayer());
- * renderer.setDepthImage(player.getCurrentDepthPixels.getPixels());
+ * renderer.setDepthImage(player.getDepthPixels());
  * 
+ * in update:
+ * player.update();
+ * if(player.isFrameNew()){
+ *   renderer.update();
+ * }
  */
 
 #pragma once 

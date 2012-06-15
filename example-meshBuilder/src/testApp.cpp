@@ -43,9 +43,8 @@ void testApp::setup(){
            
     gui.loadFromFile("defaultSettings.xml");
     
-    //load 
+    //attemping to load the last scene
     loadDefaultScene();
-    //loadNewScene();
 }
 
 //--------------------------------------------------------------
@@ -97,13 +96,17 @@ void testApp::update(){
     if(loadNew){
         loadNewScene();
     }
+    
+    
+    //copy any GUI changes into the mesh builder
     if(meshBuilder.shift.x != xshift || meshBuilder.shift.y != yshift || meshBuilder.getSimplification() != simplify){
         meshBuilder.setXYShift(ofVec2f(xshift,yshift));
         meshBuilder.setSimplification(simplify);
         simplify = meshBuilder.getSimplification();
         meshBuilder.updateMesh(player.getDepthPixels());
     }
-        
+    
+    //update the mesh if there is a new depth frame in the player
     player.update();
     if(player.isFrameNew()){
         meshBuilder.updateMesh(player.getDepthPixels());

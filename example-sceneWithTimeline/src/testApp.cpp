@@ -47,6 +47,8 @@ void testApp::setup(){
 
     //load 
     loadDefaultScene();
+    //loadNewScene();
+    
 }
 
 bool testApp::loadNewScene(){
@@ -63,6 +65,7 @@ bool testApp::loadDefaultScene(){
         if(!loadScene(settings.getValue("defaultScene", ""))){
             return loadNewScene();
         }
+        return true;
     }
     return loadNewScene();
 }
@@ -74,18 +77,31 @@ bool testApp::loadScene(string takeDirectory){
         settings.setValue("defaultScene", player.getScene().mediaFolder);
         settings.saveFile();
 
+        renderer.setup(player.getScene().calibrationFolder);
+        renderer.setRGBTexture(player.getVideoPlayer());
+        renderer.setDepthImage(player.getDepthPixels());
+
         videoTimelineElement->setVideoPlayer(player.getVideoPlayer(), player.getScene().videoThumbsPath);
         timeline.setDurationInFrames(player.getDurationInFrames());
+        return true;
     }
+    return false;
 }
 
 //--------------------------------------------------------------
 void testApp::update(){
+    //don't rotate the camera if you are in the timeline
     cam.applyRotation = cam.applyTranslation = !timeline.getDrawRect().inside(mouseX,mouseY);
-    player.getRenderer().xshift = timeline.getKeyframeValue("xshift");
-	player.getRenderer().yshift = timeline.getKeyframeValue("yshift");
-    player.getRenderer().farClip = timeline.getKeyframeValue("farclip");
+    
+    //apply the shift and clip parameters
+    renderer.xshift = timeline.getKeyframeValue("xshift");
+	renderer.yshift = timeline.getKeyframeValue("yshift");
+    renderer.farClip = timeline.getKeyframeValue("farclip");
+
     player.update();
+    if(player.isFrameNew()){
+        renderer.update();
+    }
 }
 
 //--------------------------------------------------------------
@@ -93,12 +109,13 @@ void testApp::draw(){
     if(player.isLoaded()){
         cam.begin();
         glEnable(GL_DEPTH_TEST);
-        player.drawWireframe();
+        renderer.drawWireFrame();
         glDisable(GL_DEPTH_TEST);
         cam.end();
     }
 
     timeline.draw();
+    ofDrawBitmapString("fps: " + ofToString(ofGetFrameRate()), 10, ofGetHeight()-30);
 }
 
 //--------------------------------------------------------------
