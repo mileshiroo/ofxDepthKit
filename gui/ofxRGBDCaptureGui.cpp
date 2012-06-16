@@ -71,7 +71,7 @@ void ofxRGBDCaptureGui::setup(){
 	buttonSet.push_back(btnRenderPointCloud);
     
     btnLoadRGBCalibration = new ofxMSAInteractiveObjectWithDelegate();
-    btnLoadRGBCalibration->setLabel("Load RGB Movie Folder");
+    btnLoadRGBCalibration->setLabel("Load RGB Calibration Movies");
     btnLoadRGBCalibration->setPosAndSize(0, btnheight*2+frameheight, thirdWidth, btnheight);
 	buttonSet.push_back(btnLoadRGBCalibration);
 
