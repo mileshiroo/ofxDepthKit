@@ -237,13 +237,25 @@ bool ofxRGBDAlignment::generateAlignment(){
 	//set reprojection errors
 	int skip = 0;
 	for(int i = 0; i < depthImages.size(); i++){
-		if(!depthImages[i].hasCheckerboard) skip++;
-		depthImages[i].reprojectionError = depthCalibration.getReprojectionError(i-skip);
+		if(depthImages[i].hasCheckerboard){
+        	depthImages[i].reprojectionError = depthCalibration.getReprojectionError(i-skip);   
+        }
+        else{
+            depthImages[i].reprojectionError = 0.0;
+        	skip++;   
+        }
+		
 	}
 	skip = 0;
 	for(int i = 0; i < rgbImages.size(); i++){
-		if(!rgbImages[i].hasCheckerboard) skip++;
-		rgbImages[i].reprojectionError = rgbCalibration.getReprojectionError(i-skip);
+		if(rgbImages[i].hasCheckerboard){
+            rgbImages[i].reprojectionError = rgbCalibration.getReprojectionError(i-skip);
+        }
+        else{
+            rgbImages[i].reprojectionError = 0.0;
+        	skip++;   
+        }
+		
 	}
 	
 	if(rgbImages.size() == depthImages.size() && depthImages.size() > 3){
@@ -282,21 +294,6 @@ void ofxRGBDAlignment::saveAlignment(string saveDirectory) {
 		saveMat(rotationRGBToDepth, saveDirectory+"/rotationRGBToDepth.yml");
 		saveMat(translationRGBToDepth, saveDirectory+"/translationRGBToDepth.yml");
 
-		//copy across the images used
-        //NO LONGER NEEDED
-//		ofDirectory rgbImageOutDir(saveDirectory+"/rgbAlignmentImages");
-//		ofDirectory depthImageOutDir(saveDirectory+"/depthAlignmentImages");
-//		if(!rgbImageOutDir.exists()) rgbImageOutDir.create(true);
-//		if(!depthImageOutDir.exists()) depthImageOutDir.create(true);
-		
-//		for(int i = 0; i < rgbImages.size(); i++){
-			//string pathSrc, string pathDst, bool bRelativeToData = true,  bool overwrite = false
-			//ofFile::copyFromTo(rgbImages[i].filepath, rgbImageOutDir.getOriginalDirectory(), false, false);
-//		}
-//		for(int i = 0; i < depthImages.size(); i++){
-			//string pathSrc, string pathDst, bool bRelativeToData = true,  bool overwrite = false
-			//ofFile::copyFromTo(depthImages[i].filepath, depthImageOutDir.getOriginalDirectory(), false, false);
-//		}
 	}
 	else {
 		ofLogWarning("ofxRGBDAlignment -- Could not save alignment, it's not ready");
@@ -428,6 +425,11 @@ void ofxRGBDAlignment::recalculateImageDrawRects(){
 		calculatedRGBDrawHeight = calculatedDrawWidth/rgbImages[0].image.getWidth() * rgbImages[0].image.getHeight();
 	}
 	
+    if(calculatedDepthDrawHeight > 200){
+    	calculatedDepthDrawHeight = 200;
+        calculatedDrawWidth = calculatedDepthDrawHeight/depthImages[0].image.getHeight() * depthImages[0].image.getWidth();
+    }
+    
 	for(int i = 0; i < depthImages.size(); i++){
 		depthImages[i].drawRect = ofRectangle(guiPosition.x + i*calculatedDrawWidth, guiPosition.y, calculatedDrawWidth, calculatedDepthDrawHeight);
 	}

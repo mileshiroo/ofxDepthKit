@@ -284,6 +284,7 @@ bool ofxRGBDRenderer::bindRenderer(ofShader& shader){
 
 	if(hasRGBImage){
         undistortedRGBImage.getTextureReference().bind();
+
         shader.begin();	
         setupProjectionUniforms(shader);
         currentlyBoundShader = &shader;
