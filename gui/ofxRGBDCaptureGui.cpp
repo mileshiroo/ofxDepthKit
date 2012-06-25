@@ -104,8 +104,8 @@ void ofxRGBDCaptureGui::setup(){
     
     previewRect = ofRectangle(0, btnheight*2, 640, 480);
     
-	calibrationPreview.setup(10, 7, 2.5);
-	alignment.setup(10, 7, 2.5);
+	calibrationPreview.setup(10, 7, 25);
+	alignment.setup(10, 7, 25);
 	alignment.setupGui(0, btnheight*4+frameheight, ofGetWidth());
 	
 	timeline.setup();

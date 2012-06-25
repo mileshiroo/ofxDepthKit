@@ -34,8 +34,8 @@ class ofxRGBDPlayer {
     ofxRGBDPlayer();
     ~ofxRGBDPlayer();
     
-    bool setup(string sceneDirectory);
-    bool setup(ofxRGBDScene scene);
+    bool setup(string sceneDirectory, bool forceHires = false);
+    bool setup(ofxRGBDScene scene, bool forceHires = false);
     void update();
     
     bool isLoaded();
@@ -54,9 +54,15 @@ class ofxRGBDPlayer {
     ofShortPixels& getDepthPixels();
     ofVideoPlayer& getVideoPlayer();
     
+    bool hasHighresVideo();
+    bool isUsingHighResVideo();
+    void useHiresVideo();
+    void useLowResVideo();
+    
   protected:
     bool loaded;
     bool frameIsNew;
+    bool currentlyHiRes;
     ofVec2f shift;
     ofVideoPlayer* player;
 	ofxRGBDScene scene;

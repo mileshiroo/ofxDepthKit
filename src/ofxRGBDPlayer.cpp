@@ -12,6 +12,7 @@ ofxRGBDPlayer::ofxRGBDPlayer(){
 	player = NULL;    
     loaded = false;
     frameIsNew = false;
+    currentlyHiRes = false;
     shift = ofVec2f(0,0);
 }
 
@@ -21,7 +22,7 @@ ofxRGBDPlayer::~ofxRGBDPlayer(){
     }
 }
 
-bool ofxRGBDPlayer::setup(string sceneDirectory){
+bool ofxRGBDPlayer::setup(string sceneDirectory, bool forceHiRes){
     cout << "setting up scene " << sceneDirectory << endl;
     scene.loadFromFolder(sceneDirectory);
     if(!scene.hasColor || !scene.hasPairings){
@@ -29,29 +30,22 @@ bool ofxRGBDPlayer::setup(string sceneDirectory){
         ofLogError("Scene at " + sceneDirectory + " is not valid!");
         return (loaded = false);
     }
-    return setup(scene);
+    return setup(scene, forceHiRes);
 }
 
-bool ofxRGBDPlayer::setup(ofxRGBDScene scene){
+bool ofxRGBDPlayer::setup(ofxRGBDScene newScene, bool forceHiRes){
 
-    if(player != NULL){
-        delete player;
-    }
+    scene = newScene;
     
-    player = new ofVideoPlayer();
-    if(!player->loadMovie(scene.videoPath)){
-        scene.clear();
-        ofLogError("Movie failed to load");
-        return (loaded = false);
+    if(forceHiRes){
+        useHiresVideo();
     }
-    
+    else{
+	    useLowResVideo();    
+    }
+	
     depthSequence.loadSequence(scene.depthFolder);
     videoDepthAligment.loadPairingFile(scene.pairingsFile);
-    
-//    renderer.setup(scene.calibrationFolder);
-//    renderer.setRGBTexture(*player);
-//    renderer.setDepthImage(depthSequence.getPixels());
-//    renderer.setSimplification(2); //default simplification
     
     if(scene.hasXYShift){
     	ofxXmlSettings xyshift;
@@ -67,6 +61,57 @@ bool ofxRGBDPlayer::setup(ofxRGBDScene scene){
     player->setSpeed(0);
     
     return (loaded = true);
+}
+
+bool ofxRGBDPlayer::hasHighresVideo(){
+	return loaded && scene.hasAlternativeHiResVideo;
+}
+                                      
+bool ofxRGBDPlayer::isUsingHighResVideo(){
+    return loaded && currentlyHiRes;
+}
+
+void ofxRGBDPlayer::useHiresVideo(){
+    
+    if(hasHighresVideo()){
+        ofLogError("ofxRGBDPlayer::useHiresVideo -- no hi res video to load");
+        return;        
+    }
+    if(currentlyHiRes){
+        ofLogError("ofxRGBDPlayer::useHiresVideo -- already using hi res video");
+        return;        
+    }
+	
+//    int currentFrame = player->getCurrentFrame();
+//    bool playing = player->isPlaying();
+//    float speed = player->getSpeed();
+    delete player;
+    player = new ofVideoPlayer();
+    if(!player->loadMovie(scene.alternativeHiResVideoPath)){
+        ofLogError("ofxRGBDPlayer::useHiresVideo -- error loading hi res video, returning to low res");
+        useLowResVideo();
+        return;
+    }
+//    player->setFrame(currentFrame);
+//    if(playing){
+//        player->play();
+//        player->setSpeed(speed);
+//    }
+    currentlyHiRes = true;
+}
+
+void ofxRGBDPlayer::useLowResVideo(){
+    if(player != NULL){
+        delete player;
+    }
+    
+    player = new ofVideoPlayer();
+    if(!player->loadMovie(scene.videoPath)){
+        scene.clear();
+        ofLogError("Movie failed to load");
+        return (loaded = false);
+    }    
+    currentlyHiRes = false;
 }
 
 ofVec2f ofxRGBDPlayer::getXYShift(){
@@ -138,10 +183,6 @@ ofShortPixels& ofxRGBDPlayer::getDepthPixels(){
 ofVideoPlayer& ofxRGBDPlayer::getVideoPlayer(){
 	return *player;
 }
-
-//ofxRGBDRenderer& ofxRGBDPlayer::getRenderer(){
-//	return renderer;    
-//}
 
 ofxRGBDScene& ofxRGBDPlayer::getScene(){
 	return scene;    
