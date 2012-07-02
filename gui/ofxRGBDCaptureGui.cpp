@@ -8,7 +8,6 @@
 //TODO: threaded alignment generation
 //TODO: feedback when alignment is saved
 //TODO: feedback when alignment is dirty
-//TODO: fix coloring with red/white checkerboards
 //TOOD: add in previews for selected objects
 
 #include "ofxRGBDCaptureGui.h"
@@ -116,7 +115,7 @@ void ofxRGBDCaptureGui::setup(){
 	timeline.setLoopType(OF_LOOP_NORMAL);
 	
 	depthSequence.setup();
-	
+    	
 	ofxXmlSettings defaults;
 	if(defaults.loadFile("defaults.xml")){
 		loadDirectory(defaults.getValue("currentDir", ""));
