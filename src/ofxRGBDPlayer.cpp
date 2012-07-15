@@ -184,6 +184,14 @@ ofVideoPlayer& ofxRGBDPlayer::getVideoPlayer(){
 	return *player;
 }
 
+ofxDepthImageSequence& ofxRGBDPlayer::getDepthSequence(){
+	return depthSequence;    
+}
+
 ofxRGBDScene& ofxRGBDPlayer::getScene(){
 	return scene;    
+}
+
+ofxRGBDVideoDepthSequence& ofxRGBDPlayer::getVideoDepthAligment(){
+    return videoDepthAligment;
 }

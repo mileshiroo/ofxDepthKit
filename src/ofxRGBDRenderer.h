@@ -41,7 +41,6 @@ class ofxRGBDRenderer {
 	
 	float edgeCull;
 	float farClip;
-    bool calculateTextureCoordinates;
     bool forceUndistortOff;
     bool addColors;
 	bool mirror;

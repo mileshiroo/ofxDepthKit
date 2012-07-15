@@ -34,7 +34,6 @@ ofxRGBDRenderer::ofxRGBDRenderer(){
 
     forceUndistortOff = false;
     addColors = false;
-    calculateTextureCoordinates = false;
     currentDepthImage = NULL;
     
     simplify = -1;
@@ -82,6 +81,10 @@ void ofxRGBDRenderer::setSimplification(int level){
         return;
     }
     
+    if(!calibrationSetup){
+    	return;    
+    }
+    
 	simplify = level;
 	if (simplify <= 0) {
 		simplify = 1;
@@ -111,15 +114,15 @@ void ofxRGBDRenderer::setSimplification(int level){
             mesh.addIndex(b);
             mesh.addIndex(c);
 		}
-	}		
-	
+	}
+    
 	mesh.clearVertices();
 	for (int y = 0; y < imageSize.height; y+=simplify){
 		for (int x = 0; x < imageSize.width; x+=simplify){
 			mesh.addVertex(ofVec3f(x,y,0));
 		}
 	}
-    
+
     if(addColors){
         mesh.clearColors();
         for (int y = 0; y < imageSize.height; y+=simplify){
@@ -128,8 +131,6 @@ void ofxRGBDRenderer::setSimplification(int level){
             }
         }        
     }
-        
-	//cout << "AFTER SETUP base indeces? " << baseIndeces.size() << " index map? " << indexMap.size() << endl;
 }
 
 //-----------------------------------------------
@@ -190,9 +191,9 @@ void ofxRGBDRenderer::update(){
     //feed the zed values into the mesh
     unsigned short* ptr = undistortedDepthImage.getPixels();    
     int vertexIndex = 0;
+
     for (int y = 0; y < imageSize.height; y+=simplify){
 		for (int x = 0; x < imageSize.width; x+=simplify){
-//			mesh.getVertices()[vertexIndex++].z = (*ptr++);
             mesh.getVertices()[vertexIndex++].z = ptr[y*imageSize.width+x];
         }
     }

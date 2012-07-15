@@ -53,11 +53,14 @@ class ofxRGBDPlayer {
     ofxRGBDScene& getScene();
     ofShortPixels& getDepthPixels();
     ofVideoPlayer& getVideoPlayer();
+    ofxDepthImageSequence& getDepthSequence();
+    ofxRGBDVideoDepthSequence& getVideoDepthAligment();
     
     bool hasHighresVideo();
     bool isUsingHighResVideo();
     void useHiresVideo();
     void useLowResVideo();
+
     
   protected:
     bool loaded;
