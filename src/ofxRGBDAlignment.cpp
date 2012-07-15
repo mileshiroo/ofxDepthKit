@@ -23,7 +23,7 @@ ofxRGBDAlignment::~ofxRGBDAlignment() {
 }
 
 //-----------------------------------------------
-void ofxRGBDAlignment::setup(int squaresWide, int squaresTall, int squareSize) {
+void ofxRGBDAlignment::setup(int squaresWide, int squaresTall, float squareSize) {
 	depthCalibration.setPatternSize(squaresWide, squaresTall);
 	depthCalibration.setSquareSize(squareSize);
 	

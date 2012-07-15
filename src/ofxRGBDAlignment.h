@@ -1,6 +1,5 @@
 /*
  *  ofxRGBDAlignment.h
- *  DepthExternalRGB
  *
  * The alignment tool helps organize a series of checkerboard alignment images
  * to produce a set of calibration files. 
@@ -35,7 +34,7 @@ class ofxRGBDAlignment {
 	ofxRGBDAlignment();
 	~ofxRGBDAlignment();
 	
-	void setup(int squaresWide, int squaresTall, int squareSize);
+	void setup(int squaresWide, int squaresTall, float squareSize);
 	
     bool hasRGBImages();
     bool hasDepthImages();
