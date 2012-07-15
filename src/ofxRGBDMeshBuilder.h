@@ -40,7 +40,7 @@ class ofxRGBDMeshBuilder {
     
     ofVec2f textureScale;
     ofVec3f getWorldPoint(float x, float y, unsigned short z);
-        
+    ofVec3f getWorldPoint(float x, float y, ofShortPixels& pixels);
   private:
     ofMesh mesh;
     Calibration depthCalibration, rgbCalibration;	

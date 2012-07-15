@@ -147,11 +147,6 @@ void ofxRGBDMeshBuilder::updateMesh(ofShortPixels& depthImage){
         }
     }
 
-    //set<ofIndexType> calculatedNormals;
-    //    if(calculateNormals){
-    //        mesh.getNormals().resize(mesh.getVertices().size());
-    //    }
-    
     mesh.clearIndices();    
     for(int i = 0; i < baseIndeces.size(); i+=3){
         ofVec3f& a = mesh.getVertices()[baseIndeces[i]];
@@ -184,6 +179,10 @@ void ofxRGBDMeshBuilder::updateMesh(ofShortPixels& depthImage){
     //cout << "updated mesh has " << mesh.getNumIndices()/3 << " triangles " << endl;
 }
 
+ofMesh& ofxRGBDMeshBuilder::getMesh(){
+    return mesh;
+}
+
 void ofxRGBDMeshBuilder::generateTextureCoordinates(){
     if(!calibrationSetup){
         ofLogError("ofxRGBDRenderer::generateTextureCoordinates -- no calibration set up");
@@ -213,6 +212,11 @@ void ofxRGBDMeshBuilder::generateTextureCoordinates(){
         texCd *= ofVec2f(rgbImage.width,rgbImage.height) * textureScale;
         mesh.setTexCoord(i, texCd);			
 	}
+}
+
+ofVec3f ofxRGBDMeshBuilder::getWorldPoint(float x, float y, ofShortPixels& pixels){
+	unsigned short z =  pixels.getPixels()[ pixels.getPixelIndex(x, y) ];
+    return getWorldPoint(x,y,z);
 }
 
 ofVec3f ofxRGBDMeshBuilder::getWorldPoint(float x, float y, unsigned short z){

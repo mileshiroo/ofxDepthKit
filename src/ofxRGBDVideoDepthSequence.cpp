@@ -157,6 +157,59 @@ long ofxRGBDVideoDepthSequence::getDepthFrameForVideoFrame(long videoFrame){
     return mapping;
 }
 
+long ofxRGBDVideoDepthSequence::getVideoFrameForDepthFrame(long depthFrame){
+    
+	if(!ready()){
+		return 0;
+	}
+    
+    if(alignedFrames[0].isTimeBased && alignedFrames.size() == 1){
+    	return (alignedFrames[0].videoFrame - alignedFrames[0].depthFrame) + depthFrame;  
+    }
+    
+    int startIndex, endIndex;
+    if(depthFrame < alignedFrames[0].depthFrame){
+        startIndex = 0;
+        endIndex = 1;
+    }
+    if(depthFrame > alignedFrames[alignedFrames.size()-1].depthFrame){
+        startIndex = alignedFrames.size()-2;
+        endIndex = alignedFrames.size()-1;
+    }
+    else {
+        startIndex = 0;
+        endIndex = 1;
+        while(depthFrame > alignedFrames[endIndex].depthFrame){
+            startIndex++;
+            endIndex++;
+        }
+    }
+    
+    if(endIndex == alignedFrames.size()){
+        startIndex--;
+        endIndex--;
+    }
+    
+    long mapping = ofMap(depthFrame, alignedFrames[startIndex].depthFrame, alignedFrames[endIndex].depthFrame,
+                         alignedFrames[startIndex].videoFrame, alignedFrames[endIndex].videoFrame, false);	
+    //		cout << "looking for video frame " << videoFrame << " mapped to depth " << mapping << " found to be between " << startIndex << " and " << endIndex <<endl;
+    return mapping;
+}
+
+
+
+
+ofRange ofxRGBDVideoDepthSequence::getStartAndEndTimes(ofVideoPlayer& player, ofxDepthImageSequence& sequence){
+    if(!ready()){
+        ofLogError("ofxRGBDVideoDepthSequence::getStartAndEndTimes -- video sequence not ready");
+        return ofRange();
+    }
+    ofRange output;
+    output.min = MAX(0, getVideoFrameForDepthFrame(0))/1000.;
+    output.max = MIN(player.getDuration(), getVideoFrameForDepthFrame(sequence.getDurationInMillis()) / 1000. );
+	return output;
+}
+
 vector<VideoDepthPair>& ofxRGBDVideoDepthSequence::getPairs(){
 	return alignedFrames;
 }

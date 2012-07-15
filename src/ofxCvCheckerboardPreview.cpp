@@ -10,7 +10,7 @@
 #include "ofxCvCheckerboardPreview.h"
 
 
-void ofxCvCheckerboardPreview::setup(int squaresWide, int squaresTall, int squareSize){
+void ofxCvCheckerboardPreview::setup(int squaresWide, int squaresTall, float squareSize){
 	boardFound = false;
 	newBoardToFind = false;
 	

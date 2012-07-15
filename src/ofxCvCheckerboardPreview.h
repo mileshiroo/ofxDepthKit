@@ -17,7 +17,7 @@ using namespace cv;
 
 class ofxCvCheckerboardPreview : public ofThread {
   public:
-	void setup(int squaresWide, int squaresTall, int squareSize); //starts the thread
+	void setup(int squaresWide, int squaresTall, float squareSize); //starts the thread
 	
 	void setTestImage(ofPixelsRef pixels);
 	void setSmallestSquarePixelsize(int squarePixelSize);

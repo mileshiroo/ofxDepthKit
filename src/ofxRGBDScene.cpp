@@ -241,14 +241,18 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder, bool countFrames){
     // CALIBRATION
     //////////////////////////////////////////////
 	if(hasColor){
-        calibrationFolder = mediaFolder + "/_calibration/matrices/";
-        ofDirectory calibrationDirectory = ofDirectory(calibrationFolder);
-        hasCalibration = calibrationDirectory.exists();
-        if(!hasCalibration){
-            //look for it above!
-            calibrationFolder = mediaFolder + "/../_calibration/matrices/";
-            calibrationDirectory = ofDirectory(calibrationFolder);
+        vector<string> calibrationFolders;
+        calibrationFolders.push_back(mediaFolder + "/_calibration/matrices/");
+        calibrationFolders.push_back(mediaFolder + "/calibration/");
+        calibrationFolders.push_back(mediaFolder + "/../_calibration/matrices/");
+        
+        for(int i = 0; i < calibrationFolders.size(); i++){
+            ofDirectory calibrationDirectory = ofDirectory(calibrationFolders[i]);
             hasCalibration = calibrationDirectory.exists();
+            if(hasCalibration){
+                calibrationFolder = calibrationFolders[i];
+                break;
+            }
         }
     }
     //////////////////////////////////////////////
