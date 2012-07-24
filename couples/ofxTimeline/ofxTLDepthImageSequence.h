@@ -10,12 +10,12 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxTLElement.h"
+#include "ofxTLImageTrack.h"
 #include "ofxTLVideoThumb.h"
-#include "ofxDepthImageCompressor.h"
-//#include "ofxDepthImageSequence.h" //TODO
+//#include "ofxDepthImageCompressor.h"
+#include "ofxDepthImageSequence.h"
 
-class ofxTLDepthImageSequence : public ofxTLElement {
+class ofxTLDepthImageSequence : public ofxTLImageTrack {
   public:	
 	ofxTLDepthImageSequence();
 	~ofxTLDepthImageSequence();
@@ -26,7 +26,7 @@ class ofxTLDepthImageSequence : public ofxTLElement {
 	void enable();
 	void disable();
 
-	vector<ofxTLVideoThumb> videoThumbs;
+//	vector<ofxTLVideoThumb> videoThumbs;
 
 	virtual void mousePressed(ofMouseEventArgs& args);
 	virtual void mouseMoved(ofMouseEventArgs& args);
@@ -35,14 +35,18 @@ class ofxTLDepthImageSequence : public ofxTLElement {
 
 	virtual void keyPressed(ofKeyEventArgs& args);
 	
-	virtual void zoomStarted(ofxTLZoomEventArgs& args);
-	virtual void zoomDragged(ofxTLZoomEventArgs& args);
-	virtual void zoomEnded(ofxTLZoomEventArgs& args);
+//	virtual void zoomStarted(ofxTLZoomEventArgs& args);
+//	virtual void zoomDragged(ofxTLZoomEventArgs& args);
+//	virtual void zoomEnded(ofxTLZoomEventArgs& args);
 
-	virtual void drawRectChanged();
+//	virtual void drawRectChanged();
 
 	bool loadSequence();
 	bool loadSequence(string sequenceDirectory);
+    
+    void setSequence(ofPtr<ofxDepthImageSequence> newSequence);
+    void setSequence(ofxDepthImageSequence& newSequence);
+    
 	bool isLoaded();
 	bool isFrameNew();
     
@@ -51,8 +55,8 @@ class ofxTLDepthImageSequence : public ofxTLElement {
 	void playbackLooped(ofxTLPlaybackEventArgs& args);
 	
 	ofImage currentDepthImage;
-    ofShortPixels currentDepthRaw;
-    ofShortPixels thumbnailDepthRaw;
+//    ofShortPixels currentDepthRaw;
+//    ofShortPixels thumbnailDepthRaw;
 	
 	int getSelectedFrame();
 	
@@ -69,29 +73,35 @@ class ofxTLDepthImageSequence : public ofxTLElement {
 	bool doFramesHaveTimestamps();
 
   protected:
-	bool framesHaveTimestamps;
-	
+    ofPtr<ofxDepthImageSequence> depthImageSequence;
+    
+    //bool framesHaveTimestamps;
+//    bool canCalculateThumbs() = 0;
+    
+    //width and height of image elements
+    float getContentWidth();
+    float getContentHeight();
+	void framePositionsUpdated(vector<ofxTLVideoThumb>& newThumbs);
+    
+    ofShortPixels thumbnailDepthRaw;
+
 	//only called during playback
 	void update(ofEventArgs& args);
 	
     ofRange thumbnailUpdatedZoomLevel;
     float thumbnailUpdatedWidth;
     float thumbnailUpdatedHeight;
-    bool currentlyZooming;
-
-	int selectedFrame;
-	bool sequenceLoaded;
+    
+	bool thumbsEnabled; //TODO: move to super
 	
-	bool thumbsEnabled;
-	
-	void calculateFramePositions();
+//	void calculateFramePositions();
 	void generateVideoThumbnails();
 	void generateThumbnailForFrame(int index);
 	bool frameIsNew;
 	
 	string sequenceDirectory;
-	string thumbDirectory;
+//	string thumbDirectory;
 	
-	ofxDepthImageCompressor decoder;
+//	ofxDepthImageCompressor decoder;
     
 };

@@ -24,6 +24,8 @@ class ofxDepthImageSequence {
     bool loadSequence(string sequenceDirectory);
     bool isLoaded();
     bool doFramesHaveTimestamps();
+
+    string getSequenceDirectory();
     
     int getCurrentFrame();
     long getCurrentMilliseconds();
@@ -39,13 +41,19 @@ class ofxDepthImageSequence {
     float getDurationInSeconds();
 
     void updatePixels();
+    
     ofShortPixels& getPixels();
+    void getPixelsAtTime(long timeInMillis, ofShortPixels& pixels);
+    
     vector<DepthImage>& getImageArray();
+    ofxDepthImageCompressor& getCompressor();
     
   protected:
     ofxDepthImageCompressor compressor;
+    
     bool sequenceLoaded;
     bool framesHaveTimestamps;
+    string sequenceDirectory;
     
     vector<DepthImage> images;
     int selectedFrame;

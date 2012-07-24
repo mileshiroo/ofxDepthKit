@@ -46,30 +46,32 @@ class ofxRGBDPlayer {
     void togglePlay();
     
     ofVec2f getXYShift();
+    ofVec2f getXYScale();
     
     int getDurationInFrames();
     float getDurationInSeconds();
     
     ofxRGBDScene& getScene();
     ofShortPixels& getDepthPixels();
-    ofVideoPlayer& getVideoPlayer();
-    ofxDepthImageSequence& getDepthSequence();
+    ofPtr<ofVideoPlayer> getVideoPlayer();
+    ofPtr<ofxDepthImageSequence> getDepthSequence();
     ofxRGBDVideoDepthSequence& getVideoDepthAligment();
     
     bool hasHighresVideo();
     bool isUsingHighResVideo();
     void useHiresVideo();
     void useLowResVideo();
-
     
   protected:
     bool loaded;
     bool frameIsNew;
     bool currentlyHiRes;
     ofVec2f shift;
-    ofVideoPlayer* player;
+    ofVec2f scale;
+    
 	ofxRGBDScene scene;
-    ofxDepthImageSequence depthSequence;
+    ofPtr<ofVideoPlayer> player;
+    ofPtr<ofxDepthImageSequence> depthSequence;
     ofxRGBDVideoDepthSequence videoDepthAligment;
     
 };

@@ -39,8 +39,8 @@ void ofxTLVideoDepthAlignmentScrubber::draw(){
 	for(int i = 0; i < alignedFrames.size(); i++){
 		int videoFrame;
 		if(depthSequence->doFramesHaveTimestamps()){
-            float videoPercent = alignedFrames[i].videoFrame / (videoSequence->getPlayer().getDuration()*1000.0);
-			videoFrame = videoPercent * videoSequence->getPlayer().getTotalNumFrames();
+            float videoPercent = alignedFrames[i].videoFrame / (videoSequence->getPlayer()->getDuration()*1000.0);
+			videoFrame = videoPercent * videoSequence->getPlayer()->getTotalNumFrames();
 		}
 		else{
 			videoFrame = alignedFrames[i].videoFrame;
@@ -88,7 +88,7 @@ void ofxTLVideoDepthAlignmentScrubber::mousePressed(ofMouseEventArgs& args){
 	for(int i = 0; i < alignedFrames.size(); i++){
 		int videoFrame;
 		if(depthSequence->doFramesHaveTimestamps()){
-			videoFrame = videoSequence->getPlayer().getTotalNumFrames() * alignedFrames[i].videoFrame / (videoSequence->getPlayer().getDuration()*1000.0);
+			videoFrame = videoSequence->getPlayer()->getTotalNumFrames() * alignedFrames[i].videoFrame / (videoSequence->getPlayer()->getDuration()*1000.0);
 		}
 		else{
 			videoFrame = alignedFrames[i].videoFrame;

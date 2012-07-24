@@ -26,6 +26,7 @@ class ofxRGBDRenderer {
 	
 	bool setup(string calibrationDirectory);
 
+    void setRGBTexture(ofPtr<ofBaseHasPixels> pix); 
     void setRGBTexture(ofBaseHasPixels& pix); 
     void setDepthImage(ofShortPixels& pix);
 

@@ -9,7 +9,6 @@
 #include "ofxRGBDPlayer.h"
 
 ofxRGBDPlayer::ofxRGBDPlayer(){
-	player = NULL;    
     loaded = false;
     frameIsNew = false;
     currentlyHiRes = false;
@@ -17,9 +16,6 @@ ofxRGBDPlayer::ofxRGBDPlayer(){
 }
 
 ofxRGBDPlayer::~ofxRGBDPlayer(){
-    if(player != NULL){
-        delete player;
-    }
 }
 
 bool ofxRGBDPlayer::setup(string sceneDirectory, bool forceHiRes){
@@ -44,7 +40,10 @@ bool ofxRGBDPlayer::setup(ofxRGBDScene newScene, bool forceHiRes){
 	    useLowResVideo();    
     }
 	
-    depthSequence.loadSequence(scene.depthFolder);
+    if(depthSequence == NULL){
+        depthSequence = ofPtr<ofxDepthImageSequence>( new ofxDepthImageSequence() );
+    }
+    depthSequence->loadSequence(scene.depthFolder);
     videoDepthAligment.loadPairingFile(scene.pairingsFile);
     
     if(scene.hasXYShift){
@@ -52,9 +51,13 @@ bool ofxRGBDPlayer::setup(ofxRGBDScene newScene, bool forceHiRes){
         xyshift.loadFile(scene.xyshiftFile);
         shift = ofVec2f(xyshift.getValue("xshift", 0.),
                         xyshift.getValue("yshift", 0.));
+        
+        scale = ofVec2f(xyshift.getValue("xscale", 1.0),
+                        xyshift.getValue("yscale", 1.0));
     }
     else{
         shift = ofVec2f(0,0);
+        scale = ofVec2f(1,1);
     }
     
     player->play();
@@ -85,8 +88,7 @@ void ofxRGBDPlayer::useHiresVideo(){
 //    int currentFrame = player->getCurrentFrame();
 //    bool playing = player->isPlaying();
 //    float speed = player->getSpeed();
-    delete player;
-    player = new ofVideoPlayer();
+    player = ofPtr<ofVideoPlayer>(new ofVideoPlayer());
     if(!player->loadMovie(scene.alternativeHiResVideoPath)){
         ofLogError("ofxRGBDPlayer::useHiresVideo -- error loading hi res video, returning to low res");
         useLowResVideo();
@@ -101,11 +103,11 @@ void ofxRGBDPlayer::useHiresVideo(){
 }
 
 void ofxRGBDPlayer::useLowResVideo(){
-    if(player != NULL){
-        delete player;
-    }
+//    if(player != NULL){
+//        delete player;
+//    }
     
-    player = new ofVideoPlayer();
+    player = ofPtr<ofVideoPlayer>(new ofVideoPlayer());
     if(!player->loadMovie(scene.videoPath)){
         scene.clear();
         ofLogError("Movie failed to load");
@@ -124,8 +126,8 @@ void ofxRGBDPlayer::update(){
     player->update();
     if(player->isFrameNew()){
         long videoTime = player->getPosition()*player->getDuration()*1000;
-        depthSequence.selectTime(videoDepthAligment.getDepthFrameForVideoFrame(videoTime));
-        depthSequence.updatePixels();            
+        depthSequence->selectTime(videoDepthAligment.getDepthFrameForVideoFrame(videoTime));
+        depthSequence->updatePixels();            
         frameIsNew = true;
     }
 }
@@ -177,14 +179,14 @@ float ofxRGBDPlayer::getDurationInSeconds(){
 }
 
 ofShortPixels& ofxRGBDPlayer::getDepthPixels(){
-	return depthSequence.getPixels();    
+	return depthSequence->getPixels();    
 }
 
-ofVideoPlayer& ofxRGBDPlayer::getVideoPlayer(){
-	return *player;
+ofPtr<ofVideoPlayer> ofxRGBDPlayer::getVideoPlayer(){
+	return player;
 }
 
-ofxDepthImageSequence& ofxRGBDPlayer::getDepthSequence(){
+ofPtr<ofxDepthImageSequence> ofxRGBDPlayer::getDepthSequence(){
 	return depthSequence;    
 }
 

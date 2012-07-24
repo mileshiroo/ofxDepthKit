@@ -9,7 +9,7 @@
  * James George 2012 
  * Released under the MIT License
  *
- * The RGBDToolkit has been developed with support from the STUDIO for Creative Inquiry and Eyebeam
+ * The RGBDToolkit has been developed with support from the STUDIO for Creative Inquiry, Eyebeam, and YCAM InterLab
  */
 
 #pragma once
@@ -17,10 +17,11 @@
 #include "ofMain.h"
 #include "ofxTimeline.h"
 #include "ofxXmlSettings.h"
-#include "ofxTLVideoPlayer.h"
+#include "ofxTLVideoTrack.h"
 #include "ofxGameCamera.h"
 #include "ofxRGBDPlayer.h"
 #include "ofxRGBDRenderer.h"
+#include "ofxTLDepthImageSequence.h"
 
 class testApp : public ofBaseApp{
   public:
@@ -43,8 +44,9 @@ class testApp : public ofBaseApp{
     
     ofxGameCamera cam;
     ofxTimeline timeline;
-    ofxTLVideoPlayer* videoTimelineElement;
-
+    ofxTLVideoTrack videoTrack;
+	ofxTLDepthImageSequence depthTrack;
+    
     bool loadNewScene();
     bool loadDefaultScene();
     bool loadScene(string takeDirectory);

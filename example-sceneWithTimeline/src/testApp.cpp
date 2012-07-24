@@ -29,8 +29,8 @@ void testApp::setup(){
     timeline.setPageName("Main");
     
     //set up a video timeline element so we can see the video frames
-    videoTimelineElement = new ofxTLVideoPlayer();
-    timeline.addElement("Video", videoTimelineElement);
+    timeline.addElement("Video", &videoTrack);
+    timeline.addElement("Depth", &depthTrack);
 	timeline.addKeyframes("xshift", "xshift.xml", ofRange(-.15, .15));
     timeline.addKeyframes("yshift", "yshift.xml", ofRange(-.15, .15));
     timeline.addKeyframes("farclip", "farclip.xml", ofRange(500, 6000));
@@ -47,7 +47,6 @@ void testApp::setup(){
 
     //load 
     loadDefaultScene();
-    //loadNewScene();
     
 }
 
@@ -81,7 +80,8 @@ bool testApp::loadScene(string takeDirectory){
         renderer.setRGBTexture(player.getVideoPlayer());
         renderer.setDepthImage(player.getDepthPixels());
 
-        videoTimelineElement->setVideoPlayer(player.getVideoPlayer(), player.getScene().videoThumbsPath);
+        videoTrack.setPlayer(player.getVideoPlayer());
+        depthTrack.setSequence(player.getDepthSequence());
         timeline.setDurationInFrames(player.getDurationInFrames());
         return true;
     }

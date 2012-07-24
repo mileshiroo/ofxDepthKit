@@ -17,11 +17,11 @@ ofxDepthImageSequence::~ofxDepthImageSequence(){
     
 }
 
-bool ofxDepthImageSequence::loadSequence(string sequenceDirectory){
+bool ofxDepthImageSequence::loadSequence(string newSequenceDirectory){
     
-	ofDirectory sequenceList(sequenceDirectory);
+	ofDirectory sequenceList(newSequenceDirectory);
 	if(!sequenceList.exists()){
-		ofLogError("ofxDepthImageSequence -- sequence directory " + sequenceDirectory + " does not exist!");
+		ofLogError("ofxDepthImageSequence -- sequence directory " + newSequenceDirectory + " does not exist!");
 		return false;
 	}
     
@@ -33,7 +33,7 @@ bool ofxDepthImageSequence::loadSequence(string sequenceDirectory){
 	sequenceList.allowExt("png");
 	int numFiles = sequenceList.listDir();
 	if(numFiles == 0){
-		ofLogError("ofxTLDepthImageSequence -- sequence directory " + sequenceDirectory + " is empty!");
+		ofLogError("ofxTLDepthImageSequence -- sequence directory " + newSequenceDirectory + " is empty!");
 		return false;
 	}
 	
@@ -73,9 +73,14 @@ bool ofxDepthImageSequence::loadSequence(string sequenceDirectory){
     }
 
 	ofLogVerbose("sequence is loaded " + ofToString( images.size() ));
+    sequenceDirectory = newSequenceDirectory;
     sequenceLoaded = true;
     
 	return true;
+}
+
+string ofxDepthImageSequence::getSequenceDirectory(){
+    return sequenceDirectory;
 }
 
 long ofxDepthImageSequence::getDurationInMillis(){
@@ -91,6 +96,7 @@ int ofxDepthImageSequence::getCurrentFrame(){
         ofLogError("ofxDepthImageSequence::getCurrentFrame() -- sequence not loaded");
         return 0;
     }
+    return currentFrame;
 }
 
 long ofxDepthImageSequence::getCurrentMilliseconds(){
@@ -98,6 +104,7 @@ long ofxDepthImageSequence::getCurrentMilliseconds(){
         ofLogError("ofxDepthImageSequence::getCurrentMilliseconds() -- sequence not loaded");
         return 0;
     }
+    return images[currentFrame].timestamp;
 }
 
 float ofxDepthImageSequence::getCurrentSeconds(){
@@ -105,6 +112,7 @@ float ofxDepthImageSequence::getCurrentSeconds(){
         ofLogError("ofxDepthImageSequence::getCurrentSeconds() -- sequence not loaded");
         return 0;
     }
+    return images[currentFrame].timestamp/1000.;
 }
 
 int ofxDepthImageSequence::frameForTime(long timeInMillis){
@@ -182,8 +190,16 @@ ofShortPixels& ofxDepthImageSequence::getPixels(){
     return pixels;
 }
 
+void ofxDepthImageSequence::getPixelsAtTime(long timeInMillis, ofShortPixels& outPixels){
+    compressor.readCompressedPng(images[frameForTime(timeInMillis)].path, outPixels);
+}
+
 vector<DepthImage>& ofxDepthImageSequence::getImageArray(){
     return images;
+}
+
+ofxDepthImageCompressor& ofxDepthImageSequence::getCompressor(){
+	return compressor;    
 }
 
 bool ofxDepthImageSequence::isLoaded(){

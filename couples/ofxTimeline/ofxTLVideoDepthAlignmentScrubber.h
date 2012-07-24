@@ -10,12 +10,12 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxTLElement.h"
+#include "ofxTLTrack.h"
 #include "ofxTLDepthImageSequence.h"
-#include "ofxTLVideoPlayer.h"
+#include "ofxTLVideoTrack.h"
 #include "ofxRGBDVideoDepthSequence.h"
 
-class ofxTLVideoDepthAlignmentScrubber : public ofxTLElement {
+class ofxTLVideoDepthAlignmentScrubber : public ofxTLTrack {
   public:
 	
 	ofxTLVideoDepthAlignmentScrubber();
@@ -43,7 +43,7 @@ class ofxTLVideoDepthAlignmentScrubber : public ofxTLElement {
 	vector<VideoDepthPair> & getPairs();
 	ofxRGBDVideoDepthSequence& getPairSequence();
 	
-	ofxTLVideoPlayer* videoSequence;
+	ofxTLVideoTrack* videoSequence;
 	ofxTLDepthImageSequence* depthSequence;
 	
 	void selectPercent(float percent);

@@ -69,15 +69,16 @@ ofImage ofxDepthImageCompressor::readDepthFrametoImage(string filename) {
 	return outputImage;
 }
 
-ofImage ofxDepthImageCompressor::convertTo8BitImage(ofShortPixels& pix){
-	return convertTo8BitImage(pix.getPixels());    
+ofImage ofxDepthImageCompressor::convertTo8BitImage(ofShortPixels& pix, bool createTexture){
+	return convertTo8BitImage(pix.getPixels(), createTexture);
 }
 
-ofImage ofxDepthImageCompressor::convertTo8BitImage(unsigned short* buf) {
-	ofImage outputImage;
+ofImage ofxDepthImageCompressor::convertTo8BitImage(unsigned short* buf, bool createTexture) {
+    ofImage outputImage;
+    outputImage.setUseTexture(createTexture);
 	outputImage.allocate(640, 480, OF_IMAGE_GRAYSCALE);
     convertTo8BitImage(buf, outputImage);
-	return outputImage;
+	return outputImage;	
 }
 
 void ofxDepthImageCompressor::convertTo8BitImage(ofShortPixels& pix, ofImage& image){

@@ -138,6 +138,10 @@ int ofxRGBDRenderer::getSimplification(){
 	return simplify;
 }
 
+void ofxRGBDRenderer::setRGBTexture(ofPtr<ofBaseHasPixels> pix){
+    setRGBTexture(*pix.get());
+}
+
 //-----------------------------------------------
 void ofxRGBDRenderer::setRGBTexture(ofBaseHasPixels& pix) {
 	currentRGBImage = &pix;
