@@ -293,5 +293,6 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder, bool countFrames){
 }
 
 bool ofxRGBDScene::valid(){
-    return (hasDepth && !hasColor) || (hasDepth && hasColor && hasCalibration);
+    //return (hasDepth && !hasColor) || (hasDepth && hasColor && hasCalibration);
+    return (hasDepth && hasColor && hasCalibration);
 }
