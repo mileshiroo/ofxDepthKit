@@ -36,9 +36,13 @@ class ofxRGBDRenderer {
 
     //fudge factors to apply during alignment
     void setXYShift(ofVec2f shift);
+    void setXYScale(ofVec2f scale);
+    
     float xshift;
 	float yshift;
-	
+	float xscale;
+    float yscale;
+    
 	float edgeCull;
 	float farClip;
     bool forceUndistortOff;

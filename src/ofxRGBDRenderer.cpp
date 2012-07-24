@@ -13,7 +13,9 @@
 ofxRGBDRenderer::ofxRGBDRenderer(){
 	xshift = 0;
 	yshift = 0;
-	
+	xscale = 1.0;
+    yscale = 1.0;
+    
 	edgeCull = 4000;
 	simplify = -1;
 
@@ -230,6 +232,11 @@ void ofxRGBDRenderer::setXYShift(ofVec2f shift){
     yshift = shift.y;
 }
 
+void ofxRGBDRenderer::setXYScale(ofVec2f scale){
+    xscale = scale.x;
+    yscale = scale.y;
+}
+
 void ofxRGBDRenderer::reloadShader(){
     meshShader.load("shaders/unproject");
 //    meshShader.setGeometryInputType(GL_TRIANGLES);
@@ -332,6 +339,7 @@ void ofxRGBDRenderer::setupProjectionUniforms(ofShader& theShader){
     
     
     theShader.setUniform2f("fudge", xshift, yshift);
+    theShader.setUniform2f("scale", xscale, yscale);
     theShader.setUniform2f("dim", dims.x, dims.y);
     theShader.setUniform2f("principalPoint", principalPoint.x, principalPoint.y);
     theShader.setUniform2f("fov", fx, fy);
