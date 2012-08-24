@@ -219,7 +219,6 @@ void ofxRGBDRenderer::update(){
     
 	//undistort the current images
     undistortImages();
-	cout << " drawing renderer of size  " << ofVec2f(imageSize.width,imageSize.height) << " with " << mesh.getVertices().size() << endl;
     //feed the zed values into the mesh
     unsigned short* ptr = undistortedDepthImage.getPixels();    
     int vertexIndex = 0;

@@ -45,13 +45,13 @@ void ofxTLDepthImageSequence::setup(){
 
 void ofxTLDepthImageSequence::enable(){
 	ofxTLTrack::enable();
-	ofxTLRegisterPlaybackEvents(this);
+	timeline->events().registerPlaybackEvents(this);
 
 }
 
 void ofxTLDepthImageSequence::disable(){
 	ofxTLTrack::disable();
-	ofxTLRemovePlaybackEvents(this);
+	timeline->events().removePlaybackEvents(this);
 }
 
 void ofxTLDepthImageSequence::update(ofEventArgs& args){
@@ -157,15 +157,15 @@ void ofxTLDepthImageSequence::framePositionsUpdated(vector<ofxTLVideoThumb>& new
     generateVideoThumbnails();
 }
 
-void ofxTLDepthImageSequence::mousePressed(ofMouseEventArgs& args){
-	ofxTLTrack::mousePressed(args);
-}
+//void ofxTLDepthImageSequence::mousePressed(ofMouseEventArgs& args){
+//	ofxTLTrack::mousePressed(args);
+//}
 
-void ofxTLDepthImageSequence::mouseMoved(ofMouseEventArgs& args){
-	ofxTLTrack::mouseMoved(args);
-}
+//void ofxTLDepthImageSequence::mouseMoved(ofMouseEventArgs& args){
+//	ofxTLTrack::mouseMoved(args);
+//}
 
-void ofxTLDepthImageSequence::mouseDragged(ofMouseEventArgs& args, bool snapped){
+void ofxTLDepthImageSequence::mouseDragged(ofMouseEventArgs& args, long millis){
     
     if(!isLoaded()) return;
     
@@ -245,7 +245,7 @@ int ofxTLDepthImageSequence::frameForTime(long timeInMillis){
 //    
 }
 
-void ofxTLDepthImageSequence::mouseReleased(ofMouseEventArgs& args){
+void ofxTLDepthImageSequence::mouseReleased(ofMouseEventArgs& args, long millis){
 }
 
 //void ofxTLDepthImageSequence::drawRectChanged(){

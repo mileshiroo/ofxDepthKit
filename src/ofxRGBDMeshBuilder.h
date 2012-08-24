@@ -37,10 +37,12 @@ class ofxRGBDMeshBuilder {
     bool normalizeTextureCoordinates;
     
     void setTextureScaleForImage(ofBaseHasTexture& texture);
-    
+
+	
     ofVec2f textureScale;
     ofVec3f getWorldPoint(float x, float y, unsigned short z);
     ofVec3f getWorldPoint(float x, float y, ofShortPixels& pixels);
+
   private:
     ofMesh mesh;
     Calibration depthCalibration, rgbCalibration;	
@@ -53,8 +55,8 @@ class ofxRGBDMeshBuilder {
     bool hasTriangles;
     bool calibrationSetup;
     
-    void generateTextureCoordinates();
-
+	
+    void generateTextureCoordinates();  
     vector<ofIndexType> baseIndeces;
     
 };

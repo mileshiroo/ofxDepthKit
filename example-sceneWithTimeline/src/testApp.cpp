@@ -23,14 +23,14 @@ void testApp::setup(){
     
     //set up a standard timeline with a default duration to begin with
     timeline.setup();
-    timeline.getColors().loadColors("defaultColors.xml");
+    timeline.getColors().load("defaultColors.xml");
 	timeline.setOffset(ofVec2f(0,0));
     timeline.setDurationInFrames(300);
     timeline.setPageName("Main");
     
     //set up a video timeline element so we can see the video frames
-    timeline.addElement("Video", &videoTrack);
-    timeline.addElement("Depth", &depthTrack);
+    timeline.addTrack("Video", &videoTrack);
+    timeline.addTrack("Depth", &depthTrack);
 	timeline.addKeyframes("xshift", "xshift.xml", ofRange(-.15, .15));
     timeline.addKeyframes("yshift", "yshift.xml", ofRange(-.15, .15));
     timeline.addKeyframes("farclip", "farclip.xml", ofRange(500, 6000));
@@ -83,6 +83,8 @@ bool testApp::loadScene(string takeDirectory){
         videoTrack.setPlayer(player.getVideoPlayer());
         depthTrack.setSequence(player.getDepthSequence());
         timeline.setDurationInFrames(player.getDurationInFrames());
+		timeline.setTimecontrolTrack(&videoTrack);
+		timeline.setFrameRate(player.getVideoPlayer()->getTotalNumFrames()/player.getVideoPlayer()->getDuration());
         return true;
     }
     return false;
@@ -121,7 +123,7 @@ void testApp::draw(){
 //--------------------------------------------------------------
 void testApp::keyPressed(int key){
     if(key == ' '){
-        player.togglePlay();
+        timeline.togglePlay();
     }
 }
 
@@ -152,7 +154,7 @@ void testApp::mouseReleased(int x, int y, int button){
 
 //--------------------------------------------------------------
 void testApp::windowResized(int w, int h){
-	timeline.setWidth(w);
+
 }
 
 //--------------------------------------------------------------

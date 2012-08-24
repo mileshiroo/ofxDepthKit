@@ -225,6 +225,7 @@ ofVec3f ofxRGBDMeshBuilder::getWorldPoint(float x, float y, unsigned short z){
                    ((y - principalPoint.y) / imageSize.height) * z * fy, z);
 }
 
+
 void ofxRGBDMeshBuilder::draw(ofBaseHasTexture& texture){
     if(!calibrationSetup || !hasTriangles){
         return;

@@ -44,7 +44,7 @@ class testApp : public ofBaseApp{
     
     ofxGameCamera cam;
     ofxTimeline timeline;
-    ofxTLVideoTrack videoTrack;
+    ofxTLVideoTrack videoTrack ;
 	ofxTLDepthImageSequence depthTrack;
     
     bool loadNewScene();
