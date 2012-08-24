@@ -38,12 +38,12 @@ bool ofxRGBDMeshBuilder::setup(string calibrationDirectory){
 	loadMat(translationDepthToRGB, calibrationDirectory+"/translationDepthToRGB.yml");
     
     
-    Point2d fov = depthCalibration.getUndistortedIntrinsics().getFov();
+    Point2d fov = depthCalibration.getDistortedIntrinsics().getFov();
 	fx = tanf(ofDegToRad(fov.x) / 2) * 2;
 	fy = tanf(ofDegToRad(fov.y) / 2) * 2;
     
-	principalPoint = depthCalibration.getUndistortedIntrinsics().getPrincipalPoint();
-	imageSize = depthCalibration.getUndistortedIntrinsics().getImageSize();
+	principalPoint = depthCalibration.getDistortedIntrinsics().getPrincipalPoint();
+	imageSize = depthCalibration.getDistortedIntrinsics().getImageSize();
 
 	return (calibrationSetup = true);   
 }

@@ -11,7 +11,7 @@
 class ofxRGBDScene {
   public:
     ofxRGBDScene();
-    
+    static bool isFolderValid(string sourceMediaFolder);
     bool loadFromFolder(string sourceMediaFolder, bool countFrames = true);
     bool valid();
 
@@ -30,7 +30,7 @@ class ofxRGBDScene {
     string videoThumbsPath;
     string depthFolder;
     string pairingsFile;
-    string xyshiftFile; //bogus file to save the xy fudge params
+    string xyshiftFile; //file to save the xy fudge params
     
     int totalDepthFrameCount;
     int compressedDepthFrameCount;

@@ -24,6 +24,12 @@ void ofxRGBDScene::clear(){
     
 }
 
+//static tester to see if folder is a valid bin
+bool ofxRGBDScene::isFolderValid(string sourceMediaFolder){
+	ofxRGBDScene c;
+	return c.loadFromFolder(sourceMediaFolder, false);
+}
+
 bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder, bool countFrames){
 	
     

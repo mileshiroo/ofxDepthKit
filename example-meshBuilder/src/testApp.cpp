@@ -1,10 +1,7 @@
 /**
- * Example - Scene With Timeline
- * This example shows how to create a basic RGB+D scene
- * with a timeline to scrub through the video.
+ * Example - Mesh Builder
+ * This example shows how to create a RGBD Mesh on the CPU
  *
- * It requiers ofxGameCamera https://github.com/Flightphase/ofxGameCamera 
- * and ofxTimeline https://github.com/Flightphase/ofxTimeline in addition to ofxRGBDepth
  *
  * James George 2012 
  * Released under the MIT License
@@ -78,12 +75,12 @@ bool testApp::loadScene(string takeDirectory){
         meshBuilder.setup(player.getScene().calibrationFolder);
         
         //populate
-        player.getVideoPlayer().setPosition(.5);
+        player.getVideoPlayer()->setPosition(.5);
         player.update();
         
         meshBuilder.setXYShift(player.getXYShift());
         //this will compensate if we are using an offline video that is of a different scale
-        meshBuilder.setTextureScaleForImage(player.getVideoPlayer()); 
+        meshBuilder.setTextureScaleForImage(*player.getVideoPlayer());
         //update the first mesh
         meshBuilder.updateMesh(player.getDepthPixels());
         return true;
@@ -96,7 +93,6 @@ void testApp::update(){
     if(loadNew){
         loadNewScene();
     }
-    
     
     //copy any GUI changes into the mesh builder
     if(meshBuilder.shift.x != xshift || meshBuilder.shift.y != yshift || meshBuilder.getSimplification() != simplify){
@@ -118,7 +114,7 @@ void testApp::draw(){
     if(player.isLoaded()){
         cam.begin();
         glEnable(GL_DEPTH_TEST);
-        meshBuilder.draw(player.getVideoPlayer());
+        meshBuilder.draw(*player.getVideoPlayer());
         glDisable(GL_DEPTH_TEST);
         cam.end();
     }
@@ -173,6 +169,9 @@ void testApp::gotMessage(ofMessage msg){
 }
 
 //--------------------------------------------------------------
-void testApp::dragEvent(ofDragInfo dragInfo){ 
-
+void testApp::dragEvent(ofDragInfo dragInfo){
+	ofDirectory dir(dragInfo.files[0]);
+	if( dir.isDirectory() && ofxRGBDScene::isFolderValid(dragInfo.files[0]) ){
+		loadScene(dragInfo.files[0]);
+	}
 }

@@ -111,7 +111,7 @@ void ofxRGBDPlayer::useLowResVideo(){
     if(!player->loadMovie(scene.videoPath)){
         scene.clear();
         ofLogError("Movie failed to load");
-        return (loaded = false);
+        loaded = false;
     }    
     currentlyHiRes = false;
 }
