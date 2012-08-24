@@ -51,30 +51,56 @@ bool ofxRGBDRenderer::setup(string calibrationDirectory){
 		ofLogError("ofxRGBDRenderer --- Calibration directory doesn't exist: " + calibrationDirectory);
 		return false;
 	}
+	return setup(calibrationDirectory+"/rgbCalib.yml", calibrationDirectory+"/depthCalib.yml",
+		  		calibrationDirectory+"/rotationDepthToRGB.yml", calibrationDirectory+"/translationDepthToRGB.yml");
 	
-	depthCalibration.load(calibrationDirectory+"/depthCalib.yml");
-	rgbCalibration.load(calibrationDirectory+"/rgbCalib.yml");
+}
+
+bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath, string depthIntrinsicsPath, string rotationPath, string translationPath){
+//	rgbCalibration.setFillFrame(false);
+//	depthCalibration.setFillFrame(false);
+	depthCalibration.load(depthIntrinsicsPath);
+	rgbCalibration.load(rgbIntrinsicsPath);
 	
-	loadMat(rotationDepthToRGB, calibrationDirectory+"/rotationDepthToRGB.yml");
-	loadMat(translationDepthToRGB, calibrationDirectory+"/translationDepthToRGB.yml");
+	loadMat(rotationDepthToRGB, rotationPath);
+	loadMat(translationDepthToRGB, translationPath);
     
     depthToRGBView = ofxCv::makeMatrix(rotationDepthToRGB, translationDepthToRGB);
-
+	
     ofPushView();
-    rgbCalibration.getUndistortedIntrinsics().loadProjectionMatrix();
+//    rgbCalibration.getUndistortedIntrinsics().loadProjectionMatrix();
+	rgbCalibration.getDistortedIntrinsics().loadProjectionMatrix();
     glGetFloatv(GL_PROJECTION_MATRIX, rgbProjection.getPtr());
     ofPopView();
-
-    Point2d fov = depthCalibration.getUndistortedIntrinsics().getFov();
-	fx = tanf(ofDegToRad(fov.x) / 2) * 2;
-	fy = tanf(ofDegToRad(fov.y) / 2) * 2;
+	
+//	Point2d fov = depthCalibration.getUndistortedIntrinsics().getFov();
+//	fx = tanf(ofDegToRad(fov.x) / 2) * 2;
+//	fy = tanf(ofDegToRad(fov.y) / 2) * 2;
+//	fx = depthCalibration.getUndistortedIntrinsics().getCameraMatrix().at<double>(0,0);
+//	fy = depthCalibration.getUndistortedIntrinsics().getCameraMatrix().at<double>(1,1);
+//	principalPoint = depthCalibration.getUndistortedIntrinsics().getPrincipalPoint();
+//	imageSize = depthCalibration.getUndistortedIntrinsics().getImageSize();
+	forceUndistortOff = true;
+	fx = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(0,0);
+	fy = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(1,1);
+	principalPoint = depthCalibration.getDistortedIntrinsics().getPrincipalPoint();
+	imageSize = depthCalibration.getDistortedIntrinsics().getImageSize();
     
-	principalPoint = depthCalibration.getUndistortedIntrinsics().getPrincipalPoint();
-	imageSize = depthCalibration.getUndistortedIntrinsics().getImageSize();
 
-    
+    cout << "successfully loaded calibration: fx + fy is " << fx << " " << fy  << endl;
+	
+	cout << "RGB Camera Matrix is " << rgbCalibration.getDistortedIntrinsics().getCameraMatrix() << endl;
+	cout << "RGB Distortion coefficients " << rgbCalibration.getDistCoeffs() << endl;
+	cout << "Depth Camera Matrix is " << depthCalibration.getDistortedIntrinsics().getCameraMatrix() << endl;
+	cout << "Depth Distortion coefficients " << depthCalibration.getDistCoeffs() << endl;
+	cout << "RGB->Depth rotation " << rotationDepthToRGB << endl;
+	cout << "RGB->Detph translation " << translationDepthToRGB << endl;
+	cout << "RGB Aspect Ratio " << rgbCalibration.getDistortedIntrinsics().getAspectRatio() << endl;
+	cout << "RGB Focal Length " << rgbCalibration.getDistortedIntrinsics().getFocalLength() << endl;
+
     calibrationSetup = true;
 	return true;
+	
 }
 
 void ofxRGBDRenderer::setSimplification(int level){
@@ -193,7 +219,7 @@ void ofxRGBDRenderer::update(){
     
 	//undistort the current images
     undistortImages();
-
+	cout << " drawing renderer of size  " << ofVec2f(imageSize.width,imageSize.height) << " with " << mesh.getVertices().size() << endl;
     //feed the zed values into the mesh
     unsigned short* ptr = undistortedDepthImage.getPixels();    
     int vertexIndex = 0;
@@ -203,28 +229,27 @@ void ofxRGBDRenderer::update(){
             mesh.getVertices()[vertexIndex++].z = ptr[y*imageSize.width+x];
         }
     }
-    
-
 }
 
 void ofxRGBDRenderer::undistortImages(){
-//    if(!forceUndistortOff){
-//    if(ofGetMouseX() > ofGetWidth()/2){
-//        depthCalibration.undistort( toCv(*currentDepthImage), toCv(undistortedDepthImage), CV_INTER_NN);
-//        rgbCalibration.undistort( toCv(*currentRGBImage), toCv(undistortedRGBImage) );
-//        undistortedRGBImage.update();
-//    }
-//    else {
-//        undistortedDepthImage = *currentDepthImage;
-//        
-//    }
+
     if(!forceUndistortOff){
         depthCalibration.undistort( toCv(*currentDepthImage), toCv(undistortedDepthImage), CV_INTER_NN);
+        rgbCalibration.undistort( toCv(*currentRGBImage), toCv(undistortedRGBImage) );
+        undistortedRGBImage.update();
     }
     else {
         undistortedDepthImage = *currentDepthImage;
+		undistortedRGBImage.setFromPixels(currentRGBImage->getPixelsRef());
     }
-    undistortedRGBImage.setFromPixels(currentRGBImage->getPixelsRef());
+//    undistortedRGBImage.setFromPixels(currentRGBImage->getPixelsRef());
+//    if(!forceUndistortOff){
+//        depthCalibration.undistort( toCv(*currentDepthImage), toCv(undistortedDepthImage), CV_INTER_NN);
+//    }
+//    else {
+//        undistortedDepthImage = *currentDepthImage;
+//    }
+//    undistortedRGBImage.setFromPixels(currentRGBImage->getPixelsRef());
 }
 
 ofVboMesh& ofxRGBDRenderer::getMesh(){
@@ -243,13 +268,6 @@ void ofxRGBDRenderer::setXYScale(ofVec2f scale){
 
 void ofxRGBDRenderer::reloadShader(){
     meshShader.load("shaders/unproject");
-//    meshShader.setGeometryInputType(GL_TRIANGLES);
-//    meshShader.setGeometryOutputType(GL_TRIANGLE_STRIP);
-//    meshShader.setGeometryOutputCount(3);
-//    meshShader.load("shaders/unproject.vert",
-//                	"shaders/unproject.frag",
-//                	"shaders/unproject.geom");
-    
     pointShader.load("shaders/unproject");
 }
 
@@ -335,8 +353,8 @@ void ofxRGBDRenderer::setupProjectionUniforms(ofShader& theShader){
     rgbMatrix = (depthToRGBView * rgbProjection);
     //rgbMatrix.scale(1, -1, 1);
     
-    Point2d principalPoint = depthCalibration.getUndistortedIntrinsics().getPrincipalPoint();
-	cv::Size imageSize = depthCalibration.getUndistortedIntrinsics().getImageSize();
+//    Point2d principalPoint = depthCalibration.getUndistortedIntrinsics().getPrincipalPoint();
+//	cv::Size imageSize = depthCalibration.getUndistortedIntrinsics().getImageSize();
 
     ofVec2f dims = ofVec2f(undistortedRGBImage.getTextureReference().getWidth(), 
                            undistortedRGBImage.getTextureReference().getHeight());

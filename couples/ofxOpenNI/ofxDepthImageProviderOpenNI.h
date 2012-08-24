@@ -17,9 +17,10 @@ class ofxDepthImageProviderOpenNI : public ofxDepthImageProvider {
 
 	void setup();
 	void update();
+	ofVec3f getWorldCoordinateAt(int x, int y);
 	int maxDepth();	
 	void close();
-    
+
   protected:
 	ofxOpenNIContext	recordContext;
 	ofxDepthGenerator	recordDepth;

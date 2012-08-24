@@ -24,6 +24,7 @@ class ofxRGBDRenderer {
 	ofxRGBDRenderer();
 	~ofxRGBDRenderer();
 	
+	bool setup(string rgbIntrinsicsPath, string depthIntrinsicsPath, string rotationPath, string translationPath);
 	bool setup(string calibrationDirectory);
 
     void setRGBTexture(ofPtr<ofBaseHasPixels> pix); 

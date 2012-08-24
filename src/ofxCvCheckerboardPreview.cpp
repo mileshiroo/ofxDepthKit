@@ -128,11 +128,11 @@ void ofxCvCheckerboardPreview::threadedFunction() {
 				
 			}
 			newBoardToFind = false;
-			ofSleepMillis(5);
 		}
+		ofSleepMillis(500);
 	}
 }
 
 void ofxCvCheckerboardPreview::quit() {
-	stopThread(true);
+	waitForThread(true);
 }

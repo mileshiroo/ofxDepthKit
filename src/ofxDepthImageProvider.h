@@ -18,6 +18,7 @@ class ofxDepthImageProvider {
 	virtual void update() = 0;
 	virtual int maxDepth() = 0;	
 	virtual void close() = 0;
+	virtual ofVec3f getWorldCoordinateAt(int x, int y){ return ofVec3f(0,0,0); }
 	
 	bool isFrameNew();
 	bool deviceFound();
@@ -25,7 +26,6 @@ class ofxDepthImageProvider {
 	ofShortPixels& getRawDepth();
 	ofImage& getRawIRImage();
 //	ofImage& getDepthImage();
-	
 	void setDepthModeRainbow(bool useRainbow); //otherwise grayscale
 
   protected:
