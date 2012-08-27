@@ -29,6 +29,7 @@ class ofxRGBDMeshBuilder {
     ofMesh& getMesh();
     
     float farClip;
+	float nearClip;
     float edgeSnip;
     
     bool addColors;

@@ -62,13 +62,14 @@ class ofxRGBDPlayer {
     void useHiresVideo();
     void useLowResVideo();
     
+	bool updateVideoPlayer;
   protected:
     bool loaded;
     bool frameIsNew;
     bool currentlyHiRes;
     ofVec2f shift;
     ofVec2f scale;
-    
+    int lastFrame;
 	ofxRGBDScene scene;
     ofPtr<ofVideoPlayer> player;
     ofPtr<ofxDepthImageSequence> depthSequence;

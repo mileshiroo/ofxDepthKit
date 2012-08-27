@@ -7,10 +7,10 @@
 //
 
 #include "ofxRGBDMeshBuilder.h"
-#include <set>
 
 ofxRGBDMeshBuilder::ofxRGBDMeshBuilder(){
     farClip = 5000;
+	nearClip = 300;
     edgeSnip = 500;
     addColors = false;
     undistortDepthImage = true;
@@ -41,7 +41,8 @@ bool ofxRGBDMeshBuilder::setup(string calibrationDirectory){
     Point2d fov = depthCalibration.getDistortedIntrinsics().getFov();
 	fx = tanf(ofDegToRad(fov.x) / 2) * 2;
 	fy = tanf(ofDegToRad(fov.y) / 2) * 2;
-    
+    cout << "fx and fy " << fx << " " << fy << endl;
+	
 	principalPoint = depthCalibration.getDistortedIntrinsics().getPrincipalPoint();
 	imageSize = depthCalibration.getDistortedIntrinsics().getImageSize();
 
@@ -150,17 +151,17 @@ void ofxRGBDMeshBuilder::updateMesh(ofShortPixels& depthImage){
     mesh.clearIndices();    
     for(int i = 0; i < baseIndeces.size(); i+=3){
         ofVec3f& a = mesh.getVertices()[baseIndeces[i]];
-        if(a.z > farClip || a.z < 200){
+        if(a.z > farClip || a.z < nearClip){
             continue;
         }        
         
         ofVec3f& b = mesh.getVertices()[baseIndeces[i+1]];
-        if(b.z > farClip || b.z < 200){
+        if(b.z > farClip || b.z < nearClip){
             continue;
         }
         
         ofVec3f& c = mesh.getVertices()[baseIndeces[i+2]];
-        if(c.z > farClip || c.z < 200){
+        if(c.z > farClip || c.z < nearClip){
             continue;
         }
 

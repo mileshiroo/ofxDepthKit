@@ -45,6 +45,7 @@ void testApp::setup(){
     cam.targetYRot = 0;
     cam.rotationZ = 0;    
 
+	player.updateVideoPlayer = false;
     //load 
     loadDefaultScene();
     

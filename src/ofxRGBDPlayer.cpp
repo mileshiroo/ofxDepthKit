@@ -13,6 +13,8 @@ ofxRGBDPlayer::ofxRGBDPlayer(){
     frameIsNew = false;
     currentlyHiRes = false;
     shift = ofVec2f(0,0);
+	updateVideoPlayer = true;
+	lastFrame = 0;
 }
 
 ofxRGBDPlayer::~ofxRGBDPlayer(){
@@ -85,28 +87,16 @@ void ofxRGBDPlayer::useHiresVideo(){
         return;        
     }
 	
-//    int currentFrame = player->getCurrentFrame();
-//    bool playing = player->isPlaying();
-//    float speed = player->getSpeed();
     player = ofPtr<ofVideoPlayer>(new ofVideoPlayer());
     if(!player->loadMovie(scene.alternativeHiResVideoPath)){
         ofLogError("ofxRGBDPlayer::useHiresVideo -- error loading hi res video, returning to low res");
         useLowResVideo();
         return;
     }
-//    player->setFrame(currentFrame);
-//    if(playing){
-//        player->play();
-//        player->setSpeed(speed);
-//    }
     currentlyHiRes = true;
 }
 
 void ofxRGBDPlayer::useLowResVideo(){
-//    if(player != NULL){
-//        delete player;
-//    }
-    
     player = ofPtr<ofVideoPlayer>(new ofVideoPlayer());
     if(!player->loadMovie(scene.videoPath)){
         scene.clear();
@@ -123,12 +113,17 @@ ofVec2f ofxRGBDPlayer::getXYShift(){
 void ofxRGBDPlayer::update(){
 	if(!loaded) return;
     
-    player->update();
-    if(player->isFrameNew()){
+	if(updateVideoPlayer){
+	    player->update();
+	}
+	
+	int thisFrame = player->getCurrentFrame();
+	if(thisFrame != lastFrame){
         long videoTime = player->getPosition()*player->getDuration()*1000;
         depthSequence->selectTime(videoDepthAligment.getDepthFrameForVideoFrame(videoTime));
         depthSequence->updatePixels();            
         frameIsNew = true;
+		lastFrame = thisFrame;
     }
 }
 
