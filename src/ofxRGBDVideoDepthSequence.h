@@ -17,8 +17,8 @@
 
 typedef struct{
 	bool isTimeBased;
-	int videoFrame;
-	int depthFrame;
+	unsigned long videoMillis;
+	unsigned long depthMillis;
 } VideoDepthPair;
 
 class ofxRGBDVideoDepthSequence {
@@ -32,15 +32,15 @@ class ofxRGBDVideoDepthSequence {
 	bool ready();
 	void reset();
     
-    void addAlignedFrames(int videoFrame, int depthFrame);
+    void addAlignedFrames(int videoMillis, int depthMillis);
 	void addAlignedTime(int videoMillis, int depthMillis);
 	void addAlignedPair(VideoDepthPair pair);
 	
 	void removeAlignedPair(int index);
 
     //This will return a time in milliseconds if the frames are time based
-	long getDepthFrameForVideoFrame(long videoFrame);
-    long getVideoFrameForDepthFrame(long depthFrame);
+	long getDepthMillisForVideoMillis(long videoMillis);
+    long getVideoMillisForDepthMillis(long depthMillis);
 	bool isSequenceTimebased();
 	
     //returns the start and stop points for the video player IN SECONDS for the given sequence and this pairing

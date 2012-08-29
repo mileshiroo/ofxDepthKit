@@ -55,7 +55,7 @@ class ofxRGBDPlayer {
     ofShortPixels& getDepthPixels();
     ofPtr<ofVideoPlayer> getVideoPlayer();
     ofPtr<ofxDepthImageSequence> getDepthSequence();
-    ofxRGBDVideoDepthSequence& getVideoDepthAligment();
+    ofPtr<ofxRGBDVideoDepthSequence> getVideoDepthAligment();
     
     bool hasHighresVideo();
     bool isUsingHighResVideo();
@@ -73,6 +73,6 @@ class ofxRGBDPlayer {
 	ofxRGBDScene scene;
     ofPtr<ofVideoPlayer> player;
     ofPtr<ofxDepthImageSequence> depthSequence;
-    ofxRGBDVideoDepthSequence videoDepthAligment;
+    ofPtr<ofxRGBDVideoDepthSequence> videoDepthAligment;
     
 };

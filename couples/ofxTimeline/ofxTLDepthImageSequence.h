@@ -15,10 +15,10 @@
 //#include "ofxDepthImageCompressor.h"
 #include "ofxDepthImageSequence.h"
 
-class ofxTLDepthImageSequence : public ofxTLImageTrack {
+class ofxTLDepthImageSequence : public ofxTLImageTrack, public ofThread {
   public:	
 	ofxTLDepthImageSequence();
-	~ofxTLDepthImageSequence();
+	virtual ~ofxTLDepthImageSequence();
 
 	void setup();
 	void draw();
@@ -26,26 +26,18 @@ class ofxTLDepthImageSequence : public ofxTLImageTrack {
 	void enable();
 	void disable();
 
-//	vector<ofxTLVideoThumb> videoThumbs;
-
-//	virtual void mousePressed(ofMouseEventArgs& args, long millis);
-//	virtual void mouseMoved(ofMouseEventArgs& args, long millis);
 	virtual void mouseDragged(ofMouseEventArgs& args, long millis);
 	virtual void mouseReleased(ofMouseEventArgs& args, long millis);
 
 	virtual void keyPressed(ofKeyEventArgs& args);
-	
-//	virtual void zoomStarted(ofxTLZoomEventArgs& args);
-//	virtual void zoomDragged(ofxTLZoomEventArgs& args);
-//	virtual void zoomEnded(ofxTLZoomEventArgs& args);
-
-//	virtual void drawRectChanged();
 
 	bool loadSequence();
 	bool loadSequence(string sequenceDirectory);
     
     void setSequence(ofPtr<ofxDepthImageSequence> newSequence);
     void setSequence(ofxDepthImageSequence& newSequence);
+    ofPtr<ofxDepthImageSequence> getDepthImageSequence();
+	ofImage currentDepthImage;
     
 	bool isLoaded();
 	bool isFrameNew();
@@ -54,16 +46,14 @@ class ofxTLDepthImageSequence : public ofxTLImageTrack {
 	void playbackEnded(ofxTLPlaybackEventArgs& args);
 	void playbackLooped(ofxTLPlaybackEventArgs& args);
 	
-	ofImage currentDepthImage;
-//    ofShortPixels currentDepthRaw;
-//    ofShortPixels thumbnailDepthRaw;
+	
 	
 	int getSelectedFrame();
 	
 	int frameForTime(long timeInMillis);
 	void selectFrame(int frame);
-	void selectTime(float timeInSeconds);
-	void selectTime(long timeStampInMillis);
+	void selectTimeInSeconds(float timeInSeconds);
+	void selectTimeInMillis(long timeStampInMillis);
 	
 	//only works if doFramesHaveMillis is true
 	long getSelectedTimeInMillis();
@@ -72,11 +62,9 @@ class ofxTLDepthImageSequence : public ofxTLImageTrack {
 	
 	bool doFramesHaveTimestamps();
 
+
   protected:
     ofPtr<ofxDepthImageSequence> depthImageSequence;
-    
-    //bool framesHaveTimestamps;
-//    bool canCalculateThumbs() = 0;
     
     //width and height of image elements
     float getContentWidth();
@@ -87,21 +75,23 @@ class ofxTLDepthImageSequence : public ofxTLImageTrack {
 
 	//only called during playback
 	void update(ofEventArgs& args);
+
+	ofMutex backLock; // to protect backThumbs
+    vector<ofxTLVideoThumb> backThumbs; //used to generate thumbs on the back thread, then copies them onto the main thread
+
+	void threadedFunction();
+    void exit(ofEventArgs& args);
 	
-    ofRange thumbnailUpdatedZoomLevel;
-    float thumbnailUpdatedWidth;
-    float thumbnailUpdatedHeight;
+//    ofRange thumbnailUpdatedZoomLevel;
+//    float thumbnailUpdatedWidth;
+//    float thumbnailUpdatedHeight;
     
-	bool thumbsEnabled; //TODO: move to super
+
 	
-//	void calculateFramePositions();
-	void generateVideoThumbnails();
-	void generateThumbnailForFrame(int index);
+	//void generateVideoThumbnails();
+//	void generateThumbnailForFrame(int index);
 	bool frameIsNew;
 	
 	string sequenceDirectory;
-//	string thumbDirectory;
-	
-//	ofxDepthImageCompressor decoder;
     
 };

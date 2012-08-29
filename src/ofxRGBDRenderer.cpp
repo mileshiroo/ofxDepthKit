@@ -94,7 +94,7 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath, string depthIntrinsicsPath
 	cout << "Depth Camera Matrix is " << depthCalibration.getDistortedIntrinsics().getCameraMatrix() << endl;
 	cout << "Depth Distortion coefficients " << depthCalibration.getDistCoeffs() << endl;
 	cout << "RGB->Depth rotation " << rotationDepthToRGB << endl;
-	cout << "RGB->Detph translation " << translationDepthToRGB << endl;
+	cout << "RGB->Depth translation " << translationDepthToRGB << endl;
 	cout << "RGB Aspect Ratio " << rgbCalibration.getDistortedIntrinsics().getAspectRatio() << endl;
 	cout << "RGB Focal Length " << rgbCalibration.getDistortedIntrinsics().getFocalLength() << endl;
 

@@ -46,7 +46,9 @@ bool ofxRGBDPlayer::setup(ofxRGBDScene newScene, bool forceHiRes){
         depthSequence = ofPtr<ofxDepthImageSequence>( new ofxDepthImageSequence() );
     }
     depthSequence->loadSequence(scene.depthFolder);
-    videoDepthAligment.loadPairingFile(scene.pairingsFile);
+	
+	videoDepthAligment = ofPtr<ofxRGBDVideoDepthSequence>( new ofxRGBDVideoDepthSequence() );
+    videoDepthAligment->loadPairingFile(scene.pairingsFile);
     
     if(scene.hasXYShift){
     	ofxXmlSettings xyshift;
@@ -62,8 +64,8 @@ bool ofxRGBDPlayer::setup(ofxRGBDScene newScene, bool forceHiRes){
         scale = ofVec2f(1,1);
     }
     
-    player->play();
-    player->setSpeed(0);
+//    player->play();
+//    player->setSpeed(0);
     
     return (loaded = true);
 }
@@ -78,7 +80,7 @@ bool ofxRGBDPlayer::isUsingHighResVideo(){
 
 void ofxRGBDPlayer::useHiresVideo(){
     
-    if(hasHighresVideo()){
+    if(!hasHighresVideo()){
         ofLogError("ofxRGBDPlayer::useHiresVideo -- no hi res video to load");
         return;        
     }
@@ -119,9 +121,11 @@ void ofxRGBDPlayer::update(){
 	
 	int thisFrame = player->getCurrentFrame();
 	if(thisFrame != lastFrame){
-        long videoTime = player->getPosition()*player->getDuration()*1000;
-        depthSequence->selectTime(videoDepthAligment.getDepthFrameForVideoFrame(videoTime));
-        depthSequence->updatePixels();            
+		if(videoDepthAligment->ready()){
+	        long videoTime = player->getPosition()*player->getDuration()*1000;
+    	    depthSequence->selectTimeInMillis(videoDepthAligment->getDepthMillisForVideoMillis(videoTime));
+        	depthSequence->updatePixels();
+		}
         frameIsNew = true;
 		lastFrame = thisFrame;
     }
@@ -189,6 +193,6 @@ ofxRGBDScene& ofxRGBDPlayer::getScene(){
 	return scene;    
 }
 
-ofxRGBDVideoDepthSequence& ofxRGBDPlayer::getVideoDepthAligment(){
+ofPtr<ofxRGBDVideoDepthSequence> ofxRGBDPlayer::getVideoDepthAligment(){
     return videoDepthAligment;
 }

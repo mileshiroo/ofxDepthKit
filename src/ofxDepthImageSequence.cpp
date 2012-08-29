@@ -149,7 +149,7 @@ void ofxDepthImageSequence::selectFrame(int frame){
     currentFrame = frame;
 }
 
-void ofxDepthImageSequence::selectTime(float timeInSeconds){
+void ofxDepthImageSequence::selectTimeInSeconds(float timeInSeconds){
     if(!framesHaveTimestamps){
         ofLogError("ofxDepthImageSequence::selectTime() -- no timestamps!");
         return;        
@@ -163,7 +163,7 @@ void ofxDepthImageSequence::selectTime(float timeInSeconds){
     selectFrame(frameForTime(long(timeInSeconds*1000)));
 }
 
-void ofxDepthImageSequence::selectTime(long timeInMillis){
+void ofxDepthImageSequence::selectTimeInMillis(long timeInMillis){
     
     if(!framesHaveTimestamps){
         ofLogError("ofxDepthImageSequence::selectTime() -- no timestamps!");

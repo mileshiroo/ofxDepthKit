@@ -116,6 +116,7 @@ unsigned short* ofxDepthImageCompressor::readCompressedPng(string filename, unsi
 	
 	int totalDif = 0;
 	ofImage compressedImage;
+	compressedImage.setUseTexture(false);	
 	if(!compressedImage.loadImage(filename)){
 		ofLogError("ofxDepthImageRecorder -- Couldn't read compressed frame " + filename);
 		return outbuf;

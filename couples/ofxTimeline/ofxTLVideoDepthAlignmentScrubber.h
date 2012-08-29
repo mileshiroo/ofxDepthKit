@@ -21,13 +21,12 @@ class ofxTLVideoDepthAlignmentScrubber : public ofxTLTrack {
 	ofxTLVideoDepthAlignmentScrubber();
 	~ofxTLVideoDepthAlignmentScrubber();
 	
-	void setup();
 	void draw();
 	
-	virtual void mousePressed(ofMouseEventArgs& args);
-	virtual void mouseMoved(ofMouseEventArgs& args);
-	virtual void mouseDragged(ofMouseEventArgs& args, bool snapped);
-	virtual void mouseReleased(ofMouseEventArgs& args);
+	virtual void mousePressed(ofMouseEventArgs& args, long millis);
+	virtual void mouseMoved(ofMouseEventArgs& args, long millis);
+	virtual void mouseDragged(ofMouseEventArgs& args, long millis);
+	virtual void mouseReleased(ofMouseEventArgs& args, long millis);
 	
 	virtual void keyPressed(ofKeyEventArgs& args);
 	
@@ -41,21 +40,21 @@ class ofxTLVideoDepthAlignmentScrubber : public ofxTLTrack {
 	void removeAlignmentPair(int index);
 	
 	vector<VideoDepthPair> & getPairs();
-	ofxRGBDVideoDepthSequence& getPairSequence();
+	
+	ofPtr<ofxRGBDVideoDepthSequence> getPairSequence();
+	void setPairSequence(ofPtr<ofxRGBDVideoDepthSequence> newSequence);
 	
 	ofxTLVideoTrack* videoSequence;
 	ofxTLDepthImageSequence* depthSequence;
 	
-	void selectPercent(float percent);
 	
   protected:
-	ofxRGBDVideoDepthSequence pairSequence;
+	ofPtr<ofxRGBDVideoDepthSequence> pairSequence;
 	void updateSelection();
 
 	int selectedPairIndex;
-	
-	int selectedVideoFrame;
-	int selectedDepthFrame;
+	int selectedVideoMillis;
+	int selectedDepthMillis;
 	int selectedPercent;
 	
 //	int getDepthFrameForVideoFrame(int videoFrame);

@@ -34,8 +34,8 @@ class ofxDepthImageSequence {
     int frameForTime(long timeInMillis);
     
 	void selectFrame(int frame);
-	void selectTime(float timeInSeconds);
-	void selectTime(long timeInMillis);
+	void selectTimeInSeconds(float timeInSeconds);
+	void selectTimeInMillis(long timeInMillis);
 	
     long getDurationInMillis();
     float getDurationInSeconds();
