@@ -11,7 +11,7 @@
 
 
 void ofxDepthImageProviderFreenect::setup(){
-	bDeviceFound  = kinect.init(true, true); // shows infrared instead of RGB video image
+	bDeviceFound  = kinect.init(false, true); // shows infrared instead of RGB video image
 	bDeviceFound &= kinect.open();
 	cout << "opened kinect? " << bDeviceFound << endl;
 }
@@ -25,7 +25,10 @@ void ofxDepthImageProviderFreenect::update(){
 		bNewFrame = true;
 		bDepthImageDirty = true;
 		depthPixels.setFromPixels(kinect.getRawDepthPixels(), kinect.getWidth(), kinect.getHeight(), OF_IMAGE_GRAYSCALE);
+		rawIRImage.setUseTexture(false);
 		rawIRImage.setFromPixels(kinect.getPixelsRef());
+		rawIRImage.setImageType(OF_IMAGE_GRAYSCALE);
+		rawIRImage.setUseTexture(true);
 		rawIRImage.update();
 	}		
 }

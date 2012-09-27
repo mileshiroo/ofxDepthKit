@@ -26,9 +26,9 @@ class ofxTLDepthImageSequence : public ofxTLImageTrack, public ofThread {
 	void enable();
 	void disable();
 
+	virtual bool mousePressed(ofMouseEventArgs& args, long millis);
 	virtual void mouseDragged(ofMouseEventArgs& args, long millis);
 	virtual void mouseReleased(ofMouseEventArgs& args, long millis);
-
 	virtual void keyPressed(ofKeyEventArgs& args);
 
 	bool loadSequence();
@@ -37,16 +37,19 @@ class ofxTLDepthImageSequence : public ofxTLImageTrack, public ofThread {
     void setSequence(ofPtr<ofxDepthImageSequence> newSequence);
     void setSequence(ofxDepthImageSequence& newSequence);
     ofPtr<ofxDepthImageSequence> getDepthImageSequence();
-	ofImage currentDepthImage;
-    
+	ofImage& getCurrentDepthImage();
+	
 	bool isLoaded();
 	bool isFrameNew();
-    
+
+	//will update with scrubbing and playing
+	//turn this off if you are syncing it to a video source
+	void setAutoUpdate(bool autoUpdate);
+	bool getAutoUpdate();
+	
 	void playbackStarted(ofxTLPlaybackEventArgs& args);
 	void playbackEnded(ofxTLPlaybackEventArgs& args);
 	void playbackLooped(ofxTLPlaybackEventArgs& args);
-	
-	
 	
 	int getSelectedFrame();
 	
@@ -61,16 +64,23 @@ class ofxTLDepthImageSequence : public ofxTLImageTrack, public ofThread {
 	void toggleThumbs();
 	
 	bool doFramesHaveTimestamps();
-
-
+	
+	//sets the time offset to the difference in the playhead,
+	//so if you hit play after this, the current relationship will be maintained
+	void setTimeOffsetToPlayhead();
+	void setTimeOffsetInMillis(unsigned long millis);
+	unsigned long getTimeOffsetInMillis();
+	
   protected:
     ofPtr<ofxDepthImageSequence> depthImageSequence;
-    
+
     //width and height of image elements
     float getContentWidth();
     float getContentHeight();
 	void framePositionsUpdated(vector<ofxTLVideoThumb>& newThumbs);
     
+	bool autoUpdate;
+	unsigned long timeOffsetInMillis;
     ofShortPixels thumbnailDepthRaw;
 
 	//only called during playback
@@ -81,17 +91,9 @@ class ofxTLDepthImageSequence : public ofxTLImageTrack, public ofThread {
 
 	void threadedFunction();
     void exit(ofEventArgs& args);
-	
-//    ofRange thumbnailUpdatedZoomLevel;
-//    float thumbnailUpdatedWidth;
-//    float thumbnailUpdatedHeight;
-    
-
-	
-	//void generateVideoThumbnails();
-//	void generateThumbnailForFrame(int index);
+	ofImage currentDepthImage;
 	bool frameIsNew;
-	
+	bool depthImageIsDirty;
 	string sequenceDirectory;
     
 };

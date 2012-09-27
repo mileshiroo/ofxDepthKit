@@ -73,6 +73,8 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath, string depthIntrinsicsPath
     glGetFloatv(GL_PROJECTION_MATRIX, rgbProjection.getPtr());
     ofPopView();
 	
+	rgbMatrix = (depthToRGBView * rgbProjection);
+	
 //	Point2d fov = depthCalibration.getUndistortedIntrinsics().getFov();
 //	fx = tanf(ofDegToRad(fov.x) / 2) * 2;
 //	fy = tanf(ofDegToRad(fov.y) / 2) * 2;
@@ -80,6 +82,7 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath, string depthIntrinsicsPath
 //	fy = depthCalibration.getUndistortedIntrinsics().getCameraMatrix().at<double>(1,1);
 //	principalPoint = depthCalibration.getUndistortedIntrinsics().getPrincipalPoint();
 //	imageSize = depthCalibration.getUndistortedIntrinsics().getImageSize();
+	
 	forceUndistortOff = true;
 	fx = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(0,0);
 	fy = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(1,1);
@@ -87,20 +90,18 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath, string depthIntrinsicsPath
 	imageSize = depthCalibration.getDistortedIntrinsics().getImageSize();
     
 
-    cout << "successfully loaded calibration: fx + fy is " << fx << " " << fy  << endl;
-	
-	cout << "RGB Camera Matrix is " << rgbCalibration.getDistortedIntrinsics().getCameraMatrix() << endl;
-	cout << "RGB Distortion coefficients " << rgbCalibration.getDistCoeffs() << endl;
-	cout << "Depth Camera Matrix is " << depthCalibration.getDistortedIntrinsics().getCameraMatrix() << endl;
-	cout << "Depth Distortion coefficients " << depthCalibration.getDistCoeffs() << endl;
-	cout << "RGB->Depth rotation " << rotationDepthToRGB << endl;
-	cout << "RGB->Depth translation " << translationDepthToRGB << endl;
-	cout << "RGB Aspect Ratio " << rgbCalibration.getDistortedIntrinsics().getAspectRatio() << endl;
-	cout << "RGB Focal Length " << rgbCalibration.getDistortedIntrinsics().getFocalLength() << endl;
+//  cout << "successfully loaded calibration: fx + fy is " << fx << " " << fy  << endl;
+//	cout << "RGB Camera Matrix is " << rgbCalibration.getDistortedIntrinsics().getCameraMatrix() << endl;
+//	cout << "RGB Distortion coefficients " << rgbCalibration.getDistCoeffs() << endl;
+//	cout << "Depth Camera Matrix is " << depthCalibration.getDistortedIntrinsics().getCameraMatrix() << endl;
+//	cout << "Depth Distortion coefficients " << depthCalibration.getDistCoeffs() << endl;
+//	cout << "RGB->Depth rotation " << rotationDepthToRGB << endl;
+//	cout << "RGB->Depth translation " << translationDepthToRGB << endl;
+//	cout << "RGB Aspect Ratio " << rgbCalibration.getDistortedIntrinsics().getAspectRatio() << endl;
+//	cout << "RGB Focal Length " << rgbCalibration.getDistortedIntrinsics().getFocalLength() << endl;
 
     calibrationSetup = true;
 	return true;
-	
 }
 
 void ofxRGBDRenderer::setSimplification(int level){
@@ -199,6 +200,14 @@ Calibration& ofxRGBDRenderer::getDepthCalibration(){
 
 Calibration& ofxRGBDRenderer::getRGBCalibration(){
 	return rgbCalibration;
+}
+
+ofMatrix4x4& ofxRGBDRenderer::getRGBMatrix(){
+	return rgbMatrix;
+}
+
+ofMatrix4x4& ofxRGBDRenderer::getDepthToRGBTransform(){
+	return depthToRGBView;
 }
 
 void ofxRGBDRenderer::update(){
@@ -359,14 +368,15 @@ void ofxRGBDRenderer::setupProjectionUniforms(ofShader& theShader){
                            undistortedRGBImage.getTextureReference().getHeight());
     
     
-    theShader.setUniform2f("fudge", xshift, yshift);
+    theShader.setUniform2f("shift", xshift, yshift);
     theShader.setUniform2f("scale", xscale, yscale);
     theShader.setUniform2f("dim", dims.x, dims.y);
     theShader.setUniform2f("principalPoint", principalPoint.x, principalPoint.y);
     theShader.setUniform2f("fov", fx, fy);
     theShader.setUniform2f("imageSize", imageSize.width,imageSize.height);
     theShader.setUniform1f("farClip", farClip);
-    
+    theShader.setUniform1i("project", 1);
+	
     glMatrixMode(GL_TEXTURE);
     glPushMatrix();
     glLoadMatrixf(rgbMatrix.getPtr());

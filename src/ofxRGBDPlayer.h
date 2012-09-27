@@ -48,11 +48,13 @@ class ofxRGBDPlayer {
     ofVec2f getXYShift();
     ofVec2f getXYScale();
     
+	void saveShiftValues();
+	
     int getDurationInFrames();
     float getDurationInSeconds();
     
     ofxRGBDScene& getScene();
-    ofShortPixels& getDepthPixels();
+	ofShortPixels& getDepthPixels();
     ofPtr<ofVideoPlayer> getVideoPlayer();
     ofPtr<ofxDepthImageSequence> getDepthSequence();
     ofPtr<ofxRGBDVideoDepthSequence> getVideoDepthAligment();
@@ -63,6 +65,7 @@ class ofxRGBDPlayer {
     void useLowResVideo();
     
 	bool updateVideoPlayer;
+	
   protected:
     bool loaded;
     bool frameIsNew;
@@ -70,6 +73,7 @@ class ofxRGBDPlayer {
     ofVec2f shift;
     ofVec2f scale;
     int lastFrame;
+	
 	ofxRGBDScene scene;
     ofPtr<ofVideoPlayer> player;
     ofPtr<ofxDepthImageSequence> depthSequence;

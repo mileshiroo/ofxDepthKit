@@ -17,7 +17,7 @@ void ofxCvCheckerboardPreview::setup(int squaresWide, int squaresTall, float squ
 	squarePixelSize = 11;
 	calib.setPatternSize(squaresWide, squaresTall);
 	calib.setSquareSize(squareSize);
-	//calib.setSubpixelSize(squareSize);
+	calib.setSubpixelSize(4);
 	boardLastFoundTime = 0;
 	
 	startThread(true, false);

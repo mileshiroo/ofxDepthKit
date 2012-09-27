@@ -85,7 +85,9 @@ class ofxRGBDRenderer {
 	
 	Calibration& getRGBCalibration();
 	Calibration& getDepthCalibration();
-	    
+	ofMatrix4x4& getDepthToRGBTransform();
+	ofMatrix4x4& getRGBMatrix();
+	
   protected:	
 	int simplify;
 

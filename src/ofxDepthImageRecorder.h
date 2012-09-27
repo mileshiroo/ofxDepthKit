@@ -11,6 +11,7 @@
 #include "ofMain.h"
 #include "ofxDepthImageCompressor.h"
 #include "ofxRGBDScene.h"
+#include "ofxMSATimer.h"
 
 typedef struct {
 	unsigned short* pixels;
@@ -19,19 +20,11 @@ typedef struct {
 	int timestamp;
 } QueuedFrame;
 
-/*
-typedef struct {
-    string path;
-	int numFrames;
-    int framesConverted;
-} Take;
-*/
 
 //thread classes for callbacks
 class ofxDepthImageRecorder;
 class ofxRGBDRecorderThread : public ofThread {
 public:
-    bool shutdown;
 	ofxDepthImageRecorder* delegate;
 	ofxRGBDRecorderThread(ofxDepthImageRecorder* d) : delegate(d){}	
 	void threadedFunction();
@@ -39,7 +32,6 @@ public:
 
 class ofxRGBDEncoderThread : public ofThread {
 public:
-    bool shutdown;
 	ofxDepthImageRecorder* delegate;
 	ofxRGBDEncoderThread(ofxDepthImageRecorder* d) : delegate(d){}
 	void threadedFunction();	
@@ -64,10 +56,10 @@ class ofxDepthImageRecorder {
 	int numFramesWaitingCompession();
 	int numDirectoriesWaitingCompression();
 	
-    ofxDepthImageCompressor& compressorRef();
+    ofxDepthImageCompressor& getCompressor();
 	void shutdown();
 	
-	int recordingStartTime; //in millis -- potentially should make this more accurate
+	unsigned long recordingStartTime; //in millis -- potentially should make this more accurate
 	
 	void encoderThreadCallback();
 	void recorderThreadCallback();
@@ -101,6 +93,7 @@ class ofxDepthImageRecorder {
 	string targetFilePrefix;
 	int currentFrame;
 	
+	ofxMSATimer msaTimer;
 	queue<QueuedFrame> saveQueue;
 	//queue<string> encodeDirectories;
     //queue<Take*> encodeDirectories;

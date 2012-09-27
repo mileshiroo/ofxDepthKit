@@ -33,9 +33,9 @@ class ofxDepthImageSequence {
     
     int frameForTime(long timeInMillis);
     
-	void selectFrame(int frame);
-	void selectTimeInSeconds(float timeInSeconds);
-	void selectTimeInMillis(long timeInMillis);
+	void setFrame(int frame);
+	void setTimeInSeconds(float timeInSeconds);
+	void setTimeInMilliseconds(long timeInMillis);
 	
     long getDurationInMillis();
     float getDurationInSeconds();
@@ -56,10 +56,8 @@ class ofxDepthImageSequence {
     string sequenceDirectory;
     
     vector<DepthImage> images;
-    int selectedFrame;
     ofShortPixels pixels;
-    int currentFrame;
-    
-    void loadFrame(int frame);
+    int currentPixelsFrame; //represents what's loaded in pixels currently
+	int currentFrame; //represents the latest selection
     long durationInMillis;
 };

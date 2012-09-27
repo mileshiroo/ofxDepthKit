@@ -23,7 +23,7 @@ class ofxTLVideoDepthAlignmentScrubber : public ofxTLTrack {
 	
 	void draw();
 	
-	virtual void mousePressed(ofMouseEventArgs& args, long millis);
+	virtual bool mousePressed(ofMouseEventArgs& args, long millis);
 	virtual void mouseMoved(ofMouseEventArgs& args, long millis);
 	virtual void mouseDragged(ofMouseEventArgs& args, long millis);
 	virtual void mouseReleased(ofMouseEventArgs& args, long millis);

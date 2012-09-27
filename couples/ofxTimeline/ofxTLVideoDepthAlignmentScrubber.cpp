@@ -33,16 +33,16 @@ void ofxTLVideoDepthAlignmentScrubber::draw(){
 	ofPushStyle();
 	vector<VideoDepthPair>& alignedFrames = getPairs();
 	for(int i = 0; i < alignedFrames.size(); i++){
-		int videoMillis;
-		if(depthSequence->doFramesHaveTimestamps()){
-            float videoPercent = alignedFrames[i].videoMillis / (videoSequence->getPlayer()->getDuration()*1000.0);
-			videoMillis = videoPercent * videoSequence->getPlayer()->getTotalNumFrames();
-		}
-		else{
-			videoMillis = alignedFrames[i].videoMillis;
-		}
-        
-		int screenX = screenXForIndex( videoMillis );
+//		long vid;
+//		if(depthSequence->doFramesHaveTimestamps()){
+//			float videoPercent = alignedFrames[i].videoMillis / (videoSequence->getPlayer()->getDuration()*1000.0);
+//			videoFrame = videoPercent * videoSequence->getPlayer()->getTotalNumFrames();
+//		}
+//		else{
+//			videoFrame = alignedFrames[i].videoMillis;
+//		}
+//        
+		int screenX = millisToScreenX( alignedFrames[i].videoMillis );
 		if(i == selectedPairIndex){
 			ofSetColor(timeline->getColors().textColor);
 		}
@@ -52,8 +52,8 @@ void ofxTLVideoDepthAlignmentScrubber::draw(){
 		
 		ofLine(screenX, bounds.y, 
                screenX, bounds.y+bounds.height);
-		ofDrawBitmapString("video: " + ofToString(alignedFrames[i].videoMillis), ofPoint(screenX+10, bounds.y+15));
-		ofDrawBitmapString("depth: " + ofToString(alignedFrames[i].depthMillis), ofPoint(screenX+10, bounds.y+35));
+		ofDrawBitmapString("video: " + ofToString(ofxTimecode::timecodeForMillis(alignedFrames[i].videoMillis)), ofPoint(screenX+10, bounds.y+15));
+		ofDrawBitmapString("depth: " + ofToString(ofxTimecode::timecodeForMillis(alignedFrames[i].depthMillis)), ofPoint(screenX+10, bounds.y+35));
 	}
 	
 	ofSetColor(0, 125, 255);
@@ -79,24 +79,34 @@ void ofxTLVideoDepthAlignmentScrubber::keyPressed(ofKeyEventArgs& args){
 	}
 }
 
-void ofxTLVideoDepthAlignmentScrubber::mousePressed(ofMouseEventArgs& args, long millis){
+bool ofxTLVideoDepthAlignmentScrubber::mousePressed(ofMouseEventArgs& args, long millis){
+	cout << "mouse pressed in depth align. active? " << isActive() << endl;
+	if(!isActive()){
+		return false;
+	}
 	vector<VideoDepthPair>& alignedFrames = getPairs();
 	for(int i = 0; i < alignedFrames.size(); i++){
-		int videoMillis;
-		if(depthSequence->doFramesHaveTimestamps()){
-			videoMillis = videoSequence->getPlayer()->getTotalNumFrames() * alignedFrames[i].videoMillis / (videoSequence->getPlayer()->getDuration()*1000.0);
-		}
-		else{
-			videoMillis = alignedFrames[i].videoMillis;
-		}
-		int screenX = screenXForIndex( videoMillis );
+
+//		long videoMillis;
+//		if(depthSequence->doFramesHaveTimestamps()){
+////			videoMillis = videoSequence->getPlayer()->getTotalNumFrames() * alignedFrames[i].videoMillis / (videoSequence->getPlayer()->getDuration()*1000.0);
+//            float videoPercent = alignedFrames[i].videoMillis / (videoSequence->getPlayer()->getDuration()*1000.0);
+//			videoMillis = videoPercent * videoSequence->getPlayer()->getTotalNumFrames();			
+//		}
+//		else{
+//			videoMillis = alignedFrames[i].videoMillis;
+//		}
+		int screenX = millisToScreenX( alignedFrames[i].videoMillis );
+		cout << "clicked on x " << screenX << " for vidoe millis " << alignedFrames[i].videoMillis << " mouse x is " << args.x << endl;
 		if(abs(args.x - screenX) < 5){
+			cout << " selecting pair " << endl;
 			selectedPairIndex = i;
-			return;;
+			return false;
 		}
 	}
 	
 	selectedPairIndex = -1;
+	return false;
 }
 
 void ofxTLVideoDepthAlignmentScrubber::mouseMoved(ofMouseEventArgs& args, long millis){

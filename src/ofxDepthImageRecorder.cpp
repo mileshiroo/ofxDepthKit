@@ -12,22 +12,18 @@
 
 #pragma mark Thread Implementation
 void ofxRGBDEncoderThread::threadedFunction(){
-    shutdown = false;
 	while(isThreadRunning()){
 		delegate->encoderThreadCallback();
-        ofSleepMillis(2);
+        ofSleepMillis(1);
 	}
-    shutdown = true;
 }
 
 void ofxRGBDRecorderThread::threadedFunction(){
-    shutdown = false;
 	while(isThreadRunning()){
 		delegate->recorderThreadCallback();
-        ofSleepMillis(2);
+        ofSleepMillis(1);
 
 	}
-    shutdown = true;
 }
 
 #pragma mark Main Implementation
@@ -206,13 +202,15 @@ void ofxDepthImageRecorder::updateTakes(){
 	encoderThread.unlock();		
 }
 
-ofxDepthImageCompressor& ofxDepthImageRecorder::compressorRef(){
+ofxDepthImageCompressor& ofxDepthImageRecorder::getCompressor(){
     return compressor;
 }
 
 void ofxDepthImageRecorder::shutdown(){
-	recorderThread.stopThread(true);
-	encoderThread.stopThread(true);
+	recorderThread.waitForThread(true);
+	encoderThread.waitForThread(true);
+//	recorderThread.stopThread(true);
+//	encoderThread.stopThread(true);
 }
 											  
 void ofxDepthImageRecorder::recorderThreadCallback(){
@@ -234,14 +232,13 @@ void ofxDepthImageRecorder::recorderThreadCallback(){
 			delete frame.pixels;
 		}
 		else {
-			//if the save fils push it back on tehs tack
+			//if the save fils push it back on the stack
 			recorderThread.lock();
 			saveQueue.push(frame);
 			recorderThread.unlock();
 			ofLogError("ofxDepthImageRecorder -- Save Failed! readding to queue");
 		}
 	}
-
 }
 
 void ofxDepthImageRecorder::encoderThreadCallback(){

@@ -108,9 +108,9 @@ void ofxRGBDCaptureGui::setup(){
 	alignment.setupGui(0, btnheight*4+frameheight, ofGetWidth());
 	
 	timeline.setup();
-    timeline.getColors().loadColors("defaultColors.xml");
+    timeline.getColors().load("GUI/defaultColors.xml");
 	timeline.setOffset(ofVec2f(0,btnRecordBtn->y+btnRecordBtn->height));
-	timeline.addElement("depth sequence", &depthSequence);
+	timeline.addTrack("depth sequence", &depthSequence);
 	timeline.setWidth(ofGetWidth());
 	timeline.setLoopType(OF_LOOP_NORMAL);
 	
@@ -136,7 +136,6 @@ void ofxRGBDCaptureGui::setup(){
     ofRegisterMouseEvents(this);
     ofRegisterKeyEvents(this);    
     ofAddListener(ofEvents().windowResized, this, &ofxRGBDCaptureGui::windowResized);
-    //ofAddListener(ofEvents().exit, this, &ofxRGBDCaptureGui::exit);
     ofAddListener(ofEvents().exit, this, &ofxRGBDCaptureGui::exit);
     ofAddListener(ofEvents().update, this, &ofxRGBDCaptureGui::update);
     ofAddListener(ofEvents().draw, this, &ofxRGBDCaptureGui::draw);
@@ -193,7 +192,7 @@ void ofxRGBDCaptureGui::update(ofEventArgs& args){
 void ofxRGBDCaptureGui::draw(ofEventArgs& args){
     
 	if(fullscreenPoints && currentTab == TabPlayback){
-		drawPointcloud(depthSequence.currentDepthRaw, true);
+		drawPointcloud(depthSequence.getDepthImageSequence()->getPixels(), true);
 		return;
 	}
     
@@ -236,10 +235,12 @@ void ofxRGBDCaptureGui::draw(ofEventArgs& args){
 	}
 	else if(currentTab == TabPlayback) {
         if(currentRenderMode == RenderPointCloud){
-            drawPointcloud(depthSequence.currentDepthRaw, false);            
+            drawPointcloud(depthSequence.getDepthImageSequence()->getPixels(), false);
         }
         else {
-            updateDepthImage(depthSequence.currentDepthRaw);
+			if(depthSequence.getDepthImageSequence() != NULL && depthSequence.getDepthImageSequence()->isLoaded()){
+	            updateDepthImage(depthSequence.getDepthImageSequence()->getPixels());
+			}
             depthImage.draw(previewRect);
         }
     
@@ -568,7 +569,8 @@ void ofxRGBDCaptureGui::loadDefaultDirectory(){
 
 void ofxRGBDCaptureGui::loadSequenceForPlayback( int index ){
     depthSequence.loadSequence( recorder.getScenes()[index]->depthFolder );
-	timeline.setDurationInFrames(depthSequence.videoThumbs.size());
+	//timeline.setDurationInFrames(depthSequence.videoThumbs.size());
+	timeline.setDurationInSeconds(depthSequence.getDepthImageSequence()->getDurationInSeconds());
 }
 
 void ofxRGBDCaptureGui::toggleRecord(){
@@ -579,13 +581,19 @@ void ofxRGBDCaptureGui::toggleRecord(){
 //--------------------------------------------------------------
 void ofxRGBDCaptureGui::captureCalibrationImage(){
 
-    char filename[1024];
-    sprintf(filename, "%s/_calibration/depthCalibration/calibration_image_%02d_%02d_%02d_%02d_%02d.png", workingDirectory.c_str(), ofGetMonth(), ofGetDay(), ofGetHours(), ofGetMinutes(), ofGetSeconds());
-	cout << "capture image file name " << filename << endl;
-    ofSaveImage( depthImageProvider->getRawIRImage(), filename);
-    alignment.addDepthCalibrationImage(filename);
-    alignment.generateAlignment();
-    alignment.saveState();
+    char filenamePrefix[1024];
+	
+    sprintf(filenamePrefix, "%s/_calibration/depthCalibration/calibration_image_%02d_%02d_%02d_%02d_%02d", workingDirectory.c_str(), ofGetMonth(), ofGetDay(), ofGetHours(), ofGetMinutes(), ofGetSeconds());
+//	cout << "capture image file name " << filename << endl;
+//    ofSaveImage( depthImageProvider->getRawIRImage(), filename);
+	string checkerboardFileName = string(filenamePrefix)+"_checkers.png";
+	string depthFileName = string(filenamePrefix)+"_depth.png";
+	depthImageProvider->getRawIRImage().saveImage(checkerboardFileName);
+	recorder.getCompressor().saveToCompressedPng(depthFileName, depthImageProvider->getRawDepth().getPixels() );
+	
+//    alignment.addDepthCalibrationImage(checkerboardFileName);
+//    alignment.generateAlignment();
+//    alignment.saveState();
 
 }
 
@@ -726,7 +734,7 @@ void ofxRGBDCaptureGui::updateDepthImage(ofShortPixels& pixels){
         }
     }
     else{
-        recorder.compressorRef().convertTo8BitImage(pixels, depthImage);
+        recorder.getCompressor().convertTo8BitImage(pixels, depthImage);
     }
     
     depthImage.update();

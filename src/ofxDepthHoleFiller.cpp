@@ -11,16 +11,17 @@ ofxDepthHoleFiller::ofxDepthHoleFiller(){
 	iterations = 1;
 }
 
-void ofxDepthHoleFiller::setIterations(int newIterations){
-	iterations = ofClamp(newIterations, 1, 20);
+int ofxDepthHoleFiller::setIterations(int newIterations){
+	return iterations = ofClamp(newIterations, 1, 20);
 }
 
-void ofxDepthHoleFiller::setKernelSize(int newKernelSize){
+int ofxDepthHoleFiller::setKernelSize(int newKernelSize){
 	kernelSize = ofClamp(newKernelSize, 1, 20);	
     
 	if(kernelSize % 2 == 0){
 		kernelSize++;
 	}
+	return kernelSize;
 }
 
 int ofxDepthHoleFiller::getIterations(){

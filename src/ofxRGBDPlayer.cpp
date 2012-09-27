@@ -63,11 +63,18 @@ bool ofxRGBDPlayer::setup(ofxRGBDScene newScene, bool forceHiRes){
         shift = ofVec2f(0,0);
         scale = ofVec2f(1,1);
     }
-    
-//    player->play();
-//    player->setSpeed(0);
-    
+        
     return (loaded = true);
+}
+
+void ofxRGBDPlayer::saveShiftValues(){
+	ofxXmlSettings xyshift;
+	xyshift.setValue("xshift", shift.x);
+	xyshift.setValue("yshift", shift.y);
+	
+	xyshift.setValue("xscale", scale.x);
+	xyshift.setValue("yscale", scale.y);
+	xyshift.saveFile(scene.xyshiftFile);
 }
 
 bool ofxRGBDPlayer::hasHighresVideo(){
@@ -123,8 +130,9 @@ void ofxRGBDPlayer::update(){
 	if(thisFrame != lastFrame){
 		if(videoDepthAligment->ready()){
 	        long videoTime = player->getPosition()*player->getDuration()*1000;
-    	    depthSequence->selectTimeInMillis(videoDepthAligment->getDepthMillisForVideoMillis(videoTime));
-        	depthSequence->updatePixels();
+//			cout << "video time is " << videoTime << " depth time is " << videoDepthAligment->getDepthMillisForVideoMillis(videoTime) << endl;
+    	    depthSequence->setTimeInMilliseconds(videoDepthAligment->getDepthMillisForVideoMillis(videoTime));
+//			depthSequence->updatePixels();
 		}
         frameIsNew = true;
 		lastFrame = thisFrame;

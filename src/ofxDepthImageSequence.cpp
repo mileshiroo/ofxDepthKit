@@ -11,6 +11,8 @@
 ofxDepthImageSequence::ofxDepthImageSequence(){
     sequenceLoaded = false;
     framesHaveTimestamps = false;
+	currentFrame = 0;
+	currentPixelsFrame = 0;
 }
 
 ofxDepthImageSequence::~ofxDepthImageSequence(){
@@ -66,8 +68,8 @@ bool ofxDepthImageSequence::loadSequence(string newSequenceDirectory){
 
 		images.push_back( img );
 	}
-    
-    currentFrame = 0;
+	
+	//currentFrame = -1;
     if(framesHaveTimestamps){
 	    durationInMillis = images[images.size()-1].timestamp;
     }
@@ -75,7 +77,8 @@ bool ofxDepthImageSequence::loadSequence(string newSequenceDirectory){
 	ofLogVerbose("sequence is loaded " + ofToString( images.size() ));
     sequenceDirectory = newSequenceDirectory;
     sequenceLoaded = true;
-    
+	setFrame(0);
+    updatePixels();
 	return true;
 }
 
@@ -108,11 +111,7 @@ long ofxDepthImageSequence::getCurrentMilliseconds(){
 }
 
 float ofxDepthImageSequence::getCurrentSeconds(){
-    if(!sequenceLoaded){
-        ofLogError("ofxDepthImageSequence::getCurrentSeconds() -- sequence not loaded");
-        return 0;
-    }
-    return images[currentFrame].timestamp/1000.;
+	return getCurrentMilliseconds()/1000.0;
 }
 
 int ofxDepthImageSequence::frameForTime(long timeInMillis){
@@ -126,6 +125,7 @@ int ofxDepthImageSequence::frameForTime(long timeInMillis){
 		return 0;
 	}
 	
+	//TODO: switch to std::lower_bound since data is sorted
 	for(int i = 1; i < images.size(); i++){
 		if(images[i].timestamp > timeInMillis){
 			return i-1;
@@ -135,7 +135,7 @@ int ofxDepthImageSequence::frameForTime(long timeInMillis){
 	return images.size()-1;   
 }
 
-void ofxDepthImageSequence::selectFrame(int frame){
+void ofxDepthImageSequence::setFrame(int frame){
     if(!sequenceLoaded){
         ofLogError("ofxDepthImageSequence::selectFrame() -- sequence not loaded");
         return;
@@ -147,23 +147,14 @@ void ofxDepthImageSequence::selectFrame(int frame){
     }
     
     currentFrame = frame;
+	updatePixels();
 }
 
-void ofxDepthImageSequence::selectTimeInSeconds(float timeInSeconds){
-    if(!framesHaveTimestamps){
-        ofLogError("ofxDepthImageSequence::selectTime() -- no timestamps!");
-        return;        
-    }
-    
-    if(timeInSeconds < 0 || timeInSeconds > getDurationInSeconds()){
-        ofLogError("ofxDepthImageSequence::selectTime() -- time out of range!");
-        return;
-    }
-    
-    selectFrame(frameForTime(long(timeInSeconds*1000)));
+void ofxDepthImageSequence::setTimeInSeconds(float timeInSeconds){
+	setTimeInMilliseconds(timeInSeconds*1000);
 }
 
-void ofxDepthImageSequence::selectTimeInMillis(long timeInMillis){
+void ofxDepthImageSequence::setTimeInMilliseconds(long timeInMillis){
     
     if(!framesHaveTimestamps){
         ofLogError("ofxDepthImageSequence::selectTime() -- no timestamps!");
@@ -174,19 +165,21 @@ void ofxDepthImageSequence::selectTimeInMillis(long timeInMillis){
         return;
     }    
     
-    selectFrame(frameForTime(timeInMillis));
+    setFrame(frameForTime(timeInMillis));
 }
 
 void ofxDepthImageSequence::updatePixels(){
     if(!sequenceLoaded){
         ofLogError("ofxDepthImageSequence::updatePixels() -- sequence not loaded");
     }
-//    cout << "updating pixels to " << currentFrame << endl;
-    compressor.readCompressedPng(images[currentFrame].path, pixels);
+	
+	if(currentFrame != currentPixelsFrame || !pixels.isAllocated()){
+    	compressor.readCompressedPng(images[currentFrame].path, pixels);
+		currentPixelsFrame = currentFrame;
+	}
 }
 
 ofShortPixels& ofxDepthImageSequence::getPixels(){
-    updatePixels();
     return pixels;
 }
 

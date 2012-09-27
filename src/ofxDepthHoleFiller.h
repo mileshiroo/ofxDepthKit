@@ -23,10 +23,10 @@ class ofxDepthHoleFiller {
 	
 	void close(ofShortPixels& depthPixels);
 
-	void setIterations(int iterations);
-	void setKernelSize(int kernelSize);
-	int getIterations();
+	int setKernelSize(int kernelSize);
+	int setIterations(int iterations);
 	int getKernelSize();
+	int getIterations();
 	
 	bool enable;
   protected:
