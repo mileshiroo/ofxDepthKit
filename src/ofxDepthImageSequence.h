@@ -10,13 +10,18 @@
 #include "ofMain.h"
 #include "ofxDepthImageCompressor.h"
 
-typedef struct {
+class DepthImage {
+  public:
+//	DepthImage(){ pixelLock = new ofMutex(); };
+//	~DepthImage(){ delete pixelLock; };
     string path;
     long timestamp;
     int frameNumber;
-} DepthImage;
+	ofShortPixels pixels;
+//	ofMutex* pixelLock;
+};
 
-class ofxDepthImageSequence {
+class ofxDepthImageSequence : public ofThread {
   public:
     ofxDepthImageSequence();
     ~ofxDepthImageSequence();
@@ -60,4 +65,7 @@ class ofxDepthImageSequence {
     int currentPixelsFrame; //represents what's loaded in pixels currently
 	int currentFrame; //represents the latest selection
     long durationInMillis;
+	
+	
+	void threadedFunction();
 };

@@ -144,6 +144,9 @@ void ofxRGBDCaptureGui::setup(){
     depthImage.allocate(640, 480, OF_IMAGE_COLOR);
     
     recorder.setup();
+	
+	recordOn.loadSound("sound/record_start.wav");
+	recordOff.loadSound("sound/record_stop.wav");
 }
 
 void ofxRGBDCaptureGui::setImageProvider(ofxDepthImageProvider* imageProvider){
@@ -575,6 +578,14 @@ void ofxRGBDCaptureGui::loadSequenceForPlayback( int index ){
 
 void ofxRGBDCaptureGui::toggleRecord(){
 	recorder.toggleRecord();
+	if(recorder.isRecording()){
+		recordOn.setPosition(0);
+		recordOn.play();
+	}
+	else{
+		recordOff.setPosition(0);
+		recordOff.play();
+	}
 	updateSceneButtons();
 }
 

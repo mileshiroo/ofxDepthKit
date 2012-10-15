@@ -151,19 +151,20 @@ bool ofxRGBDPlayer::isFrameNew(){
 
 void ofxRGBDPlayer::play(){
     if(!loaded) return;
-    player->setSpeed(1.0);
+//    player->setSpeed(1.0);
+	player->play();
 }
 
 void ofxRGBDPlayer::stop(){
     if(!loaded) return;
-    player->setSpeed(0.0);
+//    player->setSpeed(0.0);
+	player->stop();
 }
                            
 void ofxRGBDPlayer::togglePlay(){
     
     if(!loaded) return;
-    
-    if(player->getSpeed() == 0.0){
+    if(!player->isPlaying()){
         play();
     }
     else{

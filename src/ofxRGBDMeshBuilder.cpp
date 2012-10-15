@@ -15,6 +15,11 @@ ofxRGBDMeshBuilder::ofxRGBDMeshBuilder(){
     addColors = false;
 	depthOnly = false;
 	
+	topClip = 0.0;
+	bottomClip = 1.0;
+	leftClip = 0.0;
+	rightClip = 1.0;
+
     undistortDepthImage = true;
     calibrationSetup = false;
     calculateTextureCoordinates = true;
@@ -23,9 +28,12 @@ ofxRGBDMeshBuilder::ofxRGBDMeshBuilder(){
     simplify = -1;
     textureScale = ofVec2f(1.0, 1.0);
 	mirror = false;
+	scale = ofVec2f(1,1);
 	
 	currentTexture = NULL;
 	currentDepthPixels = NULL;
+
+	cacheValidVertices = false;
 	
 	pivot = ofVec3f(0,0,0);
 	worldPosition = ofVec3f(0,0,0);
@@ -182,40 +190,71 @@ void ofxRGBDMeshBuilder::update(ofShortPixels& depthImage){
     
 	
     //feed the zed values into the mesh
-    int vertexIndex = 0;    
+    int vertexIndex = 0;
     hasTriangles = false;
+	validVertIndices.clear();
     unsigned short* ptr = depthImage.getPixels();    
     for(int y = 0; y < imageSize.height; y += simplify) {
         for(int x = 0; x < imageSize.width; x += simplify) {
-            mesh.setVertex(vertexIndex++, getWorldPoint(x,y,ptr[y*imageSize.width+x]));
+			
+			ofVec3f point;
+			unsigned short z = ptr[y*imageSize.width+x];
+			if(x >= imageSize.width*leftClip &&
+			   x <= imageSize.width*rightClip &&
+			   y >= imageSize.height*topClip &&
+			   y <= imageSize.height*bottomClip &&
+			   z >= nearClip &&
+			   z <= farClip)
+			{
+				point = getWorldPoint(x,y,z);
+				if(cacheValidVertices){
+					validVertIndices.push_back(vertexIndex);
+				}
+				
+			}
+			else {
+				point = ofVec3f(0,0,0);
+			}
+			mesh.setVertex(vertexIndex++, point);
+
         }
     }
 
     mesh.clearIndices();    
     for(int i = 0; i < baseIndeces.size(); i+=3){
         ofVec3f& a = mesh.getVertices()[baseIndeces[i]];
-        if(a.z > farClip || a.z < nearClip){
-            continue;
-        }        
-        
+		if(a.z == 0){
+			continue;
+		}
+//        if(a.z > farClip || a.z < nearClip){
+//            continue;
+//        }        
+//        
         ofVec3f& b = mesh.getVertices()[baseIndeces[i+1]];
-        if(b.z > farClip || b.z < nearClip){
-            continue;
-        }
-        
+		if(b.z == 0){
+			continue;
+		}
+//        if(b.z > farClip || b.z < nearClip){
+//            continue;
+//        }
+//        
         ofVec3f& c = mesh.getVertices()[baseIndeces[i+2]];
-        if(c.z > farClip || c.z < nearClip){
-            continue;
-        }
-
+		if(c.z == 0){
+			continue;
+		}
+//        if(c.z > farClip || c.z < nearClip){
+//            continue;
+//        }
+//
         if(fabs(a.z - b.z) > edgeSnip || fabs(a.z - c.z) > edgeSnip){
             continue;
         }
-        
+
         mesh.addTriangle(baseIndeces[i], baseIndeces[i+1], baseIndeces[i+2]);
         hasTriangles = true;
     }
-
+	
+	//cout << "has triangles? " << mesh.getNumIndices() << endl;
 	if(calculateTextureCoordinates && !depthOnly){
         generateTextureCoordinates();
 	}
@@ -258,8 +297,9 @@ void ofxRGBDMeshBuilder::generateTextureCoordinates(){
 		texCd *= scale;
         texCd += shift;
         texCd *= ofVec2f(rgbImage.width,rgbImage.height) * textureScale;
-        mesh.setTexCoord(i, texCd);			
+        mesh.setTexCoord(i, texCd);
 	}
+
 }
 
 ofVec3f ofxRGBDMeshBuilder::getWorldPoint(float x, float y, ofShortPixels& pixels){

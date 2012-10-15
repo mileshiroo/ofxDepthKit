@@ -50,6 +50,11 @@ class ofxRGBDMeshBuilder {
     
     float farClip;
 	float nearClip;
+	float bottomClip;
+	float topClip;
+	float rightClip;
+	float leftClip;
+	
     float edgeSnip;
     
 	bool mirror;
@@ -65,7 +70,10 @@ class ofxRGBDMeshBuilder {
     ofVec3f getWorldPoint(float x, float y, unsigned short z);
     ofVec3f getWorldPoint(float x, float y, ofShortPixels& pixels);
 
-
+	bool cacheValidVertices;
+	vector<ofIndexType> validVertIndices;
+	ofMesh getReducedMesh();
+	
   private:
     ofMesh mesh;
 	

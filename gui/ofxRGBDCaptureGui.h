@@ -134,8 +134,9 @@ class ofxRGBDCaptureGui : public ofxMSAInteractiveObjectDelegate {
 	ofImage calibrationImage;
 	//unsigned short* frame;
 
-  protected:
-    
+    ofSoundPlayer recordOn;
+	ofSoundPlayer recordOff;
+	
     ofImage currentDepthImage;
     void createRainbowPallet();
 	unsigned char LUTR[256];
