@@ -79,10 +79,12 @@ bool testApp::loadScene(string takeDirectory){
         player.update();
         
         meshBuilder.setXYShift(player.getXYShift());
+		meshBuilder.setTexture(*player.getVideoPlayer());
+		meshBuilder.setDepthPixels(player.getDepthPixels());
         //this will compensate if we are using an offline video that is of a different scale
-        meshBuilder.setTextureScaleForImage(*player.getVideoPlayer());
+//        meshBuilder.setTextureScaleForImage(*player.getVideoPlayer());
         //update the first mesh
-        meshBuilder.updateMesh(player.getDepthPixels());
+        meshBuilder.update(player.getDepthPixels());
         return true;
     }
     return false;
@@ -99,13 +101,13 @@ void testApp::update(){
         meshBuilder.setXYShift(ofVec2f(xshift,yshift));
         meshBuilder.setSimplification(simplify);
         simplify = meshBuilder.getSimplification();
-        meshBuilder.updateMesh(player.getDepthPixels());
+        meshBuilder.update();
     }
     
     //update the mesh if there is a new depth frame in the player
     player.update();
     if(player.isFrameNew()){
-        meshBuilder.updateMesh(player.getDepthPixels());
+        meshBuilder.update();
     }
 }
 
@@ -113,11 +115,14 @@ void testApp::update(){
 void testApp::draw(){
     if(player.isLoaded()){
         cam.begin();
+		ofSetColor(255);
         glEnable(GL_DEPTH_TEST);
-        meshBuilder.draw(*player.getVideoPlayer());
+        meshBuilder.draw();
         glDisable(GL_DEPTH_TEST);
         cam.end();
+	
     }
+
     gui.draw();
 }
 
