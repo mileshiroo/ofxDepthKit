@@ -34,7 +34,8 @@ class ofxRGBDMeshBuilder {
 	ofVec3f worldPosition;
 	ofVec3f worldRotation;
 	ofVec3f pivot;
-	
+	ofVec3f center;
+	void updateCenter();
 	void setPivotToMeshCenter();
 	
     void setSimplification(int simplifyLevel);
@@ -73,6 +74,7 @@ class ofxRGBDMeshBuilder {
 	bool cacheValidVertices;
 	vector<ofIndexType> validVertIndices;
 	ofMesh getReducedMesh();
+	ofBaseHasTexture* currentTexture;
 	
   private:
     ofMesh mesh;
@@ -80,7 +82,7 @@ class ofxRGBDMeshBuilder {
 //	Calibration depthCalibration, rgbCalibration;
     Mat rotationDepthToRGB, translationDepthToRGB;
     
-	ofBaseHasTexture* currentTexture;
+	//ofBaseHasTexture* currentTexture;
 	ofShortPixels* currentDepthPixels;
 	
     Point2d principalPoint;

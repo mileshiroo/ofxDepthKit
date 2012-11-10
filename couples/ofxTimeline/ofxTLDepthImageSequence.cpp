@@ -47,6 +47,7 @@ void ofxTLDepthImageSequence::update(ofEventArgs& args){
 
 void ofxTLDepthImageSequence::draw(){
 
+	
     if(!isLoaded()){
 		ofPushStyle();
         ofSetColor(timeline->getColors().disabledColor);
@@ -54,6 +55,10 @@ void ofxTLDepthImageSequence::draw(){
         ofPopStyle();
         return;
     }
+	
+	//clip hanging frames off the sides
+	glEnable(GL_SCISSOR_TEST);
+	glScissor(bounds.x, 0, bounds.width, ofGetHeight());
 	
 	if(thumbsEnabled && getDrawRect().height > 10){
 		ofPushStyle();
@@ -73,7 +78,6 @@ void ofxTLDepthImageSequence::draw(){
 				ofSetColor(timeline->getColors().textColor);
 				timeline->getFont().drawString(ofToString(videoThumbs[i].framenum), videoThumbs[i].displayRect.x+5, videoThumbs[i].displayRect.y+15);
 				ofRect(videoThumbs[i].displayRect);
-				
 			}
 			else{
 				ofPushStyle();
@@ -99,6 +103,8 @@ void ofxTLDepthImageSequence::draw(){
 	timeline->getFont().drawString(timecodeString, selectedFrameX + 10,  bounds.y+timeline->getFont().getLineHeight()+3);
 	timeline->getFont().drawString(frameString, selectedFrameX + 10, bounds.y+(timeline->getFont().getLineHeight()+3)*2);
 
+	glDisable(GL_SCISSOR_TEST);
+	
 	ofPopStyle();
 }
 
@@ -214,7 +220,7 @@ void ofxTLDepthImageSequence::selectTimeInSeconds(float timeInSeconds){
 	selectTimeInMillis(timeInSeconds*1000);
 }
 
-long ofxTLDepthImageSequence::getSelectedTimeInMillis(){
+unsigned long ofxTLDepthImageSequence::getSelectedTimeInMillis(){
     if(!isLoaded()) return 0;
     return depthImageSequence->getCurrentMilliseconds();
 }
@@ -230,6 +236,11 @@ ofImage& ofxTLDepthImageSequence::getCurrentDepthImage(){
 		depthImageIsDirty = false;
 	}
 	return currentDepthImage;
+}
+
+unsigned long ofxTLDepthImageSequence::getDurationInMillis(){
+	if(!isLoaded()) return 0;
+	return depthImageSequence->getDurationInMillis();
 }
 
 bool ofxTLDepthImageSequence::loadSequence(){

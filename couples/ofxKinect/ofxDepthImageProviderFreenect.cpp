@@ -33,6 +33,10 @@ void ofxDepthImageProviderFreenect::update(){
 	}		
 }
 
+ofVec3f ofxDepthImageProviderFreenect::getWorldCoordinateAt(int x, int y){
+	return kinect.getWorldCoordinateAt(x, y);
+}
+
 int ofxDepthImageProviderFreenect::maxDepth(){
 	return 10000; //taken from looking into how ofxKinect calculates it's look up tables.
 }

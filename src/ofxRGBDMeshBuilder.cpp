@@ -219,7 +219,6 @@ void ofxRGBDMeshBuilder::update(ofShortPixels& depthImage){
 
         }
     }
-
     mesh.clearIndices();    
     for(int i = 0; i < baseIndeces.size(); i+=3){
         ofVec3f& a = mesh.getVertices()[baseIndeces[i]];
@@ -314,10 +313,8 @@ ofVec3f ofxRGBDMeshBuilder::getWorldPoint(float x, float y, unsigned short z){
 	return ofVec3f( (mirror ? 1 : -1) * (x - principalPoint.x) * z / fov.x, (y - principalPoint.y) * z / fov.y, z);	
 }
 
-
-void ofxRGBDMeshBuilder::setPivotToMeshCenter(){
-
-	ofVec3f center(0,0,0);
+void ofxRGBDMeshBuilder::updateCenter(){
+	center = ofVec3f(0,0,0);
 	int vertsAdded = 0;
 	for(int i = 0; i < mesh.getVertices().size(); i++){
 		if(mesh.getVertices()[i] != ofVec3f(0,0,0) && mesh.getVertices()[i].z < farClip){
@@ -325,9 +322,13 @@ void ofxRGBDMeshBuilder::setPivotToMeshCenter(){
 			vertsAdded++;
 		}
 	}
-	pivot = center / vertsAdded;
+	center /= vertsAdded;
+	center.y *= -1;
+}
 
-//	pivot = mesh.getCentroid();
+void ofxRGBDMeshBuilder::setPivotToMeshCenter(){
+	updateCenter();
+	pivot = center;
 }
 
 ofxDepthHoleFiller& ofxRGBDMeshBuilder::getHoleFiller(){

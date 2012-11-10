@@ -39,6 +39,8 @@ class ofxTLDepthImageSequence : public ofxTLImageTrack, public ofThread {
     ofPtr<ofxDepthImageSequence> getDepthImageSequence();
 	ofImage& getCurrentDepthImage();
 	
+
+	
 	bool isLoaded();
 	bool isFrameNew();
 
@@ -59,7 +61,8 @@ class ofxTLDepthImageSequence : public ofxTLImageTrack, public ofThread {
 	void selectTimeInMillis(long timeStampInMillis);
 	
 	//only works if doFramesHaveMillis is true
-	long getSelectedTimeInMillis();
+	unsigned long getSelectedTimeInMillis();
+	unsigned long getDurationInMillis();
 	
 	void toggleThumbs();
 	

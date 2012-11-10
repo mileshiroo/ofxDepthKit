@@ -42,6 +42,7 @@ bool ofxDepthImageSequence::loadSequence(string newSequenceDirectory){
 	}
 	
 	bool checkedForTimestamp = false;
+	unsigned long firstFrameTimeOffset = 0;
 	for(int i = 0; i < numFiles; i++){
         //backwards compat...
 		if(sequenceList.getName(i).find("poster") != string::npos){
@@ -58,7 +59,6 @@ bool ofxDepthImageSequence::loadSequence(string newSequenceDirectory){
 		
 		images.push_back( DepthImage() );
 		DepthImage& img = images[images.size()-1];
-		//t.setup(i, thumbDirectory);
 		img.path = sequenceList.getPath(i);
 		
 		if(framesHaveTimestamps){
@@ -66,6 +66,10 @@ bool ofxDepthImageSequence::loadSequence(string newSequenceDirectory){
 			for(int l = 0; l < split.size(); l++){
 				if(split[l] == "millis"){
 					img.timestamp = ofToInt(split[l+1]);
+					if(i == 0){
+						firstFrameTimeOffset = img.timestamp;
+					}
+					img.timestamp -= firstFrameTimeOffset;
 				}
 			}
 		}
@@ -97,6 +101,10 @@ long ofxDepthImageSequence::getDurationInMillis(){
 
 float ofxDepthImageSequence::getDurationInSeconds(){
     return durationInMillis / 1000.0;
+}
+
+int ofxDepthImageSequence::getTotalNumFrames(){
+	return images.size();
 }
 
 int ofxDepthImageSequence::getCurrentFrame(){
@@ -179,21 +187,8 @@ void ofxDepthImageSequence::updatePixels(){
     }
 	
 	if(currentFrame != currentPixelsFrame || !pixels.isAllocated()){
-//		bool cached = false;
-//		images[currentFrame].pixelLock->lock();
-//		if(images[currentFrame].pixels.isAllocated()){
-//			cached = true;
-//			//copy into pixels
-//			pixels = images[currentFrame].pixels;
-//		}
-//		images[currentFrame].pixelLock->unlock();
-//		if(!cached){
-//			cout << "not cached!!" << endl;
-	    	ofxDepthImageCompressor::readCompressedPng(images[currentFrame].path, pixels);
-//		}
-//		else{
-//			cout << "Cache hit!!" << endl;
-//		}
+
+    	ofxDepthImageCompressor::readCompressedPng(images[currentFrame].path, pixels);
 		currentPixelsFrame = currentFrame;
 	}
 }
@@ -222,31 +217,3 @@ bool ofxDepthImageSequence::doFramesHaveTimestamps(){
 	return framesHaveTimestamps;
 }
 
-void ofxDepthImageSequence::threadedFunction(){
-	while(isThreadRunning()){
-		//collect images to read
-		int currentFrameAtLoopStart = currentPixelsFrame;
-		for(int i = currentPixelsFrame; i < MIN(currentFrame+100, images.size()); i++){
-			if(currentFrameAtLoopStart != currentPixelsFrame){
-				break;
-			}
-			
-			ofShortPixels temp;
-			if(!images[i].pixels.isAllocated()){
-				ofxDepthImageCompressor::readCompressedPng(images[currentFrame].path, temp);
-//				images[currentFrame].pixelLock->lock();
-				images[i].pixels = temp;
-//				images[currentFrame].pixelLock->unlock();
-			}
-		}
-		
-//		for(int i = 0; i < currentPixelsFrame; i++){
-//			images[currentFrame].pixelLock->lock();
-//			if(images[i].pixels.isAllocated()){
-//				images[i].pixels.clear();
-//			}
-//			images[currentFrame].pixelLock->unlock();
-//			
-//		}
-	}
-}

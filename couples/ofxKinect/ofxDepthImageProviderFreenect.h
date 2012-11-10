@@ -18,6 +18,7 @@ class ofxDepthImageProviderFreenect : public ofxDepthImageProvider {
 	
 	void setup(); 
 	void update();
+	ofVec3f getWorldCoordinateAt(int x, int y);
 	int maxDepth();	
 	void close();
 	

@@ -12,16 +12,14 @@
 
 class DepthImage {
   public:
-//	DepthImage(){ pixelLock = new ofMutex(); };
-//	~DepthImage(){ delete pixelLock; };
     string path;
     long timestamp;
     int frameNumber;
 	ofShortPixels pixels;
-//	ofMutex* pixelLock;
+
 };
 
-class ofxDepthImageSequence : public ofThread {
+class ofxDepthImageSequence {
   public:
     ofxDepthImageSequence();
     ~ofxDepthImageSequence();
@@ -37,14 +35,15 @@ class ofxDepthImageSequence : public ofThread {
     float getCurrentSeconds();
     
     int frameForTime(long timeInMillis);
-    
+
 	void setFrame(int frame);
 	void setTimeInSeconds(float timeInSeconds);
 	void setTimeInMilliseconds(long timeInMillis);
 	
     long getDurationInMillis();
     float getDurationInSeconds();
-
+	int getTotalNumFrames();
+	
     void updatePixels();
     
     ofShortPixels& getPixels();
@@ -67,5 +66,4 @@ class ofxDepthImageSequence : public ofThread {
     long durationInMillis;
 	
 	
-	void threadedFunction();
 };
