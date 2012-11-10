@@ -31,9 +31,9 @@ void testApp::setup(){
     //set up a video timeline element so we can see the video frames
     timeline.addTrack("Video", &videoTrack);
     timeline.addTrack("Depth", &depthTrack);
-	timeline.addKeyframes("xshift", "xshift.xml", ofRange(-.15, .15));
-    timeline.addKeyframes("yshift", "yshift.xml", ofRange(-.15, .15));
-    timeline.addKeyframes("farclip", "farclip.xml", ofRange(500, 6000));
+	timeline.addCurves("xshift", "xshift.xml", ofRange(-.15, .15));
+    timeline.addCurves("yshift", "yshift.xml", ofRange(-.15, .15));
+    timeline.addCurves("farclip", "farclip.xml", ofRange(500, 6000));
     
     //set up the game camera
     cam.setup();
@@ -97,9 +97,9 @@ void testApp::update(){
     cam.applyRotation = cam.applyTranslation = !timeline.getDrawRect().inside(mouseX,mouseY);
     
     //apply the shift and clip parameters
-    renderer.xshift = timeline.getKeyframeValue("xshift");
-	renderer.yshift = timeline.getKeyframeValue("yshift");
-    renderer.farClip = timeline.getKeyframeValue("farclip");
+    renderer.xshift = timeline.getValue("xshift");
+	renderer.yshift = timeline.getValue("yshift");
+    renderer.farClip = timeline.getValue("farclip");
 
     player.update();
     if(player.isFrameNew()){

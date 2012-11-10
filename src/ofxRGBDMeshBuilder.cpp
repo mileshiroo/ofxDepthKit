@@ -266,21 +266,60 @@ ofMesh& ofxRGBDMeshBuilder::getMesh(){
 }
 
 void ofxRGBDMeshBuilder::generateTextureCoordinates(){
+    
+//    if(!mesh.hasTexCoords()){
+//        for (int y = 0; y < imageSize.height; y+=simplify){
+//            for (int x=0; x < imageSize.width; x+=simplify){
+//                mesh.addTexCoord(ofVec2f(0,0));
+//            }
+//        }        
+//    }
+    
+	generateTextureCoordinates(mesh.getVertices(), mesh.getTexCoords());
+	
+//    Mat pcMat = Mat(toCv(mesh));
+//    vector<cv::Point2f> imagePoints;    
+//    projectPoints(pcMat,
+//                  rotationDepthToRGB, translationDepthToRGB,
+//                  rgbCalibration.getDistortedIntrinsics().getCameraMatrix(),
+//                  rgbCalibration.getDistCoeffs(),
+//                  imagePoints);
+//    cv::Size rgbImage = rgbCalibration.getDistortedIntrinsics().getImageSize();
+//    for(int i = 0; i < imagePoints.size(); i++) {
+//        ofVec2f texCd = ofVec2f(imagePoints[i].x, imagePoints[i].y);
+//        texCd /= ofVec2f(rgbImage.width,rgbImage.height);
+//		if(!mirror){
+//			texCd.x = 1-texCd.x;
+//		}
+//		texCd *= scale;
+//        texCd += shift;
+//        texCd *= ofVec2f(rgbImage.width,rgbImage.height) * textureScale;
+//        mesh.setTexCoord(i, texCd);
+//	}
+	
+}
+
+ofVec2f ofxRGBDMeshBuilder::getTextureCoordinateForPoint(ofVec3f point){
+	vector<ofVec3f> points;
+	vector<ofVec2f> tex;
+	points.push_back(point);
+	generateTextureCoordinates(points, tex);
+	return tex[0];
+}
+
+void ofxRGBDMeshBuilder::generateTextureCoordinates(vector<ofVec3f>& points, vector<ofVec2f>& texCoords){
     if(!calibrationSetup){
         ofLogError("ofxRGBDRenderer::generateTextureCoordinates -- no calibration set up");
         return;
     }
-    
-    if(!mesh.hasTexCoords()){
-        for (int y = 0; y < imageSize.height; y+=simplify){
-            for (int x=0; x < imageSize.width; x+=simplify){
-                mesh.addTexCoord(ofVec2f(0,0));
-            }
-        }        
-    }
-    
-    Mat pcMat = Mat(toCv(mesh));
-    vector<cv::Point2f> imagePoints;    
+	
+	
+	//if(texCoords.size() != points.size()){
+		//texCoords.reserve(points.size());
+	//}
+	texCoords.clear();
+    Mat pcMat = Mat(toCv(points));
+    vector<cv::Point2f> imagePoints;
     projectPoints(pcMat,
                   rotationDepthToRGB, translationDepthToRGB,
                   rgbCalibration.getDistortedIntrinsics().getCameraMatrix(),
@@ -295,10 +334,17 @@ void ofxRGBDMeshBuilder::generateTextureCoordinates(){
 		}
 		texCd *= scale;
         texCd += shift;
+		texCd.x = ofClamp(texCd.x,0.0,1.0);
+		texCd.y = ofClamp(texCd.y,0.0,1.0);
         texCd *= ofVec2f(rgbImage.width,rgbImage.height) * textureScale;
-        mesh.setTexCoord(i, texCd);
-	}
 
+		texCoords.push_back(texCd);
+	}
+}
+
+ofVec3f ofxRGBDMeshBuilder::getWorldPoint(float x, float y){
+	if(currentDepthPixels == NULL) return ofVec3f(0,0,0);
+	return getWorldPoint(x,y,*currentDepthPixels);
 }
 
 ofVec3f ofxRGBDMeshBuilder::getWorldPoint(float x, float y, ofShortPixels& pixels){
@@ -376,7 +422,8 @@ void ofxRGBDMeshBuilder::draw(ofBaseHasTexture& texture){
     ofPushMatrix();
 	setupDrawMatrices();
     texture.getTextureReference().bind();
-    mesh.drawWireframe();
+    //mesh.drawWireframe();
+	mesh.draw();
     texture.getTextureReference().unbind();
     ofPopMatrix();
 }

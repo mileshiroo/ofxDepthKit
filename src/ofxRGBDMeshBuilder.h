@@ -68,6 +68,8 @@ class ofxRGBDMeshBuilder {
     void setTextureScaleForImage(ofBaseHasTexture& texture);
 	Calibration depthCalibration, rgbCalibration;
     ofVec2f textureScale;
+	
+	ofVec3f getWorldPoint(float x, float y);
     ofVec3f getWorldPoint(float x, float y, unsigned short z);
     ofVec3f getWorldPoint(float x, float y, ofShortPixels& pixels);
 
@@ -75,6 +77,10 @@ class ofxRGBDMeshBuilder {
 	vector<ofIndexType> validVertIndices;
 	ofMesh getReducedMesh();
 	ofBaseHasTexture* currentTexture;
+
+	//after this call, texCoords will be the same size as points, full of texture coords;
+	void generateTextureCoordinates(vector<ofVec3f>& points, vector<ofVec2f>& texCoords);
+	ofVec2f getTextureCoordinateForPoint(ofVec3f point);
 	
   private:
     ofMesh mesh;
