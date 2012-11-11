@@ -330,7 +330,7 @@ void ofxRGBDMeshBuilder::generateTextureCoordinates(vector<ofVec3f>& points, vec
         ofVec2f texCd = ofVec2f(imagePoints[i].x, imagePoints[i].y);
         texCd /= ofVec2f(rgbImage.width,rgbImage.height);
 		if(!mirror){
-			texCd.x = 1-texCd.x;
+			//texCd.x = 1-texCd.x;
 		}
 		texCd *= scale;
         texCd += shift;
@@ -356,7 +356,8 @@ ofVec3f ofxRGBDMeshBuilder::getWorldPoint(float x, float y, unsigned short z){
     //return ofVec3f(((principalPoint.x - x) / imageSize.width) * z * fx, ((principalPoint.y - y) / imageSize.height) * z * fy, z);
 //    return ofVec3f(((x - principalPoint.x) / imageSize.width) * z * fx, 
 //                   ((y - principalPoint.y) / imageSize.height) * z * fy, z);
-	return ofVec3f( (mirror ? 1 : -1) * (x - principalPoint.x) * z / fov.x, (y - principalPoint.y) * z / fov.y, z);	
+	//return ofVec3f( (mirror ? 1 : -1) * (x - principalPoint.x) * z / fov.x, (y - principalPoint.y) * z / fov.y, z);
+	return ofVec3f( (x - principalPoint.x) * z / fov.x, (y - principalPoint.y) * z / fov.y, z);
 }
 
 void ofxRGBDMeshBuilder::updateCenter(){
@@ -413,6 +414,9 @@ void ofxRGBDMeshBuilder::setupDrawMatrices(){
 	ofTranslate(-pivot);
 	
 	ofScale(1,-1, 1);
+	if(!mirror){
+		ofScale(-1,1, 1);
+	}
 }
 
 void ofxRGBDMeshBuilder::draw(ofBaseHasTexture& texture){

@@ -45,7 +45,6 @@
 		E77C754415798B9B0016FA54 /* ofxPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E77C753C15798B9B0016FA54 /* ofxPanel.cpp */; };
 		E77C754515798B9B0016FA54 /* ofxSlider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E77C753E15798B9B0016FA54 /* ofxSlider.cpp */; };
 		E77C754615798B9B0016FA54 /* ofxToggle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E77C754015798B9B0016FA54 /* ofxToggle.cpp */; };
-		E790F37015E73A120007629A /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = E790F36D15E73A120007629A /* .gitignore */; };
 		E790F37215E740370007629A /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E790F37115E740370007629A /* QTKit.framework */; };
 		E790F37415E7403B0007629A /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E790F37315E7403B0007629A /* CoreVideo.framework */; };
 		E790F37615E740410007629A /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E790F37515E740410007629A /* Accelerate.framework */; };
@@ -166,7 +165,6 @@
 		E77C753F15798B9B0016FA54 /* ofxSlider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxSlider.h; sourceTree = "<group>"; };
 		E77C754015798B9B0016FA54 /* ofxToggle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxToggle.cpp; sourceTree = "<group>"; };
 		E77C754115798B9B0016FA54 /* ofxToggle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxToggle.h; sourceTree = "<group>"; };
-		E790F36D15E73A120007629A /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		E790F36F15E73A120007629A /* ofRange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofRange.h; sourceTree = "<group>"; };
 		E790F37115E740370007629A /* QTKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QTKit.framework; path = System/Library/Frameworks/QTKit.framework; sourceTree = SDKROOT; };
 		E790F37315E7403B0007629A /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
@@ -583,7 +581,6 @@
 		E790F36C15E73A120007629A /* ofxRange */ = {
 			isa = PBXGroup;
 			children = (
-				E790F36D15E73A120007629A /* .gitignore */,
 				E790F36E15E73A120007629A /* src */,
 			);
 			name = ofxRange;
@@ -939,7 +936,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E73CB54215A22806002C0A49 /* readme.md in Resources */,
-				E790F37015E73A120007629A /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
