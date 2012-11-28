@@ -7,8 +7,8 @@
 
 ofxDepthHoleFiller::ofxDepthHoleFiller(){
 	enable = true;
-	kernelSize = 1;
-	iterations = 1;
+	kernelSize = 3;
+	iterations = 4;
 }
 
 int ofxDepthHoleFiller::setIterations(int newIterations){

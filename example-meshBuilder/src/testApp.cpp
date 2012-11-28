@@ -28,6 +28,7 @@ void testApp::setup(){
     cam.targetYRot = 0;
     cam.rotationZ = 0;    
     
+	
     simplify = 1;
     xshift = 0;
     yshift = 0;
@@ -40,6 +41,9 @@ void testApp::setup(){
            
     gui.loadFromFile("defaultSettings.xml");
     
+	meshBuilder.addColors = true;
+	meshBuilder.cacheValidVertices = true;
+	
     //attemping to load the last scene
     loadDefaultScene();
 }
@@ -117,10 +121,12 @@ void testApp::draw(){
         cam.begin();
 		ofSetColor(255);
         glEnable(GL_DEPTH_TEST);
-        meshBuilder.draw();
-        glDisable(GL_DEPTH_TEST);
+		ofEnableBlendMode(OF_BLENDMODE_SCREEN);
+		player.getVideoPlayer()->getTextureReference().bind();
+        meshBuilder.getMesh().drawWireframe();
+		player.getVideoPlayer()->getTextureReference().unbind();
+		glDisable(GL_DEPTH_TEST);
         cam.end();
-	
     }
 
     gui.draw();
