@@ -7,7 +7,7 @@
  *
  */
 
-#include "ofxRGBDRenderer.h"
+#include "ofxRGBDRendererNew.h"
 
 
 ofxRGBDRenderer::ofxRGBDRenderer(){
@@ -106,6 +106,13 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath, string depthIntrinsicsPath
 //	cout << "RGB Aspect Ratio " << rgbCalibration.getDistortedIntrinsics().getAspectRatio() << endl;
 //	cout << "RGB Focal Length " << rgbCalibration.getDistortedIntrinsics().getFocalLength() << endl;
 
+	ofTextureData texData;
+	texData.width = 640;
+	texData.height = 480;
+	texData.glType = GL_LUMINANCE;
+	texData.pixelType = GL_UNSIGNED_SHORT;
+	depthTexture.allocate(texData);
+	cout << " is depth texture allocated? " << (depthTexture.bAllocated() ? "yes" : "no") << endl;
     calibrationSetup = true;
 	return true;
 }
@@ -173,30 +180,27 @@ int ofxRGBDRenderer::getSimplification(){
 	return simplify;
 }
 
-void ofxRGBDRenderer::setRGBTexture(ofPtr<ofBaseHasPixels> pix){
-    setRGBTexture(*pix.get());
-}
-
 //-----------------------------------------------
-void ofxRGBDRenderer::setRGBTexture(ofBaseHasPixels& pix) {
-	currentRGBImage = &pix;
-    if(!undistortedRGBImage.isAllocated() || 
-       pix.getPixelsRef().getWidth() != undistortedRGBImage.getWidth() || 
-       pix.getPixelsRef().getHeight() != undistortedRGBImage.getHeight()){
-        undistortedRGBImage.setFromPixels(pix.getPixelsRef());
-    }
+void ofxRGBDRenderer::setRGBTexture(ofBaseHasTexture& tex){
+
+	currentRGBImage = &tex;
+//    if(!undistortedRGBImage.isAllocated() || 
+//       pix.getPixelsRef().getWidth() != undistortedRGBImage.getWidth() || 
+//       pix.getPixelsRef().getHeight() != undistortedRGBImage.getHeight()){
+//        undistortedRGBImage.setFromPixels(pix.getPixelsRef());
+//    }
 	hasRGBImage = true;
 }
 
-ofBaseHasPixels& ofxRGBDRenderer::getRGBTexture() {
+ofBaseHasTexture& ofxRGBDRenderer::getRGBTexture() {
     return *currentRGBImage;
 }
 
 void ofxRGBDRenderer::setDepthImage(ofShortPixels& pix){
     currentDepthImage = &pix;
-	if(!undistortedDepthImage.isAllocated()){
-		undistortedDepthImage.allocate(imageSize.width,imageSize.height,OF_IMAGE_GRAYSCALE);
-	}
+//	if(!undistortedDepthImage.isAllocated()){
+//		undistortedDepthImage.allocate(imageSize.width,imageSize.height,OF_IMAGE_GRAYSCALE);
+//	}
 	hasDepthImage = true;
 }
 
@@ -232,8 +236,12 @@ void ofxRGBDRenderer::update(){
         setSimplification(1);
     }
     
+	depthTexture.loadData(*currentDepthImage);
+	
+	
+	/*
 	//undistort the current images
-    undistortImages();
+    //undistortImages();
     //feed the zed values into the mesh
     unsigned short* ptr = undistortedDepthImage.getPixels();    
     int vertexIndex = 0;
@@ -243,8 +251,10 @@ void ofxRGBDRenderer::update(){
             mesh.getVertices()[vertexIndex++].z = ptr[y*imageSize.width+x];
         }
     }
+	 */
 }
 
+/*
 void ofxRGBDRenderer::undistortImages(){
 
     if(!forceUndistortOff){
@@ -265,6 +275,7 @@ void ofxRGBDRenderer::undistortImages(){
 //    }
 //    undistortedRGBImage.setFromPixels(currentRGBImage->getPixelsRef());
 }
+*/
 
 ofVboMesh& ofxRGBDRenderer::getMesh(){
 	return mesh;
@@ -352,9 +363,12 @@ bool ofxRGBDRenderer::bindRenderer(ofShader& shader){
 	//cout << rgbMatrix << endl;
 
 	if(hasRGBImage){
-        undistortedRGBImage.getTextureReference().bind();
+        shader.begin();
 
-        shader.begin();	
+		shader.setUniformTexture("colorTex", currentRGBImage->getTextureReference(), 1);
+		shader.setUniformTexture("depthTex", depthTexture, 2);
+		
+        
         setupProjectionUniforms(shader);
         currentlyBoundShader = &shader;
 	}
@@ -372,7 +386,9 @@ void ofxRGBDRenderer::unbindRenderer(){
     }
     
     if(hasRGBImage){
-        undistortedRGBImage.getTextureReference().unbind();
+		
+//        undistortedRGBImage.getTextureReference().unbind();
+//		depthTexture.unbind();
         if(currentlyBoundShader != NULL){
             restortProjection();
             currentlyBoundShader->end();

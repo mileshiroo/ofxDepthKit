@@ -82,6 +82,8 @@ class ofxRGBDMeshBuilder {
 	void generateTextureCoordinates(vector<ofVec3f>& points, vector<ofVec2f>& texCoords);
 	ofVec2f getTextureCoordinateForPoint(ofVec3f point);
 	
+	void drawRGBProjection();
+	
   private:
     ofMesh mesh;
 	

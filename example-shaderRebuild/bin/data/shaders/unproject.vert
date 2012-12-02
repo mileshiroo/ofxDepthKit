@@ -4,7 +4,7 @@ uniform vec2 dim;
 uniform vec2 shift;
 uniform vec2 scale;
 
-//uniform sampler2DRect depthTexture;
+uniform sampler2DRect depthTex;
 uniform vec2 principalPoint;
 uniform vec2 fov;
 uniform float farClip;
@@ -15,7 +15,8 @@ void main(void)
 {
 
 //    float depthValue = texture2DRect(tex0, gl_TexCoord[0].st);
-	VZPositionValid0 = (gl_Vertex.z < farClip && gl_Vertex.z > 200.) ? 1.0 : 0.0;
+	float depth = texture2DRect(depthTex, gl_MultiTexCoord2.st).r;
+	VZPositionValid0 = (depth < farClip && gl_Vertex.z > 200.) ? 1.0 : 0.0;
 
 	vec4 pos = vec4((gl_Vertex.x - principalPoint.x) * gl_Vertex.z / fov.x,
 	(gl_Vertex.y - principalPoint.y) * gl_Vertex.z / fov.y, gl_Vertex.z, 1.0);

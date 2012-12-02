@@ -19,7 +19,7 @@ void testApp::setup(){
     
     ofSetFrameRate(60);
     ofSetVerticalSync(true);
-    ofBackground(255);
+    ofBackground(255*.15);
     
     //set up a standard timeline with a default duration to begin with
     timeline.setup();
@@ -35,9 +35,23 @@ void testApp::setup(){
 //	timeline.addCurves("xshift", "xshift.xml", ofRange(-.15, .15));
 //  timeline.addCurves("yshift", "yshift.xml", ofRange(-.15, .15));
 //  timeline.addCurves("farclip", "farclip.xml", ofRange(500, 6000));
-    
+	
+	panel.setup("options");
+	panel.add(showDepthProjection.setup("show depth projection", ofxParameter<bool>()));
+	panel.add(showDepthWireframe.setup("show wireframe", ofxParameter<bool>()));
+	panel.add(showRGBProjection.setup("show rgb projection", ofxParameter<bool>()));
+	panel.add(rgbTextureSlider.setup("rgb texture projection", ofxParameter<float>(), 0, 1));
+//	panel.add(xShift.setup("x shift",ofxParameter<float>(), -.15, .15));
+//	panel.add(yShift.setup("y shift",ofxParameter<float>(), -.15, .15));
+
+	xShift = 0.0045;
+	yShift = 0.03;
+	rgbTextureSlider = 0;
+	
+	
     //set up the game camera
     cam.setup();
+	cam.dampen = true;
     cam.speed = 20;
     cam.autosavePosition = true;
     cam.targetNode.setPosition(ofVec3f());
@@ -49,7 +63,8 @@ void testApp::setup(){
 	player.updateVideoPlayer = false;
     //load 
     loadDefaultScene();
-    
+	
+ 	ofToggleFullscreen();
 }
 
 bool testApp::loadNewScene(){
@@ -78,6 +93,8 @@ bool testApp::loadScene(string takeDirectory){
         settings.setValue("defaultScene", player.getScene().mediaFolder);
         settings.saveFile();
 
+		
+		renderer.farClip = 1250;
         renderer.setup(player.getScene().calibrationFolder);
         renderer.setRGBTexture(player.getVideoPlayer());
         renderer.setDepthImage(player.getDepthPixels());
@@ -96,32 +113,64 @@ bool testApp::loadScene(string takeDirectory){
 //--------------------------------------------------------------
 void testApp::update(){
     //don't rotate the camera if you are in the timeline
-    cam.applyRotation = cam.applyTranslation = !timeline.getDrawRect().inside(mouseX,mouseY);
-    
+   // cam.applyRotation = cam.applyTranslation = !timeline.getDrawRect().inside(mouseX,mouseY);
+    cam.applyRotation = cam.applyTranslation = cameraRect.inside(mouseX, mouseY);
     //apply the shift and clip parameters
-//    renderer.xshift = timeline.getValue("xshift");
-//	renderer.yshift = timeline.getValue("yshift");
 //    renderer.farClip = timeline.getValue("farclip");
-
+	
     player.update();
-    if(player.isFrameNew()){
+    if(player.isFrameNew() ||
+	   renderer.xshift != xShift ||
+	   renderer.yshift != yShift)
+	{
+		renderer.xshift = xShift;
+		renderer.yshift = yShift;
         renderer.update();
+
     }
+	
+	cameraRect = ofRectangle(220, timeline.getBottomLeft().y,
+							 ofGetWidth()-220, ofGetHeight() - timeline.getBottomLeft().y);
+	
 }
 
 //--------------------------------------------------------------
 void testApp::draw(){
     if(player.isLoaded()){
-        cam.begin();
+		ofPushStyle();
+		ofSetColor(0);
+		ofRect(cameraRect);
+		ofPopStyle();
+		
+        cam.begin(cameraRect);
         glEnable(GL_DEPTH_TEST);
-        renderer.drawWireFrame();
+		if(showDepthWireframe){
+			renderer.useTexture = rgbTextureSlider > .8;
+			renderer.drawWireFrame();
+		}
         glDisable(GL_DEPTH_TEST);
-		renderer.drawProjectionDebug();
+		renderer.drawProjectionDebug(showDepthProjection, showRGBProjection,rgbTextureSlider);
         cam.end();
     }
 
-    timeline.draw();
-    ofDrawBitmapString("fps: " + ofToString(ofGetFrameRate()), 10, ofGetHeight()-30);
+	
+	timeline.draw();
+
+	ofRectangle sideViewDraw(0, panel.getShape().getBottom(),panel.getShape().width, ofGetHeight() - panel.getShape().getBottom());
+	ofRectangle colorDebug = ofRectangle(0,0,player.getVideoPlayer()->getWidth(),player.getVideoPlayer()->getHeight());
+	colorDebug.scaleTo(sideViewDraw);
+	colorDebug.y = panel.getShape().getBottom();
+	ofRectangle depthDebug = ofRectangle(0,0,640,480);
+	depthDebug.scaleTo(sideViewDraw);
+	depthDebug.y = colorDebug.getBottom();
+	
+//	player.getVideoPlayer()->draw(colorDebug);
+//	depthTrack.getCurrentDepthImage().draw(depthDebug);
+//	player.getDepthSequence()->getCompressor().convertTo8BitImage(player.getDepthPixels()).draw(depthDebug);
+	
+	panel.setPosition(timeline.getBottomLeft());
+	panel.draw();
+    //ofDrawBitmapString("fps: " + ofToString(ofGetFrameRate()), 10, ofGetHeight()-30);
 }
 
 //--------------------------------------------------------------
@@ -129,6 +178,10 @@ void testApp::keyPressed(int key){
     if(key == ' '){
         timeline.togglePlay();
     }
+	
+	if(key == 'f'){
+		ofToggleFullscreen();
+	}
 }
 
 //--------------------------------------------------------------

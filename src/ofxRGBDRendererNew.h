@@ -27,13 +27,13 @@ class ofxRGBDRenderer {
 	bool setup(string rgbIntrinsicsPath, string depthIntrinsicsPath, string rotationPath, string translationPath);
 	bool setup(string calibrationDirectory);
 
-    void setRGBTexture(ofPtr<ofBaseHasPixels> pix); 
-    void setRGBTexture(ofBaseHasPixels& pix); 
+
+    void setRGBTexture(ofBaseHasTexture& tex);
     void setDepthImage(ofShortPixels& pix);
 
-    ofBaseHasPixels& getRGBTexture();
+    ofBaseHasTexture& getRGBTexture();
 
-    void undistortImages();
+//    void undistortImages();
 	void update();
 
     //fudge factors to apply during alignment
@@ -106,8 +106,9 @@ class ofxRGBDRenderer {
 	bool hasRGBImage;
 
     
-
-    ofBaseHasPixels* currentRGBImage;
+	ofTexture depthTexture;
+	
+	ofBaseHasTexture* currentRGBImage;
 	ofShortPixels* currentDepthImage;
     ofImage undistortedRGBImage;
 	ofShortPixels undistortedDepthImage;

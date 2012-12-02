@@ -66,6 +66,7 @@ class ofxRGBDPlayer {
     
 	bool updateVideoPlayer;
 	
+
   protected:
     bool loaded;
     bool frameIsNew;

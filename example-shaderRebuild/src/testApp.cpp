@@ -19,7 +19,7 @@ void testApp::setup(){
     
     ofSetFrameRate(60);
     ofSetVerticalSync(true);
-    ofBackground(255);
+    ofBackground(0);
     
     //set up a standard timeline with a default duration to begin with
     timeline.setup();
@@ -79,7 +79,7 @@ bool testApp::loadScene(string takeDirectory){
         settings.saveFile();
 
         renderer.setup(player.getScene().calibrationFolder);
-        renderer.setRGBTexture(player.getVideoPlayer());
+        renderer.setRGBTexture(*player.getVideoPlayer());
         renderer.setDepthImage(player.getDepthPixels());
 		renderer.setSimplification(2);
 
@@ -116,7 +116,6 @@ void testApp::draw(){
         glEnable(GL_DEPTH_TEST);
         renderer.drawWireFrame();
         glDisable(GL_DEPTH_TEST);
-		renderer.drawProjectionDebug();
         cam.end();
     }
 
@@ -129,6 +128,10 @@ void testApp::keyPressed(int key){
     if(key == ' '){
         timeline.togglePlay();
     }
+	
+	if(key == 'S'){
+		renderer.reloadShader();
+	}
 }
 
 //--------------------------------------------------------------

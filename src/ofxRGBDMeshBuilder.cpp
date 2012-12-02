@@ -151,6 +151,7 @@ void ofxRGBDMeshBuilder::setSimplification(int simplifyLevel){
 //    cout << "set simplification level to " << simplifyLevel << " for image size " << imageSize.width << " x " << imageSize.height << " #verts " << mesh.getNumVertices() << endl;
 }
 
+
 void ofxRGBDMeshBuilder::update(){
 	if(currentDepthPixels != NULL){
 		update(*currentDepthPixels);
