@@ -27,13 +27,11 @@ class ofxRGBDRenderer {
 	bool setup(string rgbIntrinsicsPath, string depthIntrinsicsPath, string rotationPath, string translationPath);
 	bool setup(string calibrationDirectory);
 
-    void setRGBTexture(ofPtr<ofBaseHasPixels> pix); 
-    void setRGBTexture(ofBaseHasPixels& pix); 
+    void setRGBTexture(ofBaseHasTexture& tex);
     void setDepthImage(ofShortPixels& pix);
 
-    ofBaseHasPixels& getRGBTexture();
+    ofBaseHasTexture& getRGBTexture();
 
-    void undistortImages();
 	void update();
 
     //fudge factors to apply during alignment
@@ -45,7 +43,7 @@ class ofxRGBDRenderer {
 	float xscale;
     float yscale;
     
-	float edgeCull;
+	float edgeClip;
 	float farClip;
     bool forceUndistortOff;
     bool addColors;
@@ -62,6 +60,7 @@ class ofxRGBDRenderer {
     void setupProjectionUniforms(ofShader& shader);
     void restortProjection();
 
+    //fun way of visualizing the calibration
     void drawProjectionDebug(bool showDepth, bool showRGB, float rgbTexturePosition);
     
 	void reloadShader();
@@ -69,8 +68,8 @@ class ofxRGBDRenderer {
 	//sets a level of simplification, 
 	//should be either 1 for none
 	//2 for half, or 4 for quarter;
-	void setSimplification(int level);
-	int getSimplification();
+	void setSimplification(ofVec2f simplification);
+	ofVec2f getSimplification();
 	
 	void drawMesh();
 	void drawPointCloud();
@@ -79,7 +78,7 @@ class ofxRGBDRenderer {
     void drawMesh(ofShader& customShader);
 	void drawPointCloud(ofShader& customShader);
 	void drawWireFrame(ofShader& customShader);
-
+    
 	//populated with vertices, texture coords, and indeces
 	ofVboMesh& getMesh();
 	
@@ -87,10 +86,11 @@ class ofxRGBDRenderer {
 	Calibration& getDepthCalibration();
 	ofMatrix4x4& getDepthToRGBTransform();
 	ofMatrix4x4& getRGBMatrix();
-	
+	ofTexture& getDepthTexture();
+    
 	bool useTexture;
   protected:	
-	int simplify;
+	ofVec2f simplify;
 
     //bool shaderBound;
     ofShader* currentlyBoundShader;
@@ -106,8 +106,9 @@ class ofxRGBDRenderer {
 	bool hasRGBImage;
 
     
-
-    ofBaseHasPixels* currentRGBImage;
+	ofTexture depthTexture;
+	
+	ofBaseHasTexture* currentRGBImage;
 	ofShortPixels* currentDepthImage;
     ofImage undistortedRGBImage;
 	ofShortPixels undistortedDepthImage;
