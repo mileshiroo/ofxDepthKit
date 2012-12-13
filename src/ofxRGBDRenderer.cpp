@@ -111,11 +111,12 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath, string depthIntrinsicsPath
     texData.glTypeInternal = GL_LUMINANCE16;
 //    texData.glType = GL_RGB;
 	texData.pixelType = GL_UNSIGNED_SHORT;
-    
+
 	depthTexture.allocate(texData);
     depthTexture.bind();
     GLint internalFormat;
     glGetTexLevelParameteriv(texData.textureTarget, 0, GL_TEXTURE_INTERNAL_FORMAT, &internalFormat);
+    
     depthTexture.unbind();
 	cout << " is depth texture allocated? " << (depthTexture.bAllocated() ? "yes" : "no") << " internal format? " << internalFormat << " vs " << GL_LUMINANCE16 << endl;
     calibrationSetup = true;
@@ -344,6 +345,10 @@ bool ofxRGBDRenderer::bindRenderer(ofShader& shader){
 
 	if(hasRGBImage){
         shader.begin();
+        glActiveTexture(GL_TEXTURE1);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glActiveTexture(GL_TEXTURE0);
 
 		shader.setUniformTexture("colorTex", currentRGBImage->getTextureReference(), 0);
 		shader.setUniformTexture("depthTex", depthTexture, 1);
