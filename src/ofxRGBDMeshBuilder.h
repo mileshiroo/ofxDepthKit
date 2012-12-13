@@ -38,8 +38,8 @@ class ofxRGBDMeshBuilder {
 	void updateCenter();
 	void setPivotToMeshCenter();
 	
-    void setSimplification(int simplifyLevel);
-    int getSimplification();
+    void setSimplification(ofVec2f simplify);
+    ofVec2f getSimplification();
     
 	ofxDepthHoleFiller& getHoleFiller();
 	
@@ -47,8 +47,12 @@ class ofxRGBDMeshBuilder {
     ofVec2f shift;
 	ofVec2f scale;
 	ofVec2f angleFov;
-    ofMesh& getMesh();
     
+    //contains un-index vertices
+    ofMesh& getMesh();
+    //mesh with only valid vertices
+	ofMesh getReducedMesh(bool normalizeTextureCoords);
+
     float farClip;
 	float nearClip;
 	float bottomClip;
@@ -56,7 +60,7 @@ class ofxRGBDMeshBuilder {
 	float rightClip;
 	float leftClip;
 	
-    float edgeSnip;
+    float edgeClip;
     
 	bool mirror;
 	
@@ -75,7 +79,7 @@ class ofxRGBDMeshBuilder {
 
 	bool cacheValidVertices;
 	vector<ofIndexType> validVertIndices;
-	ofMesh getReducedMesh();
+
 	ofBaseHasTexture* currentTexture;
 
 	//after this call, texCoords will be the same size as points, full of texture coords;
@@ -86,11 +90,7 @@ class ofxRGBDMeshBuilder {
 	
   private:
     ofMesh mesh;
-	
-//	Calibration depthCalibration, rgbCalibration;
     Mat rotationDepthToRGB, translationDepthToRGB;
-    
-	//ofBaseHasTexture* currentTexture;
 	ofShortPixels* currentDepthPixels;
 	
     Point2d principalPoint;
@@ -99,14 +99,13 @@ class ofxRGBDMeshBuilder {
 	void setupDrawMatrices();
 	
 	ofVec2f fov;
-    int simplify;
+    ofVec2f simplify;
     bool hasTriangles;
     bool calibrationSetup;
     bool depthOnly;
 	
 	ofxDepthHoleFiller holeFiller;
     void generateTextureCoordinates();  
-    vector<ofIndexType> baseIndeces;
-    
+    vector<ofIndexType> baseIndeces;    
 };
 

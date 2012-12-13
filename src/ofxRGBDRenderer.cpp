@@ -213,9 +213,6 @@ ofBaseHasTexture& ofxRGBDRenderer::getRGBTexture() {
 
 void ofxRGBDRenderer::setDepthImage(ofShortPixels& pix){
     currentDepthImage = &pix;
-//	if(!undistortedDepthImage.isAllocated()){
-//		undistortedDepthImage.allocate(imageSize.width,imageSize.height,OF_IMAGE_GRAYSCALE);
-//	}
 	hasDepthImage = true;
 }
 
@@ -337,12 +334,6 @@ bool ofxRGBDRenderer::bindRenderer(ofShader& shader){
     ofRotate(meshRotate.y,0,1,0);
     ofRotate(meshRotate.z,0,0,1);
 
-//    if(ofGetKeyPressed('v'))
-//        cout << "view " <<depthToRGBView << endl;
-//    else if (ofGetKeyPressed('p'))
-//        cout << "projection " << rgbProjection << endl;
-	//cout << rgbMatrix << endl;
-
 	if(hasRGBImage){
         shader.begin();
         glActiveTexture(GL_TEXTURE1);
@@ -371,8 +362,6 @@ void ofxRGBDRenderer::unbindRenderer(){
     
     if(rendererBound && hasRGBImage){
 	
-//      undistortedRGBImage.getTextureReference().unbind();
-//		depthTexture.unbind();
         if(currentlyBoundShader != NULL){
             restortProjection();
             currentlyBoundShader->end();
@@ -390,7 +379,6 @@ void ofxRGBDRenderer::unbindRenderer(){
 void ofxRGBDRenderer::setupProjectionUniforms(ofShader& theShader){
 
     rgbMatrix = (depthToRGBView * rgbProjection);
-    //rgbMatrix.scale(1, -1, 1);
     
     ofVec2f dims = ofVec2f(currentRGBImage->getTextureReference().getWidth(),
                            currentRGBImage->getTextureReference().getHeight());
