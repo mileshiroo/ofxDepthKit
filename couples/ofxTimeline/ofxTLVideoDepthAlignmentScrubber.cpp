@@ -52,15 +52,17 @@ void ofxTLVideoDepthAlignmentScrubber::draw(){
 		
 		ofLine(screenX, bounds.y, 
                screenX, bounds.y+bounds.height);
-		ofDrawBitmapString("video: " + ofToString(ofxTimecode::timecodeForMillis(alignedFrames[i].videoMillis)), ofPoint(screenX+10, bounds.y+15));
-		ofDrawBitmapString("depth: " + ofToString(ofxTimecode::timecodeForMillis(alignedFrames[i].depthMillis)), ofPoint(screenX+10, bounds.y+35));
+        timeline->getFont().drawString("video: " + ofToString(ofxTimecode::timecodeForMillis(alignedFrames[i].videoMillis)), screenX+10, bounds.y+15);
+        timeline->getFont().drawString("depth: " + ofToString(ofxTimecode::timecodeForMillis(alignedFrames[i].depthMillis) + " milliseconds: " + ofToString(alignedFrames[i].depthMillis) ), screenX+10, bounds.y+35);
+		//ofDrawBitmapString("video: " + ofToString(ofxTimecode::timecodeForMillis(alignedFrames[i].videoMillis)), ofPoint(screenX+10, bounds.y+15));
+		//ofDrawBitmapString("depth: " + ofToString(ofxTimecode::timecodeForMillis(alignedFrames[i].depthMillis)), ofPoint(screenX+10, bounds.y+35));
 	}
 	
-	ofSetColor(0, 125, 255);
-	int selectedScreenX = normalizedXtoScreenX(selectedPercent);
-	ofLine(selectedScreenX, bounds.y, selectedScreenX, bounds.y+bounds.height);
-	ofDrawBitmapString("sel.video: " + ofToString(selectedVideoMillis), ofPoint(selectedScreenX+10, bounds.y+55));
-	ofDrawBitmapString("sel.depth: " + ofToString(selectedDepthMillis), ofPoint(selectedScreenX+10, bounds.y+75));
+//	ofSetColor(0, 125, 255);
+//	int selectedScreenX = normalizedXtoScreenX(selectedPercent);
+//	ofLine(selectedScreenX, bounds.y, selectedScreenX, bounds.y+bounds.height);
+//	ofDrawBitmapString("sel.video: " + ofToString(selectedVideoMillis), ofPoint(selectedScreenX+10, bounds.y+55));
+//	ofDrawBitmapString("sel.depth: " + ofToString(selectedDepthMillis), ofPoint(selectedScreenX+10, bounds.y+75));
 	
 	ofPopStyle();
 }
