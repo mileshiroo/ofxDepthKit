@@ -36,9 +36,6 @@ class ofxRGBDScene {
 
     void clear();
     
-  protected:
-
-    
 };
 
 
