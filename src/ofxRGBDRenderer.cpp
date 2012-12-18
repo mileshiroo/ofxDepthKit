@@ -15,7 +15,8 @@ ofxRGBDRenderer::ofxRGBDRenderer(){
 	yshift = 0;
 	xscale = 1.0;
     yscale = 1.0;
-    
+    flipTexture = false;
+
 	edgeClip = 50;
 	simplify = ofVec2f(0,0);
 
@@ -341,9 +342,7 @@ bool ofxRGBDRenderer::bindRenderer(ofShader& shader){
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glActiveTexture(GL_TEXTURE0);
 
-		shader.setUniformTexture("colorTex", currentRGBImage->getTextureReference(), 0);
-		shader.setUniformTexture("depthTex", depthTexture, 1);
-        
+
         setupProjectionUniforms(shader);
         currentlyBoundShader = &shader;
 	}
@@ -383,16 +382,18 @@ void ofxRGBDRenderer::setupProjectionUniforms(ofShader& theShader){
     ofVec2f dims = ofVec2f(currentRGBImage->getTextureReference().getWidth(),
                            currentRGBImage->getTextureReference().getHeight());
 
+	theShader.setUniformTexture("colorTex", currentRGBImage->getTextureReference(), 0);
+	theShader.setUniformTexture("depthTex", depthTexture, 1);
     theShader.setUniform1i("useTexture", useTexture ? 1 : 0);
+    theShader.setUniform1i("flipTexture", flipTexture ? 1 : 0);
     theShader.setUniform2f("shift", xshift, yshift);
     theShader.setUniform2f("scale", xscale, yscale);
     theShader.setUniform2f("dim", dims.x, dims.y);
     theShader.setUniform2f("principalPoint", principalPoint.x, principalPoint.y);
     theShader.setUniform2f("fov", fx, fy);
-    theShader.setUniform2f("imageSize", imageSize.width,imageSize.height);
     theShader.setUniform1f("farClip", farClip);
 	theShader.setUniform1f("edgeClip", edgeClip);
-    theShader.setUniform1i("project", 1);
+
     theShader.setUniform1f("xsimplify", simplify.x);
     theShader.setUniform1f("ysimplify", simplify.y);
     

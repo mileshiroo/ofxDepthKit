@@ -246,7 +246,7 @@ ofMesh& ofxRGBDMeshBuilder::getMesh(){
     return mesh;
 }
 
-ofMesh ofxRGBDMeshBuilder::getReducedMesh(bool normalizeTextureCoords){
+ofMesh ofxRGBDMeshBuilder::getReducedMesh(bool normalizeTextureCoords, float vertexScale){
     if(!cacheValidVertices){
         ofLogError("ofxRGBDMeshBuilder::getReducedMesh -- Must cache valid verts to get the reduced mesh");
     }
@@ -254,12 +254,13 @@ ofMesh ofxRGBDMeshBuilder::getReducedMesh(bool normalizeTextureCoords){
     map<ofIndexType, ofIndexType> vertMapping;
     for(int i = 0; i < validVertIndices.size(); i++){
         vertMapping[ validVertIndices[i] ] = i;
-        reducedMesh.addVertex( mesh.getVertices()[ validVertIndices[i] ]);
-        if(mesh.hasTexCoords()){
+        reducedMesh.addVertex( mesh.getVertices()[ validVertIndices[i] ] * vertexScale);
+		if(mesh.hasTexCoords() && calculateTextureCoordinates && currentTexture != NULL){
             ofVec2f& coord = mesh.getTexCoords()[ validVertIndices[i] ] ;
             if(normalizeTextureCoords){
                 cv::Size rgbImage = rgbCalibration.getDistortedIntrinsics().getImageSize();
-                reducedMesh.addTexCoord( coord / ofVec2f(rgbImage.width,rgbImage.height) );
+				reducedMesh.addTexCoord( coord / ofVec2f(currentTexture->getTextureReference().getWidth(),
+														 currentTexture->getTextureReference().getHeight() ) );
             }
             else{
                 reducedMesh.addTexCoord( coord );
@@ -294,9 +295,15 @@ void ofxRGBDMeshBuilder::generateTextureCoordinates(vector<ofVec3f>& points, vec
         return;
     }
     
+	if(points.size() == 0){
+        ofLogError("ofxRGBDRenderer::generateTextureCoordinates -- no points to generate");
+        return;
+	}
+
 	texCoords.clear();
     Mat pcMat = Mat(toCv(points));
     vector<cv::Point2f> imagePoints;
+
     projectPoints(pcMat,
                   rotationDepthToRGB, translationDepthToRGB,
                   rgbCalibration.getDistortedIntrinsics().getCameraMatrix(),

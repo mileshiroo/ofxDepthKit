@@ -67,8 +67,11 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder, bool countFrames){
         ofLogWarning("ofxRGBDScene::loadFromFolder -- folder " + mediaFolder + " -- Directory is empty.");
         return false;        
     }
-
-    vector<string> components = ofSplitString( mediaFolder, "/");
+#ifdef TARGET_WIN32
+    vector<string> components = ofSplitString( mediaFolder, "\\" );
+#else
+    vector<string> components = ofSplitString( mediaFolder, "/" );
+#endif		
     name = components[components.size()-1];
     
     //////////////////////////////////////////////

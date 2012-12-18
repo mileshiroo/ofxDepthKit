@@ -89,6 +89,8 @@ class ofxRGBDRenderer {
 	ofTexture& getDepthTexture();
     
 	bool useTexture;
+	bool flipTexture;
+		
   protected:	
 	ofVec2f simplify;
 
