@@ -201,12 +201,6 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder, bool countFrames){
 //            cout << "largest size is " << largestSize << " smallest size is " << smallestSize << endl;
         }
         
-        if(hasColor){
-            videoThumbsPath = ofFilePath::removeExt(videoPath);
-            if(!ofDirectory(videoThumbsPath).exists()){
-                ofDirectory(videoThumbsPath).create(true);
-            }
-        }
     }    
     //////////////////////////////////////////////
     // END COLOR

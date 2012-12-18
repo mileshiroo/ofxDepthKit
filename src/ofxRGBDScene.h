@@ -1,6 +1,5 @@
 //
-//  ofxRGBDMediaScene.h
-//  ScreenLabRenderer
+//  ofxRGBDScene    
 //
 //  Created by James George on 4/16/12.
 //
@@ -27,7 +26,6 @@ class ofxRGBDScene {
     string calibrationFolder;
     string videoPath;
     string alternativeHiResVideoPath;
-    string videoThumbsPath;
     string depthFolder;
     string pairingsFile;
     string xyshiftFile; //file to save the xy fudge params
