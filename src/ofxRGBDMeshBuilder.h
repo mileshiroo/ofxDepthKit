@@ -20,7 +20,7 @@ class ofxRGBDMeshBuilder {
     ~ofxRGBDMeshBuilder();    
     
     bool setup(string calibrationDirectory);
-	bool setDepthOnly();
+	void setDepthOnly();
 	
 	void setTexture(ofBaseHasTexture& texture);
 	void setDepthPixels(ofShortPixels& pixels);

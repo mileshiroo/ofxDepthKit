@@ -44,7 +44,7 @@ ofxRGBDMeshBuilder::ofxRGBDMeshBuilder(){
 ofxRGBDMeshBuilder::~ofxRGBDMeshBuilder(){
 }
 
-bool ofxRGBDMeshBuilder::setDepthOnly(){
+void ofxRGBDMeshBuilder::setDepthOnly(){
     
     //default kinect intrinsics
 	fov.x = 5.7034220279543524e+02;
