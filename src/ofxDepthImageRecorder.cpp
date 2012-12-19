@@ -159,8 +159,8 @@ void ofxDepthImageRecorder::compressCurrentTake(){
         return;
     }
     ofxRGBDScene* t = new ofxRGBDScene();
-    t->loadFromFolder(targetDirectory + "/" + currentFolderPrefix);
-    
+	t->loadFromFolder(targetDirectory + t->pathDelim + currentFolderPrefix);
+    cout << "NEW SCENE NAME IS " << t->name << endl;
     takes.push_back( t );
     encoderThread.lock();
     encodeDirectories.push( t );
@@ -180,7 +180,7 @@ void ofxDepthImageRecorder::updateTakes(){
 	dir.sort();
     
 	for(int i = 0; i < dir.numFiles(); i++){
-        if(dir.getName(i) == "_calibration"){
+        if(dir.getName(i) == "_calibration" || dir.getName(i) == "_RenderBin"){
             continue;
         }
 
@@ -209,8 +209,6 @@ ofxDepthImageCompressor& ofxDepthImageRecorder::getCompressor(){
 void ofxDepthImageRecorder::shutdown(){
 	recorderThread.waitForThread(true);
 	encoderThread.waitForThread(true);
-//	recorderThread.stopThread(true);
-//	encoderThread.stopThread(true);
 }
 											  
 void ofxDepthImageRecorder::recorderThreadCallback(){
@@ -228,6 +226,7 @@ void ofxDepthImageRecorder::recorderThreadCallback(){
 	if(foundFrame){
 		char filenumber[512];
 		sprintf(filenumber, "%05d", currentFrame); 
+		//cout << "three random frame pixels " << frame.pixels[(int)ofRandom(0,320*240)] << " " <<frame.pixels[(int)ofRandom(0,320*240)] << frame.pixels[(int)ofRandom(0,320*240)] << endl; ;
 		if(compressor.saveToRaw(frame.directory+frame.filename, frame.pixels)){
 			delete frame.pixels;
 		}
@@ -275,6 +274,7 @@ void ofxDepthImageRecorder::encoderThreadCallback(){
     }
     
     ofLogVerbose("ofxDepthImageCompressor -- Starting to convert " + ofToString(take->uncompressedDepthFrameCount) + " in " + take->depthFolder);
+    //cout << "ofxDepthImageCompressor -- Starting to convert " << ofToString(take->uncompressedDepthFrameCount) << " in " << take->depthFolder << endl;
     framesToCompress = take->uncompressedDepthFrameCount;
     rawDir.allowExt("raw");
     rawDir.listDir();
@@ -295,6 +295,7 @@ void ofxDepthImageRecorder::encoderThreadCallback(){
         string path = rawDir.getPath(i);
         //READ IN THE RAW FILE
         compressor.readDepthFrame(path, encodingBuffer.getPixels());
+
         //COMPRESS TO PNG
         compressor.saveToCompressedPng(ofFilePath::removeExt(path)+".png", encodingBuffer.getPixels());
         //DELETE the file
