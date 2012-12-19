@@ -1,9 +1,3 @@
-//
-//  ofxRGBDScene    
-//
-//  Created by James George on 4/16/12.
-//
-
 #pragma once
 #include "ofMain.h"
 
@@ -37,9 +31,4 @@ class ofxRGBDScene {
 
     void clear();
     
-  protected:
-
-    
 };
-
-
