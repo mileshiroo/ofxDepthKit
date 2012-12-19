@@ -264,13 +264,12 @@ ofPtr<ofxDepthImageSequence> ofxTLDepthImageSequence::getDepthImageSequence(){
 }
 
 bool ofxTLDepthImageSequence::loadSequence(string seqdir){
-    
 	waitForThread(true);
 	
     if(depthImageSequence == NULL){
 		depthImageSequence = ofPtr<ofxDepthImageSequence>( new ofxDepthImageSequence() );
     }
-	
+
     bool loadSuccess = depthImageSequence->loadSequence(seqdir);
 	if(loadSuccess){
 		frameIsNew = true;

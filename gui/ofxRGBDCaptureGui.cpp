@@ -386,10 +386,11 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
 	else {
 		for(int i = 0; i < btnScenes.size(); i++){
 			if(object == btnScenes[i].button){
-				loadSequenceForPlayback( i );                
-                for(int b = 0; b < btnScenes.size(); b++){
-                	btnScenes[b].isSelected = b == i;
-                }
+				if(loadSequenceForPlayback( i )){                
+					for(int b = 0; b < btnScenes.size(); b++){
+                		btnScenes[b].isSelected = b == i;
+					}
+				}
                 break;
 			}
 		}
@@ -572,10 +573,14 @@ void ofxRGBDCaptureGui::loadDefaultDirectory(){
 	
 }
 
-void ofxRGBDCaptureGui::loadSequenceForPlayback( int index ){
-    depthSequence.loadSequence( recorder.getScenes()[index]->depthFolder );
-	//timeline.setDurationInFrames(depthSequence.videoThumbs.size());
-	timeline.setDurationInSeconds(depthSequence.getDepthImageSequence()->getDurationInSeconds());
+bool ofxRGBDCaptureGui::loadSequenceForPlayback( int index ){
+
+	if(recorder.getScenes()[index]->uncompressedDepthFrameCount == 0){
+	    depthSequence.loadSequence( recorder.getScenes()[index]->depthFolder );
+		timeline.setDurationInSeconds(depthSequence.getDepthImageSequence()->getDurationInSeconds());
+		return true;
+	}
+	return false;
 }
 
 void ofxRGBDCaptureGui::toggleRecord(){

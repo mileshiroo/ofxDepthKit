@@ -76,7 +76,7 @@ class ofxRGBDCaptureGui : public ofxMSAInteractiveObjectDelegate {
 	void loadDirectory(string path);
 	void loadDefaultDirectory();
     
-	void loadSequenceForPlayback( int index );
+	bool loadSequenceForPlayback( int index );
 	void updateSceneButtons();
 	
 	void toggleRecord();
