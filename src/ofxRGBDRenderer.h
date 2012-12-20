@@ -58,7 +58,6 @@ class ofxRGBDRenderer {
     
     //called inside of bind/unbind
     void setupProjectionUniforms(ofShader& shader);
-    void restortProjection();
 
     //fun way of visualizing the calibration
     void drawProjectionDebug(bool showDepth, bool showRGB, float rgbTexturePosition);

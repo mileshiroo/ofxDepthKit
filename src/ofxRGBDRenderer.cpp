@@ -70,14 +70,6 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath, string depthIntrinsicsPath
     ofPushView();
 	rgbCalibration.getDistortedIntrinsics().loadProjectionMatrix();
     glGetFloatv(GL_PROJECTION_MATRIX, rgbProjection.getPtr());
-	cout << " RGB Projection matrix PRE FLIP " << rgbProjection << endl;
-//	if(rgbProjection.getPtr()[0] > 0){ 
-//		ofMatrix4x4 flipMatrix;
-//		flipMatrix.makeScaleMatrix(-1,1,1);
-//		rgbProjection = flipMatrix * rgbProjection;
-//	}
-	cout << " RGB Projection matrix POST FLIP" << rgbProjection << endl;
-
 	ofPopView();
 	
 	ofPushView();
@@ -368,7 +360,6 @@ void ofxRGBDRenderer::unbindRenderer(){
     if(rendererBound && hasRGBImage){
 	
         if(currentlyBoundShader != NULL){
-            restortProjection();
             currentlyBoundShader->end();
 			currentlyBoundShader = NULL;
         }
@@ -382,16 +373,12 @@ void ofxRGBDRenderer::unbindRenderer(){
 }
 
 void ofxRGBDRenderer::setupProjectionUniforms(ofShader& theShader){
-
-    rgbMatrix = (depthToRGBView * rgbProjection);
-    
     ofVec2f dims = ofVec2f(currentRGBImage->getTextureReference().getWidth(),
                            currentRGBImage->getTextureReference().getHeight());
 
 	theShader.setUniformTexture("colorTex", currentRGBImage->getTextureReference(), 0);
 	theShader.setUniformTexture("depthTex", depthTexture, 1);
     theShader.setUniform1i("useTexture", useTexture ? 1 : 0);
-    theShader.setUniform1i("flipTexture", flipTexture ? 1 : 0);
     theShader.setUniform2f("shift", xshift, yshift);
     theShader.setUniform2f("scale", xscale, yscale);
     theShader.setUniform2f("dim", dims.x, dims.y);
@@ -399,22 +386,19 @@ void ofxRGBDRenderer::setupProjectionUniforms(ofShader& theShader){
     theShader.setUniform2f("fov", fx, fy);
     theShader.setUniform1f("farClip", farClip);
 	theShader.setUniform1f("edgeClip", edgeClip);
-    theShader.setUniformMatrix4f("tTex", rgbMatrix);
+	if(flipTexture){
+		ofMatrix4x4 flipMatrix;
+		flipMatrix.makeScaleMatrix(-1,1,1);
+        rgbMatrix = (depthToRGBView * (flipMatrix * rgbProjection));
+        theShader.setUniformMatrix4f("tTex", rgbMatrix );
+	}
+    else{
+        rgbMatrix = (depthToRGBView * rgbProjection);
+        theShader.setUniformMatrix4f("tTex", rgbMatrix);
+    }
+    
     theShader.setUniform1f("xsimplify", simplify.x);
     theShader.setUniform1f("ysimplify", simplify.y);
-    
-//    glMatrixMode(GL_TEXTURE);
-//    glPushMatrix();
-//    glLoadMatrixf(rgbMatrix.getPtr());
-//    glMatrixMode(GL_MODELVIEW);      
-//    
-}
-
-void ofxRGBDRenderer::restortProjection(){
-
-//    glMatrixMode(GL_TEXTURE);
-//    glPopMatrix();
-//    glMatrixMode(GL_MODELVIEW);   
 
 }
 
@@ -436,6 +420,7 @@ void ofxRGBDRenderer::drawMesh(ofShader& shader){
 		mesh.drawFaces();
         unbindRenderer();
     }
+    
 }
 
 void ofxRGBDRenderer::drawPointCloud(ofShader& shader){
