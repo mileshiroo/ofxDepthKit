@@ -124,6 +124,10 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath, string depthIntrinsicsPath
 	return true;
 }
 
+void ofxRGBDRenderer::setSimplification(float simplification){
+    setSimplification(ofVec2f(simplification,simplification));
+}
+
 void ofxRGBDRenderer::setSimplification(ofVec2f simplification){
     
     if(!calibrationSetup){
@@ -200,11 +204,6 @@ ofVec2f ofxRGBDRenderer::getSimplification(){
 void ofxRGBDRenderer::setRGBTexture(ofBaseHasTexture& tex){
 
 	currentRGBImage = &tex;
-//    if(!undistortedRGBImage.isAllocated() || 
-//       pix.getPixelsRef().getWidth() != undistortedRGBImage.getWidth() || 
-//       pix.getPixelsRef().getHeight() != undistortedRGBImage.getHeight()){
-//        undistortedRGBImage.setFromPixels(pix.getPixelsRef());
-//    }
 	hasRGBImage = true;
 }
 

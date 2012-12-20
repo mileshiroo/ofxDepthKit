@@ -68,6 +68,7 @@ class ofxRGBDRenderer {
 	//sets a level of simplification, 
 	//should be either 1 for none
 	//2 for half, or 4 for quarter;
+    void setSimplification(float simplification);
 	void setSimplification(ofVec2f simplification);
 	ofVec2f getSimplification();
 	
