@@ -68,10 +68,17 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath, string depthIntrinsicsPath
     depthToRGBView = ofxCv::makeMatrix(rotationDepthToRGB, translationDepthToRGB);
 	
     ofPushView();
-//    rgbCalibration.getUndistortedIntrinsics().loadProjectionMatrix();
 	rgbCalibration.getDistortedIntrinsics().loadProjectionMatrix();
     glGetFloatv(GL_PROJECTION_MATRIX, rgbProjection.getPtr());
-    ofPopView();
+	cout << " RGB Projection matrix PRE FLIP " << rgbProjection << endl;
+	if(rgbProjection.getPtr()[0] > 0){ 
+		ofMatrix4x4 flipMatrix;
+		flipMatrix.makeScaleMatrix(-1,1,1);
+		rgbProjection = flipMatrix * rgbProjection;
+	}
+	cout << " RGB Projection matrix POST FLIP" << rgbProjection << endl;
+
+	ofPopView();
 	
 	ofPushView();
 	depthCalibration.getDistortedIntrinsics().loadProjectionMatrix();
