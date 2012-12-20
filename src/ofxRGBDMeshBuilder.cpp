@@ -246,7 +246,7 @@ ofMesh& ofxRGBDMeshBuilder::getMesh(){
     return mesh;
 }
 
-ofMesh ofxRGBDMeshBuilder::getReducedMesh(bool normalizeTextureCoords, float vertexScale){
+ofMesh ofxRGBDMeshBuilder::getReducedMesh(bool normalizeTextureCoords, ofVec3f vertexScale, bool flipTextureX, bool flipTextureY){
     if(!cacheValidVertices){
         ofLogError("ofxRGBDMeshBuilder::getReducedMesh -- Must cache valid verts to get the reduced mesh");
     }
@@ -257,14 +257,20 @@ ofMesh ofxRGBDMeshBuilder::getReducedMesh(bool normalizeTextureCoords, float ver
         reducedMesh.addVertex( mesh.getVertices()[ validVertIndices[i] ] * vertexScale);
 		if(mesh.hasTexCoords() && calculateTextureCoordinates && currentTexture != NULL){
             ofVec2f& coord = mesh.getTexCoords()[ validVertIndices[i] ] ;
+            if(flipTextureX){
+                coord.x = currentTexture->getTextureReference().getWidth() - coord.x;
+            }
+            if(flipTextureY){
+                coord.y = currentTexture->getTextureReference().getHeight() - coord.y;
+            }
+            
             if(normalizeTextureCoords){
-                cv::Size rgbImage = rgbCalibration.getDistortedIntrinsics().getImageSize();
-				reducedMesh.addTexCoord( coord / ofVec2f(currentTexture->getTextureReference().getWidth(),
-														 currentTexture->getTextureReference().getHeight() ) );
+				coord /= ofVec2f(currentTexture->getTextureReference().getWidth(),
+                                 currentTexture->getTextureReference().getHeight() );
             }
-            else{
-                reducedMesh.addTexCoord( coord );
-            }
+            
+            reducedMesh.addTexCoord(coord);
+            
         }
         if(mesh.hasColors()){
             reducedMesh.addColor( mesh.getColors()[ validVertIndices[i] ] );

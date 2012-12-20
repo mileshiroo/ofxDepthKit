@@ -51,8 +51,7 @@ class ofxRGBDMeshBuilder {
     //contains un-index vertices
     ofMesh& getMesh();
     //mesh with only valid vertices
-	ofMesh getReducedMesh(bool normalizeTextureCoords, float vertexScale);
-
+    ofMesh getReducedMesh(bool normalizeTextureCoords, ofVec3f vertexScale = ofVec3f(1,1,1), bool flipTextureX = false, bool flipTextureY = false);
     float farClip;
 	float nearClip;
 	float bottomClip;
