@@ -21,8 +21,7 @@ ofxDepthImageSequence::~ofxDepthImageSequence(){
 
 bool ofxDepthImageSequence::loadSequence(string newSequenceDirectory){
     
-//	waitForThread(true);
-	
+
 	ofDirectory sequenceList(newSequenceDirectory);
 	if(!sequenceList.exists()){
 		ofLogError("ofxDepthImageSequence -- sequence directory " + newSequenceDirectory + " does not exist!");
@@ -34,6 +33,7 @@ bool ofxDepthImageSequence::loadSequence(string newSequenceDirectory){
 		sequenceLoaded = false;
 	}
 
+
 	sequenceList.allowExt("png");
 	int numFiles = sequenceList.listDir();
 	if(numFiles == 0){
@@ -41,6 +41,7 @@ bool ofxDepthImageSequence::loadSequence(string newSequenceDirectory){
 		return false;
 	}
 	
+
 	bool checkedForTimestamp = false;
 	unsigned long firstFrameTimeOffset = 0;
 	for(int i = 0; i < numFiles; i++){

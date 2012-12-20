@@ -22,6 +22,11 @@ void ofxRGBDScene::clear(){
     compressedDepthFrameCount = 0;
     uncompressedDepthFrameCount = 0;
     
+	#ifdef TARGET_WIN32
+	pathDelim = "\\";
+	#else
+	pathDelim = "/";
+	#endif
 }
 
 //static tester to see if folder is a valid bin
@@ -67,11 +72,7 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder, bool countFrames){
         ofLogWarning("ofxRGBDScene::loadFromFolder -- folder " + mediaFolder + " -- Directory is empty.");
         return false;        
     }
-#ifdef TARGET_WIN32
-    vector<string> components = ofSplitString( mediaFolder, "\\" );
-#else
-    vector<string> components = ofSplitString( mediaFolder, "/" );
-#endif		
+    vector<string> components = ofSplitString( mediaFolder, pathDelim );
     name = components[components.size()-1];
     
     //////////////////////////////////////////////
@@ -87,7 +88,7 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder, bool countFrames){
     }
     
     if(!depthFolderFound){
-	    depthFolder = mediaFolder + "/depth/";
+	    depthFolder = mediaFolder + pathDelim + "depth" + pathDelim;
     }
     
     ofDirectory depthDirectory = ofDirectory(depthFolder);
@@ -107,7 +108,7 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder, bool countFrames){
          
          //move all the files from the main folder into the depth directory
         for(int i = 0; i < mainDirectory.numFiles(); i++){
-            string destinationPath = ofFilePath::getEnclosingDirectory(mainDirectory.getPath(i)) + "depth/" + mainDirectory.getName(i);
+            string destinationPath = ofFilePath::getEnclosingDirectory(mainDirectory.getPath(i)) + "depth" + pathDelim + mainDirectory.getName(i);
             //cout << "ofxRGBDScene -- Legacy Format -- moved to " << destinationPath << endl;
         	//mainDirectory.getFile(i).moveTo( destinationPath );
         }
@@ -139,7 +140,7 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder, bool countFrames){
     //////////////////////////////////////////////
     // COLOR
     //////////////////////////////////////////////
-    string colorFolder = mediaFolder + "/color/";
+    string colorFolder = mediaFolder + pathDelim + "color" + pathDelim;
     ofDirectory colorDirectory = ofDirectory(colorFolder);
 	ofDirectory mainDirectoryColor = ofDirectory(sourceMediaFolder);
     //TODO: make an xml file for video formats
@@ -156,7 +157,7 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder, bool countFrames){
         }
         
         for(int i = 0; i < mainDirectoryColor.numFiles(); i++){
-            string destinationPath = ofFilePath::getEnclosingDirectory(mainDirectoryColor.getPath(i)) + "color/" + mainDirectoryColor.getName(i);
+            string destinationPath = ofFilePath::getEnclosingDirectory(mainDirectoryColor.getPath(i)) + "color" + pathDelim + mainDirectoryColor.getName(i);
 //            cout << "ofxRGBDScene -- Legacy Format -- moved to " << destinationPath << endl;
 //        	mainDirectoryColor.getFile(i).moveTo( destinationPath );
         }
@@ -185,7 +186,7 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder, bool countFrames){
             uint64_t smallestSize = colorDirectory.getFile(0).getSize();
             for(int i = 0; i < colorDirectory.numFiles(); i++){
                 uint64_t size = colorDirectory.getFile(i).getSize();
-                cout << colorDirectory.getName(i) << " size is " << size << endl;
+                //cout << colorDirectory.getName(i) << " size is " << size << endl;
                 if(largestSize < size){
                     largestSize = size;
                     largestIndex = i;
@@ -229,10 +230,10 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder, bool countFrames){
         }
 
         if(!hasPairings){
-            pairingsFile = mediaFolder + "/pairings.xml";
+            pairingsFile = mediaFolder + pathDelim + "pairings.xml";
         }
         if(!hasXYShift){
-            xyshiftFile = mediaFolder + "/xyshift.xml";
+            xyshiftFile = mediaFolder + pathDelim + "xyshift.xml";
         }
     }
     //////////////////////////////////////////////
@@ -245,11 +246,11 @@ bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder, bool countFrames){
     //////////////////////////////////////////////
 	if(hasColor){
         vector<string> calibrationFolders;
-        calibrationFolders.push_back(mediaFolder + "/_calibration/matrices/");
+        calibrationFolders.push_back(mediaFolder + "_calibration/matrices/");
         calibrationFolders.push_back(mediaFolder + "/calibration/");
         calibrationFolders.push_back(mediaFolder + "/../_calibration/matrices/");
-        
         for(int i = 0; i < calibrationFolders.size(); i++){
+			ofStringReplace(calibrationFolders[i], "/", pathDelim);
             ofDirectory calibrationDirectory = ofDirectory(calibrationFolders[i]);
             hasCalibration = calibrationDirectory.exists();
             if(hasCalibration){

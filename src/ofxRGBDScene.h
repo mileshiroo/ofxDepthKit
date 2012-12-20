@@ -1,9 +1,3 @@
-//
-//  ofxRGBDScene    
-//
-//  Created by James George on 4/16/12.
-//
-
 #pragma once
 #include "ofMain.h"
 
@@ -29,7 +23,8 @@ class ofxRGBDScene {
     string depthFolder;
     string pairingsFile;
     string xyshiftFile; //file to save the xy fudge params
-    
+    string pathDelim;
+
     int totalDepthFrameCount;
     int compressedDepthFrameCount;
     int uncompressedDepthFrameCount;
@@ -37,5 +32,3 @@ class ofxRGBDScene {
     void clear();
     
 };
-
-

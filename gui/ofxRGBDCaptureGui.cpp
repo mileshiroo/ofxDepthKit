@@ -145,8 +145,8 @@ void ofxRGBDCaptureGui::setup(){
     
     recorder.setup();
 	
-	recordOn.loadSound("sound/record_start.wav");
-	recordOff.loadSound("sound/record_stop.wav");
+//	recordOn.loadSound("sound/record_start.wav");
+//	recordOff.loadSound("sound/record_stop.wav");
 }
 
 void ofxRGBDCaptureGui::setImageProvider(ofxDepthImageProvider* imageProvider){
@@ -156,6 +156,7 @@ void ofxRGBDCaptureGui::setImageProvider(ofxDepthImageProvider* imageProvider){
 }
 
 void ofxRGBDCaptureGui::update(ofEventArgs& args){
+	
 
     for(int i = 0; i < btnScenes.size(); i++){
         btnScenes[i].button->enabled = (currentTab == TabRecord || currentTab == TabPlayback);
@@ -175,8 +176,10 @@ void ofxRGBDCaptureGui::update(ofEventArgs& args){
 		return;
 	}
 	
-	//JG conv -- recordContext.update();
+
 	depthImageProvider->update();
+
+
 	if(depthImageProvider->isFrameNew()){
         if(currentTab == TabRecord){
 	        updateDepthImage(depthImageProvider->getRawDepth());
@@ -186,14 +189,13 @@ void ofxRGBDCaptureGui::update(ofEventArgs& args){
 		}
 		
 		if(recorder.isRecording()){
-			//JG conv -- recorder.addImage( (unsigned short*)recordDepth.getRawDepthPixels());
 			recorder.addImage(depthImageProvider->getRawDepth());
 		}
 	}
 }
 
 void ofxRGBDCaptureGui::draw(ofEventArgs& args){
-    
+
 	if(fullscreenPoints && currentTab == TabPlayback){
 		drawPointcloud(depthSequence.getDepthImageSequence()->getPixels(), true);
 		return;
@@ -384,10 +386,11 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
 	else {
 		for(int i = 0; i < btnScenes.size(); i++){
 			if(object == btnScenes[i].button){
-				loadSequenceForPlayback( i );                
-                for(int b = 0; b < btnScenes.size(); b++){
-                	btnScenes[b].isSelected = b == i;
-                }
+				if(loadSequenceForPlayback( i )){                
+					for(int b = 0; b < btnScenes.size(); b++){
+                		btnScenes[b].isSelected = b == i;
+					}
+				}
                 break;
 			}
 		}
@@ -439,7 +442,7 @@ void ofxRGBDCaptureGui::loadVideoFolder(){
 void ofxRGBDCaptureGui::exit(ofEventArgs& args){
 
     calibrationPreview.quit();
-//  recorder.shutdown();
+	recorder.shutdown();
     if(providerSet){
 		depthImageProvider->close();
         providerSet = false; 
@@ -570,14 +573,19 @@ void ofxRGBDCaptureGui::loadDefaultDirectory(){
 	
 }
 
-void ofxRGBDCaptureGui::loadSequenceForPlayback( int index ){
-    depthSequence.loadSequence( recorder.getScenes()[index]->depthFolder );
-	//timeline.setDurationInFrames(depthSequence.videoThumbs.size());
-	timeline.setDurationInSeconds(depthSequence.getDepthImageSequence()->getDurationInSeconds());
+bool ofxRGBDCaptureGui::loadSequenceForPlayback( int index ){
+
+	if(recorder.getScenes()[index]->uncompressedDepthFrameCount == 0){
+	    depthSequence.loadSequence( recorder.getScenes()[index]->depthFolder );
+		timeline.setDurationInSeconds(depthSequence.getDepthImageSequence()->getDurationInSeconds());
+		return true;
+	}
+	return false;
 }
 
 void ofxRGBDCaptureGui::toggleRecord(){
 	recorder.toggleRecord();
+	/*
 	if(recorder.isRecording()){
 		recordOn.setPosition(0);
 		recordOn.play();
@@ -586,6 +594,7 @@ void ofxRGBDCaptureGui::toggleRecord(){
 		recordOff.setPosition(0);
 		recordOff.play();
 	}
+	*/
 	updateSceneButtons();
 }
 

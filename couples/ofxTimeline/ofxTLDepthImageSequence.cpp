@@ -41,13 +41,12 @@ void ofxTLDepthImageSequence::disable(){
 
 void ofxTLDepthImageSequence::update(ofEventArgs& args){
 	if(isLoaded() && getAutoUpdate()){
-		//selectTimeInMillis( timeline->getCurrentTimeMillis() );
+		cout << "AUTO UPDATING!!" << endl;
+		selectTimeInMillis( timeline->getCurrentTimeMillis() );
 	}
 }
 
 void ofxTLDepthImageSequence::draw(){
-
-	
     if(!isLoaded()){
 		ofPushStyle();
         ofSetColor(timeline->getColors().disabledColor);
@@ -266,13 +265,12 @@ ofPtr<ofxDepthImageSequence> ofxTLDepthImageSequence::getDepthImageSequence(){
 }
 
 bool ofxTLDepthImageSequence::loadSequence(string seqdir){
-    
 	waitForThread(true);
 	
     if(depthImageSequence == NULL){
 		depthImageSequence = ofPtr<ofxDepthImageSequence>( new ofxDepthImageSequence() );
     }
-	
+
     bool loadSuccess = depthImageSequence->loadSequence(seqdir);
 	if(loadSuccess){
 		frameIsNew = true;
@@ -296,6 +294,7 @@ void ofxTLDepthImageSequence::threadedFunction(){
 	while(isThreadRunning()){
 		
         backLock.lock();
+		ofImage thumbImage;
         if(!ofGetMousePressed() && isLoaded() && !currentlyZooming && thumbsEnabled){
             for(int i = 0; i < backThumbs.size(); i++){
                 if(!backThumbs[i].loaded){
@@ -311,8 +310,8 @@ void ofxTLDepthImageSequence::threadedFunction(){
 					backThumbs[i].useTexture = false;
 					depthImageSequence->getPixelsAtTime(ofClamp(videoThumbs[i].timestamp+timeOffsetInMillis,
 																0, depthImageSequence->getDurationInMillis()), thumbnailDepthRaw);
-					backThumbs[i].create(depthImageSequence->getCompressor().convertTo8BitImage(thumbnailDepthRaw, false));
-                    
+					thumbImage = depthImageSequence->getCompressor().convertTo8BitImage(thumbnailDepthRaw, false);
+					backThumbs[i].create(thumbImage.getPixelsRef());
                     lock();
                     videoThumbs[i] = backThumbs[i];
                     unlock();

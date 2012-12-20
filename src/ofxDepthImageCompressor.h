@@ -22,8 +22,8 @@ class ofxDepthImageCompressor {
 	//DECOMPRESS
     static void readCompressedPng(string filename, ofShortPixels& pix);
 	unsigned short* readDepthFrame(string filename, unsigned short* outbuf = NULL);
-	unsigned short* readDepthFrame(ofFile file, unsigned short*  outbuf = NULL);
-	static  unsigned short* readCompressedPng(string filename, unsigned short* outbuf = NULL);
+	unsigned short* readDepthFrame(ofFile& file, unsigned short*  outbuf = NULL);
+	static unsigned short* readCompressedPng(string filename, unsigned short* outbuf = NULL);
 	
 	ofImage readDepthFrametoImage(string filename);
     
@@ -35,4 +35,5 @@ class ofxDepthImageCompressor {
     
   protected:
 	ofImage compressedDepthImage;
+
 };
