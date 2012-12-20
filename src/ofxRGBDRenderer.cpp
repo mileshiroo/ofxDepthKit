@@ -71,11 +71,11 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath, string depthIntrinsicsPath
 	rgbCalibration.getDistortedIntrinsics().loadProjectionMatrix();
     glGetFloatv(GL_PROJECTION_MATRIX, rgbProjection.getPtr());
 	cout << " RGB Projection matrix PRE FLIP " << rgbProjection << endl;
-	if(rgbProjection.getPtr()[0] > 0){ 
-		ofMatrix4x4 flipMatrix;
-		flipMatrix.makeScaleMatrix(-1,1,1);
-		rgbProjection = flipMatrix * rgbProjection;
-	}
+//	if(rgbProjection.getPtr()[0] > 0){ 
+//		ofMatrix4x4 flipMatrix;
+//		flipMatrix.makeScaleMatrix(-1,1,1);
+//		rgbProjection = flipMatrix * rgbProjection;
+//	}
 	cout << " RGB Projection matrix POST FLIP" << rgbProjection << endl;
 
 	ofPopView();
@@ -399,22 +399,22 @@ void ofxRGBDRenderer::setupProjectionUniforms(ofShader& theShader){
     theShader.setUniform2f("fov", fx, fy);
     theShader.setUniform1f("farClip", farClip);
 	theShader.setUniform1f("edgeClip", edgeClip);
-
+    theShader.setUniformMatrix4f("tTex", rgbMatrix);
     theShader.setUniform1f("xsimplify", simplify.x);
     theShader.setUniform1f("ysimplify", simplify.y);
     
-    glMatrixMode(GL_TEXTURE);
-    glPushMatrix();
-    glLoadMatrixf(rgbMatrix.getPtr());
-    glMatrixMode(GL_MODELVIEW);      
-    
+//    glMatrixMode(GL_TEXTURE);
+//    glPushMatrix();
+//    glLoadMatrixf(rgbMatrix.getPtr());
+//    glMatrixMode(GL_MODELVIEW);      
+//    
 }
 
 void ofxRGBDRenderer::restortProjection(){
 
-    glMatrixMode(GL_TEXTURE);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);   
+//    glMatrixMode(GL_TEXTURE);
+//    glPopMatrix();
+//    glMatrixMode(GL_MODELVIEW);   
 
 }
 

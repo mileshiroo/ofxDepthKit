@@ -106,11 +106,6 @@ void ofxRGBDPlayer::useHiresVideo(){
 }
 
 void ofxRGBDPlayer::useLowResVideo(){
-//    player = ofPtr<ofVideoPlayer>(new ofVideoPlayer());
-//    ofQTKitPlayer* newPlayer = new ofQTKitPlayer();
-//    newPlayer->loadMovie(scene.videoPath, OF_QTKIT_DECODE_TEXTURE_ONLY);
-//    player->setPlayer(ofPtr<ofBaseVideoPlayer>(newPlayer));
-    
     player = ofPtr<ofVideoPlayer>(new ofVideoPlayer());
     if(!player->loadMovie(scene.videoPath)){
         scene.clear();
