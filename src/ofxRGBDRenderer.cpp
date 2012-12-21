@@ -109,7 +109,6 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath, string depthIntrinsicsPath
 	texData.height = 480;
 	texData.glType = GL_LUMINANCE;
     texData.glTypeInternal = GL_LUMINANCE16;
-//    texData.glType = GL_RGB;
 	texData.pixelType = GL_UNSIGNED_SHORT;
 
 	depthTexture.allocate(texData);
