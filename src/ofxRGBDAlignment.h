@@ -17,8 +17,6 @@
 #include "ofMain.h"
 #include "ofxCv.h"
 
-using namespace ofxCv;
-using namespace cv;
 
 typedef struct {
 	string filepath;
@@ -60,8 +58,8 @@ class ofxRGBDAlignment {
 
 	void draw3DCalibrationDebug(bool left);
 	
-	Calibration& getDepthCalibration();
-	Calibration& getRGBCalibration();
+    ofxCv::Calibration& getDepthCalibration();
+	ofxCv::Calibration& getRGBCalibration();
 	
 	//create calibration files from the current images for use in ofxRGBDRenderer
 	void saveAlignment(string saveDirectory);
@@ -98,9 +96,9 @@ class ofxRGBDAlignment {
 	vector<CalibrationImage> rgbImages;
 	vector<CalibrationImage> depthImages;
 	
-	Calibration depthCalibration, rgbCalibration;    
-	Mat rotationDepthToRGB, translationDepthToRGB;
-	Mat rotationRGBToDepth, translationRGBToDepth;
+    ofxCv::Calibration depthCalibration, rgbCalibration;
+	cv::Mat rotationDepthToRGB, translationDepthToRGB;
+    cv::Mat rotationRGBToDepth, translationRGBToDepth;
 	
 	ofRectangle depthImageBoundingRect;
 	ofRectangle rgbImageBoundingRect;

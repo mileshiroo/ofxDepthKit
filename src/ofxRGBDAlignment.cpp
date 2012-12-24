@@ -10,6 +10,9 @@
 #include "ofxRGBDAlignment.h"
 #include "ofxXmlSettings.h"
 
+using namespace ofxCv;
+using namespace cv;
+
 ofxRGBDAlignment::ofxRGBDAlignment() {
 	guiIsSetup = false;
 	selectedDepthImage = -1;

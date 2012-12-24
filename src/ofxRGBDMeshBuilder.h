@@ -12,10 +12,10 @@
 #include "ofxCv.h"
 #include "ofxDepthHoleFiller.h"
 
-using namespace ofxCv;
 
 class ofxRGBDMeshBuilder {
   public:
+    
     ofxRGBDMeshBuilder();
     ~ofxRGBDMeshBuilder();    
     
@@ -69,15 +69,19 @@ class ofxRGBDMeshBuilder {
     bool normalizeTextureCoordinates;
     
     void setTextureScaleForImage(ofBaseHasTexture& texture);
-	Calibration depthCalibration, rgbCalibration;
+    
+    ofxCv::Calibration depthCalibration, rgbCalibration;
     ofVec2f textureScale;
 	
 	ofVec3f getWorldPoint(float x, float y);
     ofVec3f getWorldPoint(float x, float y, unsigned short z);
     ofVec3f getWorldPoint(float x, float y, ofShortPixels& pixels);
-
+    
+    
 	bool cacheValidVertices;
 	vector<ofIndexType> validVertIndices;
+    //returns the x,y coord in the image for the given
+    pair<int,int> getPixelLocationForIndex(ofIndexType index);
 
 	ofBaseHasTexture* currentTexture;
 
@@ -89,14 +93,15 @@ class ofxRGBDMeshBuilder {
 	
   private:
     ofMesh mesh;
-    Mat rotationDepthToRGB, translationDepthToRGB;
+    cv::Mat rotationDepthToRGB, translationDepthToRGB;
 	ofShortPixels* currentDepthPixels;
 	
-    Point2d principalPoint;
+    cv::Point2d principalPoint;
     cv::Size imageSize;
 	
 	void setupDrawMatrices();
-	
+	map< ofIndexType, pair<int, int> > indexToPixelCoord;
+    
 	ofVec2f fov;
     ofVec2f simplify;
     bool hasTriangles;
@@ -107,4 +112,3 @@ class ofxRGBDMeshBuilder {
     void generateTextureCoordinates();  
     vector<ofIndexType> baseIndeces;    
 };
-

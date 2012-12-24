@@ -12,8 +12,6 @@
 #include "ofMain.h"
 #include "ofxCv.h"
 
-using namespace cv;
-using namespace ofxCv;
 
 class ofxDepthHoleFiller {
 	

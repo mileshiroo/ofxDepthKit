@@ -5,6 +5,9 @@
 
 #include "ofxDepthHoleFiller.h"
 
+using namespace cv;
+using namespace ofxCv;
+
 ofxDepthHoleFiller::ofxDepthHoleFiller(){
 	enable = true;
 	kernelSize = 3;

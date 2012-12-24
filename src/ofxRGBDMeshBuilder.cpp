@@ -8,6 +8,8 @@
 
 #include "ofxRGBDMeshBuilder.h"
 
+using namespace ofxCv;
+
 ofxRGBDMeshBuilder::ofxRGBDMeshBuilder(){
     farClip = 5000;
 	nearClip = 20;
@@ -134,6 +136,7 @@ void ofxRGBDMeshBuilder::setSimplification(ofVec2f simplification){
 	mesh.clearVertices();
 	for (float y = 0; y < imageSize.height; y += simplify.y){
 		for (float x = 0; x < imageSize.width; x += simplify.x){
+            indexToPixelCoord[ mesh.getVertices().size() ] = make_pair(x,y);
 			mesh.addVertex(ofVec3f(x,y,0));
 		}
 	}
@@ -341,6 +344,10 @@ ofVec3f ofxRGBDMeshBuilder::getWorldPoint(float x, float y, ofShortPixels& pixel
 
 ofVec3f ofxRGBDMeshBuilder::getWorldPoint(float x, float y, unsigned short z){
 	return ofVec3f( (x - principalPoint.x) * z / fov.x, (y - principalPoint.y) * z / fov.y, z);
+}
+
+pair<int,int> ofxRGBDMeshBuilder::getPixelLocationForIndex(ofIndexType index){
+    return indexToPixelCoord[index];
 }
 
 void ofxRGBDMeshBuilder::updateCenter(){
