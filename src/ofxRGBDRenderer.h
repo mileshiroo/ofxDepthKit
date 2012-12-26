@@ -79,8 +79,6 @@ class ofxRGBDRenderer {
 	void drawPointCloud(ofShader& customShader);
 	void drawWireFrame(ofShader& customShader);
     
-    void setNormalTexture(ofBaseHasTexture& normals);
-    
 	//populated with vertices, texture coords, and indeces
 	ofVboMesh& getMesh();
 	
@@ -113,7 +111,6 @@ class ofxRGBDRenderer {
 	ofTexture depthTexture;
 	
 	ofBaseHasTexture* currentRGBImage;
-    ofBaseHasTexture* currentNormalImage;
 	ofShortPixels* currentDepthImage;
     ofImage undistortedRGBImage;
 	ofShortPixels undistortedDepthImage;
