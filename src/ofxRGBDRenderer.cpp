@@ -28,7 +28,8 @@ ofxRGBDRenderer::ofxRGBDRenderer(){
 
     rendererBound = false;
     currentlyBoundShader = NULL;
-
+    currentNormalImage = NULL;
+    
 	mirror = false;
 	calibrationSetup = false;
     
@@ -57,8 +58,7 @@ bool ofxRGBDRenderer::setup(string calibrationDirectory){
 }
 
 bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath, string depthIntrinsicsPath, string rotationPath, string translationPath){
-//	rgbCalibration.setFillFrame(false);
-//	depthCalibration.setFillFrame(false);
+    
 	depthCalibration.load(depthIntrinsicsPath);
 	rgbCalibration.load(rgbIntrinsicsPath);
 	
@@ -348,6 +348,9 @@ bool ofxRGBDRenderer::bindRenderer(ofShader& shader){
     return true;
 }
 
+void ofxRGBDRenderer::setNormalTexture(ofBaseHasTexture& normals){
+    currentNormalImage = &normals;
+}
 
 void ofxRGBDRenderer::unbindRenderer(){
     
@@ -377,6 +380,10 @@ void ofxRGBDRenderer::setupProjectionUniforms(ofShader& theShader){
 
 	theShader.setUniformTexture("colorTex", currentRGBImage->getTextureReference(), 0);
 	theShader.setUniformTexture("depthTex", depthTexture, 1);
+    if(currentNormalImage != NULL && currentNormalImage->getTextureReference().isAllocated()){
+        theShader.setUniformTexture("normalTex", currentNormalImage->getTextureReference(), 2);
+    }
+    
     theShader.setUniform1i("useTexture", useTexture ? 1 : 0);
     theShader.setUniform2f("shift", xshift, yshift);
     theShader.setUniform2f("scale", xscale, yscale);
