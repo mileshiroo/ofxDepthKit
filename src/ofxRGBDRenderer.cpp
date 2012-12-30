@@ -11,6 +11,7 @@
 
 
 ofxRGBDRenderer::ofxRGBDRenderer(){
+    
 	xshift = 0;
 	yshift = 0;
 	xscale = 1.0;
@@ -29,7 +30,17 @@ ofxRGBDRenderer::ofxRGBDRenderer(){
     rendererBound = false;
     currentlyBoundShader = NULL;
     currentNormalImage = NULL;
+    currentFaceImage = NULL;
+    currentDistortImage = NULL;
     
+    currentScanlineFrame = 0;
+
+    distortionScale = 0;
+    distortionColorSample = 0;
+    scanlineDiscardThreshold = 0;
+    scanlineDiscardFrequency = 0;
+    scanlineRate = 0;
+
 	mirror = false;
 	calibrationSetup = false;
     
@@ -40,6 +51,9 @@ ofxRGBDRenderer::ofxRGBDRenderer(){
     addColors = false;
     currentDepthImage = NULL;
     useTexture = true;
+    useFaceTexture = false;
+    useNormalTexture = false;
+    
 }
 
 ofxRGBDRenderer::~ofxRGBDRenderer(){
@@ -351,6 +365,12 @@ bool ofxRGBDRenderer::bindRenderer(ofShader& shader){
 void ofxRGBDRenderer::setNormalTexture(ofBaseHasTexture& normals){
     currentNormalImage = &normals;
 }
+void ofxRGBDRenderer::setFaceTexture(ofBaseHasTexture& faces){
+    currentFaceImage = &faces;
+}
+void ofxRGBDRenderer::setDistortionTexture(ofBaseHasTexture& distort){
+    currentDistortImage = &distort;
+}
 
 void ofxRGBDRenderer::unbindRenderer(){
     
@@ -380,10 +400,15 @@ void ofxRGBDRenderer::setupProjectionUniforms(ofShader& theShader){
 
 	theShader.setUniformTexture("colorTex", currentRGBImage->getTextureReference(), 0);
 	theShader.setUniformTexture("depthTex", depthTexture, 1);
-    if(currentNormalImage != NULL && currentNormalImage->getTextureReference().isAllocated()){
+    if(useNormalTexture && currentNormalImage != NULL && currentNormalImage->getTextureReference().isAllocated()){
         theShader.setUniformTexture("normalTex", currentNormalImage->getTextureReference(), 2);
     }
-    
+    if(useFaceTexture && currentFaceImage != NULL && currentFaceImage->getTextureReference().isAllocated()){
+        theShader.setUniformTexture("faceTex", currentFaceImage->getTextureReference(), 3);
+    }
+    if(currentDistortImage != NULL && currentDistortImage->getTextureReference().isAllocated()){
+        theShader.setUniformTexture("distortTex", currentDistortImage->getTextureReference(), 4);
+    }
     theShader.setUniform1i("useTexture", useTexture ? 1 : 0);
     theShader.setUniform2f("shift", xshift, yshift);
     theShader.setUniform2f("scale", xscale, yscale);
@@ -392,6 +417,12 @@ void ofxRGBDRenderer::setupProjectionUniforms(ofShader& theShader){
     theShader.setUniform2f("fov", fx, fy);
     theShader.setUniform1f("farClip", farClip);
 	theShader.setUniform1f("edgeClip", edgeClip);
+    theShader.setUniform1f("frame", currentScanlineFrame);
+    theShader.setUniform1f("distortionScale",distortionScale);
+    theShader.setUniform1f("distortionSampleAmount",distortionColorSample);
+    theShader.setUniform1f("scanlineDiscardFrequency",scanlineDiscardFrequency);
+    theShader.setUniform1f("scanlineDiscardThreshold",scanlineDiscardThreshold);
+    currentScanlineFrame += scanlineRate;
 	if(flipTexture){
 		ofMatrix4x4 flipMatrix;
 		flipMatrix.makeScaleMatrix(-1,1,1);

@@ -80,6 +80,8 @@ class ofxRGBDRenderer {
 	void drawWireFrame(ofShader& customShader);
     
     void setNormalTexture(ofBaseHasTexture& normals);
+    void setFaceTexture(ofBaseHasTexture& faces);
+    void setDistortionTexture(ofBaseHasTexture& distort);
     
 	//populated with vertices, texture coords, and indeces
 	ofVboMesh& getMesh();
@@ -92,8 +94,18 @@ class ofxRGBDRenderer {
     
 	bool useTexture;
 	bool flipTexture;
-		
-  protected:	
+    bool useFaceTexture;
+    bool useNormalTexture;
+    
+    float distortionScale;
+    float distortionColorSample;
+    float scanlineDiscardThreshold;
+    float scanlineDiscardFrequency;
+    float scanlineRate;
+    
+    float currentScanlineFrame;
+    
+  protected:
 	ofVec2f simplify;
 
     //bool shaderBound;
@@ -108,12 +120,14 @@ class ofxRGBDRenderer {
 
 	bool hasDepthImage;
 	bool hasRGBImage;
-
     
 	ofTexture depthTexture;
 	
 	ofBaseHasTexture* currentRGBImage;
     ofBaseHasTexture* currentNormalImage;
+    ofBaseHasTexture* currentFaceImage;
+    ofBaseHasTexture* currentDistortImage;
+    
 	ofShortPixels* currentDepthImage;
     ofImage undistortedRGBImage;
 	ofShortPixels undistortedDepthImage;

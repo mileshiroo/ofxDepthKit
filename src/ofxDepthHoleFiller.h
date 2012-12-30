@@ -25,9 +25,11 @@ class ofxDepthHoleFiller {
 	int setIterations(int iterations);
 	int getKernelSize();
 	int getIterations();
-	
+	void setThreshold(float treshold);
+    
 	bool enable;
   protected:
+    float threshold;
 	int kernelSize;
 	int iterations;
 	
