@@ -323,6 +323,10 @@ void ofxRGBDRenderer::drawProjectionDebug(bool showDepth, bool showRGB, float rg
     ofPopStyle();
 }
 
+bool ofxRGBDRenderer::bindRenderer(){
+    bindRenderer(meshShader);
+}
+
 bool ofxRGBDRenderer::bindRenderer(ofShader& shader){
 
 	if(!hasDepthImage){
