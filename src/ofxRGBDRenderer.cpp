@@ -41,6 +41,10 @@ ofxRGBDRenderer::ofxRGBDRenderer(){
     scanlineDiscardFrequency = 0;
     scanlineRate = 0;
 
+    depthColorMix = 0.0;
+    depthColorMax = 2000.0;
+    depthColorMin = 0.0;
+
 	mirror = false;
 	calibrationSetup = false;
     
@@ -323,6 +327,10 @@ void ofxRGBDRenderer::drawProjectionDebug(bool showDepth, bool showRGB, float rg
     ofPopStyle();
 }
 
+ofShader& ofxRGBDRenderer::getShader(){
+    return meshShader;
+}
+
 bool ofxRGBDRenderer::bindRenderer(){
     bindRenderer(meshShader);
 }
@@ -426,6 +434,10 @@ void ofxRGBDRenderer::setupProjectionUniforms(ofShader& theShader){
     theShader.setUniform1f("distortionSampleAmount",distortionColorSample);
     theShader.setUniform1f("scanlineDiscardFrequency",scanlineDiscardFrequency);
     theShader.setUniform1f("scanlineDiscardThreshold",scanlineDiscardThreshold);
+    theShader.setUniform1f("depthColorMix", depthColorMix);
+    theShader.setUniform1f("depthColorMax", depthColorMax);
+    theShader.setUniform1f("depthColorMin", depthColorMin);
+    
     currentScanlineFrame += scanlineRate;
 	if(flipTexture){
 		ofMatrix4x4 flipMatrix;

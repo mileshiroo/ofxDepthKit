@@ -63,6 +63,7 @@ class ofxRGBDRenderer {
     void drawProjectionDebug(bool showDepth, bool showRGB, float rgbTexturePosition);
     
 	void reloadShader();
+    ofShader& getShader();
     
 	//sets a level of simplification, 
 	//should be either 1 for none
@@ -104,6 +105,10 @@ class ofxRGBDRenderer {
     float scanlineRate;
     
     float currentScanlineFrame;
+    
+    float depthColorMix;
+    float depthColorMax;
+    float depthColorMin;
     
   protected:
 	ofVec2f simplify;
