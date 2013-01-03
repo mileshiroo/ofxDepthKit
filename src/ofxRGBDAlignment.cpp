@@ -17,7 +17,7 @@ ofxRGBDAlignment::ofxRGBDAlignment() {
 	guiIsSetup = false;
 	selectedDepthImage = -1;
 	selectedRgbImage = -1;
-	
+	calibrationIsDirty = false;
 }
 
 //-----------------------------------------------
@@ -57,6 +57,8 @@ void ofxRGBDAlignment::addRGBCalibrationImage(string rgbCalibrationImagePath){
     ci.hasCheckerboard = false;
 	rgbImages.push_back( ci );
 	recalculateImageDrawRects();
+    
+    calibrationIsDirty = true;
 }
 
 //-----------------------------------------------
@@ -73,6 +75,8 @@ void ofxRGBDAlignment::addDepthCalibrationImage(string depthCalibrationImagePath
     ci.hasCheckerboard = false;
 	depthImages.push_back( ci );	
 	recalculateImageDrawRects();
+    
+    calibrationIsDirty = true;
 }
 
 //-----------------------------------------------
@@ -99,9 +103,11 @@ void ofxRGBDAlignment::addRGBCalibrationDirectory(string rgbImageDirectory){
 	}
 	
 	generateAlignment();
+    
 	if (guiIsSetup) {
 		recalculateImageDrawRects();
 	}
+
 }
 
 //-----------------------------------------------
@@ -120,30 +126,36 @@ void ofxRGBDAlignment::addDepthCalibrationDirectory(string depthImageDirectory){
 	}
 	
 	generateAlignment();
+    
 	if (guiIsSetup) {
 		recalculateImageDrawRects();
 	}
-	
 }
 
 //-----------------------------------------------
 void ofxRGBDAlignment::addCalibrationDirectoryPair(string depthImageDirectory, string rgbImageDirectory){
+    calibrationIsDirty = true;
 	addDepthCalibrationDirectory(depthImageDirectory);
 	addRGBCalibrationDirectory(rgbImageDirectory);
 }
 
 //-----------------------------------------------
 void ofxRGBDAlignment::clearRGBImages(){
+    calibrationIsDirty = true;
 	rgbImages.clear();
 }
 
 //-----------------------------------------------
 void ofxRGBDAlignment::clearDepthImages(){
+    calibrationIsDirty = true;
 	depthImages.clear();
 }
 
 //-----------------------------------------------
 void ofxRGBDAlignment::discardCurrentPair(){
+    
+    calibrationIsDirty = true;
+    
 	if(selectedRgbImage != -1){
 		rgbImages.erase(rgbImages.begin() + selectedRgbImage);
 		selectedRgbImage = -1;
@@ -163,6 +175,7 @@ void ofxRGBDAlignment::saveState(string filePath){
 }
 
 void ofxRGBDAlignment::saveState(){
+    
 	ofxXmlSettings imageLocations;
 	imageLocations.addTag("images");
 	imageLocations.pushTag("images");
@@ -216,6 +229,8 @@ void ofxRGBDAlignment::loadState(string filePath){
 	else {
 		ofLogError("ofxRGBDAlignment -- failed to load image locations at " + filePath );
 	}
+    
+    calibrationIsDirty = true;
 }
 
 
@@ -261,12 +276,13 @@ bool ofxRGBDAlignment::generateAlignment(){
 		
 	}
 	
-	if(rgbImages.size() == depthImages.size() && depthImages.size() > 3){
+	if(rgbImages.size() == depthImages.size() && depthImages.size() >= 3){
 		depthCalibration.getTransformation(rgbCalibration, rotationDepthToRGB, translationDepthToRGB);
 		rgbCalibration.getTransformation(depthCalibration, rotationRGBToDepth, translationRGBToDepth);
+        calibrationIsDirty = false;
+        return ready();
 	}
-	
-	return ready();
+    return false;
 }
 
 //-----------------------------------------------
@@ -281,8 +297,13 @@ bool ofxRGBDAlignment::ready(){
 	return depthCalibration.isReady() && rgbCalibration.isReady();
 }
 
-void ofxRGBDAlignment::saveAlignment(string saveDirectory) {
+bool ofxRGBDAlignment::saveAlignment(string saveDirectory) {
 	if(ready()){
+        
+        if(calibrationIsDirty){
+            generateAlignment();
+        }
+        
 		ofDirectory dir(saveDirectory);
 		if(!dir.exists()){
 			dir.create(true);
@@ -296,11 +317,10 @@ void ofxRGBDAlignment::saveAlignment(string saveDirectory) {
 		saveMat(translationDepthToRGB, saveDirectory+"/translationDepthToRGB.yml");
 		saveMat(rotationRGBToDepth, saveDirectory+"/rotationRGBToDepth.yml");
 		saveMat(translationRGBToDepth, saveDirectory+"/translationRGBToDepth.yml");
-
+        return true;
 	}
-	else {
-		ofLogWarning("ofxRGBDAlignment -- Could not save alignment, it's not ready");
-	}
+    ofLogWarning("ofxRGBDAlignment -- Could not save alignment, it's not ready");
+	return false;
 }
 
 
@@ -391,8 +411,6 @@ void ofxRGBDAlignment::drawRGBImages(){
 		ofRect(rgbImages[selectedRgbImage].drawRect);
 		ofPopStyle();
 	}
-    
-
 }
 
 ofImage& ofxRGBDAlignment::getCurrentDepthImage(){

@@ -62,7 +62,7 @@ class ofxRGBDAlignment {
 	ofxCv::Calibration& getRGBCalibration();
 	
 	//create calibration files from the current images for use in ofxRGBDRenderer
-	void saveAlignment(string saveDirectory);
+	bool saveAlignment(string saveDirectory);
 	
 	//GUI STUFF
 	//perhaps this is bad deisgn to mix these two together, but it works well in this case
@@ -92,6 +92,7 @@ class ofxRGBDAlignment {
 	
   protected:
 	
+    bool calibrationIsDirty;
 	string stateFilePath;
 	vector<CalibrationImage> rgbImages;
 	vector<CalibrationImage> depthImages;

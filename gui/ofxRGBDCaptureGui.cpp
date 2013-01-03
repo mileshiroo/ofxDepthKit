@@ -70,7 +70,7 @@ void ofxRGBDCaptureGui::setup(){
 	buttonSet.push_back(btnRenderPointCloud);
     
     btnLoadRGBCalibration = new ofxMSAInteractiveObjectWithDelegate();
-    btnLoadRGBCalibration->setLabel("Load Calibration Movies");
+    btnLoadRGBCalibration->setLabel("Load RGB Calibration");
     btnLoadRGBCalibration->setPosAndSize(0, btnheight*2+frameheight, thirdWidth, btnheight);
 	buttonSet.push_back(btnLoadRGBCalibration);
 
@@ -105,6 +105,7 @@ void ofxRGBDCaptureGui::setup(){
     
 	calibrationPreview.setup(10, 7, 25);
 	alignment.setup(10, 7, 25);
+    
 	alignment.setupGui(0, btnheight*4+frameheight, ofGetWidth());
 	
 	timeline.setup();
@@ -373,7 +374,9 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
         loadVideoFolder();
     }
     else if(object == btnGenerateCalibration){
-        alignment.generateAlignment();
+        if(!alignment.generateAlignment()){
+            ofSystemAlertDialog("Generation Failed. Ensure you have at least three image pairs loaded.");
+        }
     }
     else if(object == btnExportCalibration){
         string matrixDir = workingDirectory+"/_calibration/matrices/";
@@ -381,7 +384,9 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
         if(!dir.exists()){
             dir.create(true);
         }
-        alignment.saveAlignment(matrixDir);
+        if(!alignment.saveAlignment(matrixDir)){
+            ofSystemAlertDialog("Save Failed. Make sure you have generated a valid alignment");
+        }
     }
 	else {
 		for(int i = 0; i < btnScenes.size(); i++){
@@ -400,14 +405,16 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
 void ofxRGBDCaptureGui::loadVideoFolder(){
     		
 	//TODO thread this
-    ofSystemAlertDialog("Select a Folder of Calibration MOVs");
-    ofFileDialogResult r = ofSystemLoadDialog("Calibration MOV's", true);
+    ofSystemAlertDialog("Select a Folder of Calibration movies or PNGs");
+    ofFileDialogResult r = ofSystemLoadDialog("Calibration images", true);
     if(r.bSuccess){
+        
         ofDirectory files(r.getPath());
         files.allowExt("mov");
         files.allowExt("mpeg");
         files.allowExt("mpg");
         files.allowExt("mp4");
+        files.allowExt("png");
         files.listDir();
         files.sort();
         
@@ -418,21 +425,32 @@ void ofxRGBDCaptureGui::loadVideoFolder(){
         }
         
 		alignment.clearRGBImages();
+        ofImage saveImage;
+        saveImage.setUseTexture(false);
         for(int i = 0; i < files.numFiles(); i++){
-            ofVideoPlayer p;
-            if(p.loadMovie(files.getPath(i))){
+            if(  files.getFile(i).getExtension() == "png"){
+                if(!saveImage.loadImage(files.getPath(i))){
+                    ofLogError("ofxRGBDCaptureGui::loadVideoFolder -- ERROR loading image file " + files.getPath(i));
+                    continue;
+                }
+            }
+            else{
+                ofVideoPlayer p;
+                p.setUseTexture(false);
+                if(!p.loadMovie(files.getPath(i))){
+                    ofLogError("ofxRGBDCaptureGui::loadVideoFolder -- ERROR loading video file " + files.getPath(i));
+                    continue;
+                }
+                
                 p.setFrame(p.getTotalNumFrames() / 2);
                 p.update();
-                ofImage toSave;
-                toSave.setFromPixels(p.getPixelsRef());
-                string pngFileName = pathPrefix+ofFilePath::getBaseName(files.getName(i)) + ".png";
-                toSave.saveImage(pngFileName);
-                alignment.addRGBCalibrationImage(pngFileName);
-                cout << "turned " << files.getPath(i) << " into " << pngFileName << " and loaded it " << endl;
+                saveImage.setFromPixels(p.getPixelsRef());
             }
-            else {
-                ofLogError("ofxRGBDCaptureGui::loadVideoFolder -- ERROR loading movie file " + files.getPath(i));
-            }
+            
+            string pngFileName = pathPrefix+ofFilePath::getBaseName(files.getName(i)) + ".png";
+            saveImage.saveImage(pngFileName);
+            alignment.addRGBCalibrationImage(pngFileName);
+//            cout << "turned " << files.getPath(i) << " into " << pngFileName << " and loaded it " << endl;
         }
 //        alignment.generateAlignment();
         alignment.saveState();
@@ -606,12 +624,11 @@ void ofxRGBDCaptureGui::captureCalibrationImage(){
     sprintf(filenamePrefix, "%s/_calibration/depthCalibration/calibration_image_%02d_%02d_%02d_%02d_%02d", workingDirectory.c_str(), ofGetMonth(), ofGetDay(), ofGetHours(), ofGetMinutes(), ofGetSeconds());
 //	cout << "capture image file name " << filename << endl;
 //    ofSaveImage( depthImageProvider->getRawIRImage(), filename);
-	string checkerboardFileName = string(filenamePrefix)+"_checkers.png";
-	string depthFileName = string(filenamePrefix)+"_depth.png";
+	string checkerboardFileName = string(filenamePrefix)+"_sensor_checkers.png";
+//	string depthFileName = string(filenamePrefix)+"_depth.png";
 	depthImageProvider->getRawIRImage().saveImage(checkerboardFileName);
-	recorder.getCompressor().saveToCompressedPng(depthFileName, depthImageProvider->getRawDepth().getPixels() );
-	
-//    alignment.addDepthCalibrationImage(checkerboardFileName);
+//	recorder.getCompressor().saveToCompressedPng(depthFileName, depthImageProvider->getRawDepth().getPixels() );
+    alignment.addDepthCalibrationImage(checkerboardFileName);
 //    alignment.generateAlignment();
 //    alignment.saveState();
 
