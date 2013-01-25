@@ -41,7 +41,6 @@ void ofxTLDepthImageSequence::disable(){
 
 void ofxTLDepthImageSequence::update(ofEventArgs& args){
 	if(isLoaded() && getAutoUpdate()){
-		cout << "AUTO UPDATING!!" << endl;
 		selectTimeInMillis( timeline->getCurrentTimeMillis() );
 	}
 }

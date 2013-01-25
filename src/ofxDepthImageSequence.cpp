@@ -74,11 +74,8 @@ bool ofxDepthImageSequence::loadSequence(string newSequenceDirectory){
 				}
 			}
 		}
-
-		images.push_back( img );
 	}
 	
-	//currentFrame = -1;
     if(framesHaveTimestamps){
 	    durationInMillis = images[images.size()-1].timestamp;
     }
