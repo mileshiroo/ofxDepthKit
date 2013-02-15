@@ -1,40 +1,36 @@
 //
-//  ofxRGBDMeshBuilder.cpp
+//  ofxRGBDCPURenderer.cpp
 //  RGBDVisualize
 //
 //  Created by James George on 6/14/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
-#include "ofxRGBDMeshBuilder.h"
+#include "ofxRGBDCPURenderer.h"
 
 using namespace ofxCv;
 
-ofxRGBDMeshBuilder::ofxRGBDMeshBuilder(){
-    farClip = 5000;
-	nearClip = 20;
-    edgeClip = 500;
-    addColors = false;
+ofxRGBDCPURenderer::ofxRGBDCPURenderer(){
+    
 	depthOnly = false;
-	
+
+	//TODO: bring this into renderer?
 	topClip = 0.0;
 	bottomClip = 1.0;
 	leftClip = 0.0;
 	rightClip = 1.0;
 
-    undistortDepthImage = true;
     calibrationSetup = false;
     calculateTextureCoordinates = true;
     normalizeTextureCoordinates = false;
     hasTriangles = false;
     
-    setSimplification(ofVec2f(1,1));
     textureScale = ofVec2f(1.0, 1.0);
 	mirror = false;
 	scale = ofVec2f(1,1);
 	
-	currentTexture = NULL;
-	currentDepthPixels = NULL;
+//	currentTexture = NULL;
+//	currentDepthPixels = NULL;
 
 	cacheValidVertices = false;
 	
@@ -43,14 +39,14 @@ ofxRGBDMeshBuilder::ofxRGBDMeshBuilder(){
 	worldRotation = ofVec3f(0,0,0);
 }
 
-ofxRGBDMeshBuilder::~ofxRGBDMeshBuilder(){
+ofxRGBDCPURenderer::~ofxRGBDCPURenderer(){
 }
 
-void ofxRGBDMeshBuilder::setDepthOnly(){
+void ofxRGBDCPURenderer::setDepthOnly(){
     
     //default kinect intrinsics
-	fov.x = 5.7034220279543524e+02;
-	fov.y = 5.7034220280129011e+02;
+	fx = 5.7034220279543524e+02;
+	fy = 5.7034220280129011e+02;
 	principalPoint.x = 320;
 	principalPoint.y = 240;
 	imageSize.width = 640;
@@ -58,7 +54,8 @@ void ofxRGBDMeshBuilder::setDepthOnly(){
 	depthOnly = true;
 }
 
-bool ofxRGBDMeshBuilder::setup(string calibrationDirectory){
+/*
+bool ofxRGBDCPURenderer::setup(string calibrationDirectory){
  	if(!ofDirectory(calibrationDirectory).exists()){
 		ofLogError("ofxRGBDRenderer --- Calibration directory doesn't exist: " + calibrationDirectory);
 		return false;
@@ -84,12 +81,14 @@ bool ofxRGBDMeshBuilder::setup(string calibrationDirectory){
 	
 	return (calibrationSetup = true);   
 }
+*/
 
-ofVec2f ofxRGBDMeshBuilder::getSimplification(){
-    return simplify;
-}
+//ofVec2f ofxRGBDCPURenderer::getSimplification(){
+//    return simplify;
+//}
 
-void ofxRGBDMeshBuilder::setSimplification(ofVec2f simplification){
+void ofxRGBDCPURenderer::setSimplification(ofVec2f simplification){
+    
     if(!calibrationSetup && !depthOnly){
         return;
     }
@@ -98,6 +97,10 @@ void ofxRGBDMeshBuilder::setSimplification(ofVec2f simplification){
         return;
     }
     
+    if(simplification.x <= 0  || simplification.y <= 0){
+        return;
+    }
+
 	simplify = simplification;
     simplify.x = ofClamp(simplify.x, 0, 8);
     simplify.y = ofClamp(simplify.y, 0, 8);
@@ -157,44 +160,38 @@ void ofxRGBDMeshBuilder::setSimplification(ofVec2f simplification){
                 mesh.addTexCoord(ofVec2f(0,0));
             }
         }
-    }    
+    }
+    meshGenerated = true;
 //    cout << "set simplification level to " << simplifyLevel << " for image size " << imageSize.width << " x " << imageSize.height << " #verts " << mesh.getNumVertices() << endl;
 }
 
-void ofxRGBDMeshBuilder::update(){
-	if(currentDepthPixels != NULL){
-		update(*currentDepthPixels);
-	}
-	else {
-		ofLogError("ofxRGBDMeshBuilder") << "calling updated without a mesh sent";
-	}
-}
-
-void ofxRGBDMeshBuilder::update(ofShortPixels& depthImage){
+void ofxRGBDCPURenderer::update(){
     
     if(!calibrationSetup && !depthOnly){
-     	ofLogError("ofxRGBDMeshBuilder::updateMesh() -- no calibration set up");
+     	ofLogError("ofxRGBDCPURenderer::updateMesh() -- no calibration set up");
         return;
     }
     
-	if(!depthImage.isAllocated()){
-		ofLogError("ofxRGBDMeshBuilder::update") << "depth pix are not allocated";
+	if(currentDepthImage == NULL || !currentDepthImage->isAllocated()){
+		ofLogError("ofxRGBDCPURenderer::update") << "depth pix are not allocated";
 		return;
 	}
 
-	if(depthImage.getWidth() != imageSize.width || depthImage.getHeight() != imageSize.height){
-		ofLogError("ofxRGBDMeshBuilder::update") << "depth pix dimensions don't match, provided " << ofVec2f(depthImage.getWidth(), depthImage.getHeight()) << " expecting " << ofVec2f(imageSize.width,imageSize.height);
+	if(currentDepthImage->getWidth() != imageSize.width ||
+       currentDepthImage->getHeight() != imageSize.height)
+    {
+		ofLogError("ofxRGBDCPURenderer::update") << "depth pix dimensions don't match, provided " << ofVec2f(currentDepthImage->getWidth(), currentDepthImage->getHeight()) << " expecting " << ofVec2f(imageSize.width,imageSize.height);
 		return;
 	}
     
     
-	holeFiller.close(depthImage);
+	//holeFiller.close(depthImage);
 		
     //feed the zed values into the mesh
     int vertexIndex = 0;
     hasTriangles = false;
 	validVertIndices.clear();
-    unsigned short* ptr = depthImage.getPixels();    
+    unsigned short* ptr = currentDepthImage->getPixels();
     for(float y = 0; y < imageSize.height; y += simplify.y) {
         for(float x = 0; x < imageSize.width; x += simplify.x) {
 			
@@ -245,31 +242,27 @@ void ofxRGBDMeshBuilder::update(ofShortPixels& depthImage){
     //cout << "updated mesh has " << mesh.getNumIndices()/3 << " triangles " << endl;
 }
 
-ofMesh& ofxRGBDMeshBuilder::getMesh(){
-    return mesh;
-}
-
-ofMesh ofxRGBDMeshBuilder::getReducedMesh(bool normalizeTextureCoords, ofVec3f vertexScale, bool flipTextureX, bool flipTextureY){
+ofMesh ofxRGBDCPURenderer::getReducedMesh(bool normalizeTextureCoords, ofVec3f vertexScale, bool flipTextureX, bool flipTextureY){
     if(!cacheValidVertices){
-        ofLogError("ofxRGBDMeshBuilder::getReducedMesh -- Must cache valid verts to get the reduced mesh");
+        ofLogError("ofxRGBDCPURenderer::getReducedMesh -- Must cache valid verts to get the reduced mesh");
     }
     ofMesh reducedMesh;
     map<ofIndexType, ofIndexType> vertMapping;
     for(int i = 0; i < validVertIndices.size(); i++){
         vertMapping[ validVertIndices[i] ] = i;
         reducedMesh.addVertex( mesh.getVertices()[ validVertIndices[i] ] * vertexScale);
-		if(mesh.hasTexCoords() && calculateTextureCoordinates && currentTexture != NULL){
+		if(mesh.hasTexCoords() && calculateTextureCoordinates && currentRGBImage != NULL){
             ofVec2f& coord = mesh.getTexCoords()[ validVertIndices[i] ] ;
             if(flipTextureX){
-                coord.x = currentTexture->getTextureReference().getWidth() - coord.x;
+                coord.x = currentRGBImage->getTextureReference().getWidth() - coord.x;
             }
             if(flipTextureY){
-                coord.y = currentTexture->getTextureReference().getHeight() - coord.y;
+                coord.y = currentRGBImage->getTextureReference().getHeight() - coord.y;
             }
             
             if(normalizeTextureCoords){
-				coord /= ofVec2f(currentTexture->getTextureReference().getWidth(),
-                                 currentTexture->getTextureReference().getHeight() );
+				coord /= ofVec2f(currentRGBImage->getTextureReference().getWidth(),
+                                 currentRGBImage->getTextureReference().getHeight() );
             }
             
             reducedMesh.addTexCoord(coord);
@@ -286,11 +279,11 @@ ofMesh ofxRGBDMeshBuilder::getReducedMesh(bool normalizeTextureCoords, ofVec3f v
     return reducedMesh;
 }
 
-void ofxRGBDMeshBuilder::generateTextureCoordinates(){
+void ofxRGBDCPURenderer::generateTextureCoordinates(){
 	generateTextureCoordinates(mesh.getVertices(), mesh.getTexCoords());
 }
 
-ofVec2f ofxRGBDMeshBuilder::getTextureCoordinateForPoint(ofVec3f point){
+ofVec2f ofxRGBDCPURenderer::getTextureCoordinateForPoint(ofVec3f point){
 	vector<ofVec3f> points;
 	vector<ofVec2f> tex;
 	points.push_back(point);
@@ -298,7 +291,7 @@ ofVec2f ofxRGBDMeshBuilder::getTextureCoordinateForPoint(ofVec3f point){
 	return tex[0];
 }
 
-void ofxRGBDMeshBuilder::generateTextureCoordinates(vector<ofVec3f>& points, vector<ofVec2f>& texCoords){
+void ofxRGBDCPURenderer::generateTextureCoordinates(vector<ofVec3f>& points, vector<ofVec2f>& texCoords){
     if(!calibrationSetup){
         ofLogError("ofxRGBDRenderer::generateTextureCoordinates -- no calibration set up");
         return;
@@ -332,25 +325,25 @@ void ofxRGBDMeshBuilder::generateTextureCoordinates(vector<ofVec3f>& points, vec
 	}
 }
 
-ofVec3f ofxRGBDMeshBuilder::getWorldPoint(float x, float y){
-	if(currentDepthPixels == NULL) return ofVec3f(0,0,0);
-	return getWorldPoint(x,y,*currentDepthPixels);
+ofVec3f ofxRGBDCPURenderer::getWorldPoint(float x, float y){
+	if(currentDepthImage == NULL) return ofVec3f(0,0,0);
+	return getWorldPoint(x,y,*currentDepthImage);
 }
 
-ofVec3f ofxRGBDMeshBuilder::getWorldPoint(float x, float y, ofShortPixels& pixels){
+ofVec3f ofxRGBDCPURenderer::getWorldPoint(float x, float y, ofShortPixels& pixels){
 	unsigned short z =  pixels.getPixels()[ pixels.getPixelIndex(x, y) ];
     return getWorldPoint(x,y,z);
 }
 
-ofVec3f ofxRGBDMeshBuilder::getWorldPoint(float x, float y, unsigned short z){
-	return ofVec3f( (x - principalPoint.x) * z / fov.x, (y - principalPoint.y) * z / fov.y, z);
+ofVec3f ofxRGBDCPURenderer::getWorldPoint(float x, float y, unsigned short z){
+	return ofVec3f( (x - principalPoint.x) * z / fx, (y - principalPoint.y) * z / fy, z);
 }
 
-pair<int,int> ofxRGBDMeshBuilder::getPixelLocationForIndex(ofIndexType index){
+pair<int,int> ofxRGBDCPURenderer::getPixelLocationForIndex(ofIndexType index){
     return indexToPixelCoord[index];
 }
 
-void ofxRGBDMeshBuilder::updateCenter(){
+void ofxRGBDCPURenderer::updateCenter(){
 	center = ofVec3f(0,0,0);
 	int vertsAdded = 0;
 	for(int i = 0; i < mesh.getVertices().size(); i++){
@@ -363,37 +356,35 @@ void ofxRGBDMeshBuilder::updateCenter(){
 	center.y *= -1;
 }
 
-void ofxRGBDMeshBuilder::setPivotToMeshCenter(){
+void ofxRGBDCPURenderer::setPivotToMeshCenter(){
 	updateCenter();
 	pivot = center;
 }
 
-ofxDepthHoleFiller& ofxRGBDMeshBuilder::getHoleFiller(){
-	return holeFiller;
-}
 
-void ofxRGBDMeshBuilder::setTexture(ofBaseHasTexture& texture){
-	currentTexture = &texture;
-	setTextureScaleForImage(texture);
-}
+//void ofxRGBDCPURenderer::setTexture(ofBaseHasTexture& texture){
+//	currentTexture = &texture;
+//	setTextureScaleForImage(texture);
+//}
+//
+//void ofxRGBDCPURenderer::setDepthPixels(ofShortPixels& pixels){
+//	currentDepthPixels = &pixels;
+//}
 
-void ofxRGBDMeshBuilder::setDepthPixels(ofShortPixels& pixels){
-	currentDepthPixels = &pixels;
-}
 
-void ofxRGBDMeshBuilder::draw(){
-	if(currentTexture != NULL){
-		draw(*currentTexture);
-	}
-	else {
-		ofPushMatrix();
-		setupDrawMatrices();
-		mesh.drawWireframe();
-		ofPopMatrix();
-	}
-}
+//void ofxRGBDCPURenderer::draw(){
+//	if(currentTexture != NULL){
+//		draw(*currentTexture);
+//	}
+//	else {
+//		ofPushMatrix();
+//		setupDrawMatrices();
+//		mesh.drawWireframe();
+//		ofPopMatrix();
+//	}
+//}
 
-void ofxRGBDMeshBuilder::setupDrawMatrices(){
+void ofxRGBDCPURenderer::setupDrawMatrices(){
 	ofTranslate(worldPosition);
 	
 	ofTranslate(pivot);
@@ -408,17 +399,54 @@ void ofxRGBDMeshBuilder::setupDrawMatrices(){
 	}
 }
 
-void ofxRGBDMeshBuilder::draw(ofBaseHasTexture& texture){
+void ofxRGBDCPURenderer::draw(ofPolyRenderMode drawMode){
+    
+    if(!calibrationSetup && !depthOnly){
+        ofLogError("ofxRGBDCPURenderer::draw -- Failed. Calibration is not set up");
+        return;
+    }
+    
+    if(!hasTriangles){
+        ofLogError("ofxRGBDCPURenderer::draw -- Failed. Mesh has no geometry");
+        return;
+    }
+
+    ofPushMatrix();
+	setupDrawMatrices();
+    if(!depthOnly && currentRGBImage != NULL){
+        currentRGBImage->getTextureReference().bind();
+    }
+    
+    switch(drawMode){
+        case OF_MESH_POINTS:
+            mesh.drawVertices(); break;
+        case OF_MESH_WIREFRAME:
+            mesh.drawWireframe(); break;
+        case OF_MESH_FILL:
+            mesh.drawFaces(); break;
+    }
+    
+    if(!depthOnly && currentRGBImage != NULL){
+        currentRGBImage->getTextureReference().unbind();
+    }
+    
+    ofPopMatrix();
+}
+
+
+
+/*
+void ofxRGBDCPURenderer::draw(ofBaseHasTexture& texture){
     if(!calibrationSetup){
-        ofLogError("ofxRGBDMeshBuilder::draw -- Failed. Calibration is not set up");
+        ofLogError("ofxRGBDCPURenderer::draw -- Failed. Calibration is not set up");
         return;
     }
     if(!hasTriangles){
-        ofLogError("ofxRGBDMeshBuilder::draw -- Failed. Mesh has no geometry");
+        ofLogError("ofxRGBDCPURenderer::draw -- Failed. Mesh has no geometry");
         return;
     }
     if(depthOnly){
-        ofLogError("ofxRGBDMeshBuilder::draw -- Failed. MeshBuilder is set to depth only");
+        ofLogError("ofxRGBDCPURenderer::draw -- Failed. MeshBuilder is set to depth only");
         return;
     }
     
@@ -429,10 +457,11 @@ void ofxRGBDMeshBuilder::draw(ofBaseHasTexture& texture){
     texture.getTextureReference().unbind();
     ofPopMatrix();
 }
+ */
 
-void ofxRGBDMeshBuilder::setTextureScaleForImage(ofBaseHasTexture& texture){
+void ofxRGBDCPURenderer::setTextureScaleForImage(ofBaseHasTexture& texture){
 	if(!calibrationSetup){
-		ofLogError("ofxRGBDMeshBuilder::setTextureScaleForImage") << "must set up matrices before setting texture scale";
+		ofLogError("ofxRGBDCPURenderer::setTextureScaleForImage") << "must set up matrices before setting texture scale";
 		return;
 	}
 	
@@ -441,6 +470,6 @@ void ofxRGBDMeshBuilder::setTextureScaleForImage(ofBaseHasTexture& texture){
                            float(texture.getTextureReference().getHeight()) / float(rgbImage.height) );    
 }
 
-void ofxRGBDMeshBuilder::setXYShift(ofVec2f newShift){
-    shift = newShift;
-}
+//void ofxRGBDCPURenderer::setXYShift(ofVec2f newShift){
+//    shift = newShift;
+//}
