@@ -201,7 +201,7 @@ void ofxRGBDCPURenderer::update(){
 			   x <= imageSize.width*rightClip &&
 			   y >= imageSize.height*topClip &&
 			   y <= imageSize.height*bottomClip &&
-			   z >= nearClip &&
+			   z > nearClip &&
 			   z <= farClip)
 			{
 				point = getWorldPoint(x,y,z);
@@ -215,7 +215,7 @@ void ofxRGBDCPURenderer::update(){
 			mesh.setVertex(vertexIndex++, point);
         }
     }
-    
+
     mesh.clearIndices();
     for(int i = 0; i < baseIndeces.size(); i+=3){
 
@@ -234,7 +234,7 @@ void ofxRGBDCPURenderer::update(){
         hasTriangles = true;
     }
 
-	//cout << "has triangles? " << mesh.getNumIndices() << endl;
+//	cout << "has triangles? " << mesh.getNumIndices() << endl;
 	if(calculateTextureCoordinates && !depthOnly){
         generateTextureCoordinates();
 	}
@@ -423,7 +423,8 @@ void ofxRGBDCPURenderer::draw(ofPolyRenderMode drawMode){
         case OF_MESH_WIREFRAME:
             mesh.drawWireframe(); break;
         case OF_MESH_FILL:
-            mesh.drawFaces(); break;
+            mesh.drawFaces();
+            break;
     }
     
     if(!depthOnly && currentRGBImage != NULL){

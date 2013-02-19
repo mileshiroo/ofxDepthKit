@@ -22,31 +22,10 @@ class ofxRGBDGPURenderer : public ofxRGBDRenderer {
 	ofxRGBDGPURenderer();
 	virtual ~ofxRGBDGPURenderer();
 	
-//    bool setup(string rgbIntrinsicsPath, string depthIntrinsicsPath, string rotationPath, string translationPath);
-//	bool setup(string calibrationDirectory);
-
-//    void setRGBTexture(ofBaseHasTexture& tex);
     virtual void setDepthImage(ofShortPixels& pix);
-
-//    ofBaseHasTexture& getRGBTexture();
     virtual void update();
 
-//    //fudge factors to apply during alignment
-//    void setXYShift(ofVec2f shift);
-//    void setXYScale(ofVec2f scale);
-//    
-//    float xshift;
-//	float yshift;
-//	float xscale;
-//    float yscale;
-//	float edgeClip;
-//	float farClip;
-//    bool addColors;
-//	bool mirror;
-//    bool calibrationSetup;
-    
-    //ofVec3f meshRotate;
-
+    //use these to project and draw textured custom geometry
     bool bindRenderer();
     void unbindRenderer();
     
@@ -59,8 +38,7 @@ class ofxRGBDGPURenderer : public ofxRGBDRenderer {
     void setShaderPath(string path);
 	void reloadShader();
 
-//    ofShader& getShader();
-//    void setShader(ofShader& shader);
+    ofShader& getShader();
 
 	//sets a level of simplification,
 	//should be either 1 for none
@@ -69,53 +47,14 @@ class ofxRGBDGPURenderer : public ofxRGBDRenderer {
 	
     void draw(ofPolyRenderMode drawMode);
 
-//  void drawMesh(ofShader& customShader);
-//	void drawPointCloud(ofShader& customShader);
-//	void drawWireFrame(ofShader& customShader);
-    
-    
-	//populated with vertices, texture coords, and indeces
-//	ofVboMesh& getMesh();
-	
-//	Calibration& getRGBCalibration();
-//	Calibration& getDepthCalibration();
-//	ofMatrix4x4& getDepthToRGBTransform();
-//	ofMatrix4x4& getRGBMatrix();
 	ofTexture& getDepthTexture();
     
-//	bool useTexture;
-	bool flipTexture;
-		
   protected:	
 	ofVec2f simplify;
 
-    //bool shaderBound;
-    ofShader meshShader;
+    ofShader shader;
     string shaderPath;
     bool rendererBound;
 	ofTexture depthTexture;
-
-
-//    Point2d principalPoint;
-//    cv::Size imageSize;
-//	Calibration depthCalibration, rgbCalibration;    
-//	Mat rotationDepthToRGB, translationDepthToRGB;
-//    float fx, fy;
-
-//	bool hasDepthImage;
-//	bool hasRGBImage;
-
-    
-//	ofBaseHasTexture* currentRGBImage;
-//	ofShortPixels* currentDepthImage;
-//    ofImage undistortedRGBImage;
-//	ofShortPixels undistortedDepthImage;
-
-//    ofVboMesh mesh; 
-    
-//	ofMatrix4x4 depthToRGBView;
-//	ofMatrix4x4 rgbProjection;
-//    ofMatrix4x4 rgbMatrix;
-//	ofMatrix4x4 depthProjection;
     
 };

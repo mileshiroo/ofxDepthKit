@@ -26,7 +26,7 @@ ofxRGBDRenderer::ofxRGBDRenderer(){
     
     flipTexture = false;
     
-    nearClip = 0;
+    nearClip = 1;
 	edgeClip = 50;
 	simplify = ofVec2f(0,0);
     

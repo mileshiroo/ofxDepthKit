@@ -27,6 +27,7 @@ ofxRGBDGPURenderer::ofxRGBDGPURenderer()
 ofxRGBDGPURenderer::~ofxRGBDGPURenderer(){
 
 }
+
 /*
 bool ofxRGBDGPURenderer::setup(string calibrationDirectory){
 	
@@ -91,9 +92,6 @@ bool ofxRGBDGPURenderer::setup(string rgbIntrinsicsPath, string depthIntrinsicsP
 }
 */
 
-//void ofxRGBDGPURenderer::setSimplification(float simplification){
-//    setSimplification(ofVec2f(simplification,simplification));
-//}
 
 void ofxRGBDGPURenderer::setSimplification(ofVec2f simplification){
     
@@ -110,14 +108,11 @@ void ofxRGBDGPURenderer::setSimplification(ofVec2f simplification){
     }
     
 	simplify = simplification;
-//    simplify.x = ofClamp(simplify.x, 0, 8);
-//    simplify.y = ofClamp(simplify.y, 0, 8);
 	
     mesh.clearIndices();
     int x = 0;
     int y = 0;
     
-//    int w = imageSize.width;
     int gw = ceil(imageSize.width / simplify.x);
     int w = gw*simplify.x;
     int h = imageSize.height;
@@ -166,22 +161,6 @@ void ofxRGBDGPURenderer::setSimplification(ofVec2f simplification){
     meshGenerated = true;
 }
 
-////-----------------------------------------------
-//ofVec2f ofxRGBDGPURenderer::getSimplification(){
-//	return simplify;
-//}
-
-////-----------------------------------------------
-//void ofxRGBDGPURenderer::setRGBTexture(ofBaseHasTexture& tex){
-//
-//	currentRGBImage = &tex;
-//	hasRGBImage = true;
-//}
-
-//ofBaseHasTexture& ofxRGBDGPURenderer::getRGBTexture() {
-//    return *currentRGBImage;
-//}
-
 void ofxRGBDGPURenderer::setDepthImage(ofShortPixels& pix){
     ofxRGBDRenderer::setDepthImage(pix);
     
@@ -205,26 +184,8 @@ void ofxRGBDGPURenderer::setDepthImage(ofShortPixels& pix){
 //        cout << " is depth texture allocated? " << (depthTexture.bAllocated() ? "yes" : "no") << " internal format? " << internalFormat << " vs " << GL_LUMINANCE16 << endl;
     }
     
-//    currentDepthImage = &pix;
-//	hasDepthImage = true;
 }
 
-//Calibration& ofxRGBDGPURenderer::getDepthCalibration(){
-//	return depthCalibration;
-//}
-//
-//Calibration& ofxRGBDGPURenderer::getRGBCalibration(){
-//	return rgbCalibration;
-//}
-//
-//ofMatrix4x4& ofxRGBDGPURenderer::getRGBMatrix(){
-//	return rgbMatrix;
-//}
-//
-//ofMatrix4x4& ofxRGBDGPURenderer::getDepthToRGBTransform(){
-//	return depthToRGBView;
-//}
-//
 
 ofTexture& ofxRGBDGPURenderer::getDepthTexture(){
     return depthTexture;
@@ -249,65 +210,14 @@ void ofxRGBDGPURenderer::update(){
 	depthTexture.loadData(*currentDepthImage);
 }
 
-//ofVboMesh& ofxRGBDGPURenderer::getMesh(){
-//	return mesh;
-//}
-
-//void ofxRGBDGPURenderer::setXYShift(ofVec2f shift){
-//    xshift = shift.x;
-//    yshift = shift.y;
-//}
-//
-//void ofxRGBDGPURenderer::setXYScale(ofVec2f scale){
-//    xscale = scale.x;
-//    yscale = scale.y;
-//}
-
 void ofxRGBDGPURenderer::setShaderPath(string path){
     shaderPath = path;
     reloadShader();
 }
 
 void ofxRGBDGPURenderer::reloadShader(){
-    meshShader.load(shaderPath);
+    shader.load(shaderPath);
 }
-
-//void ofxRGBDGPURenderer::drawProjectionDebug(bool showDepth, bool showRGB, float rgbTexturePosition){
-//    ofPushStyle();
-//	glEnable(GL_DEPTH_TEST);
-//	if(showRGB){
-//		ofPushMatrix();
-//		ofSetColor(255);
-//		rgbMatrix = (depthToRGBView * rgbProjection);
-//		ofScale(1,-1,1);
-//		glMultMatrixf(rgbMatrix.getInverse().getPtr());
-//		
-//		ofNoFill();
-//		ofSetColor(255,200,10);
-//		ofBox(1.99f);
-//		
-//		//draw texture
-//		if(rgbTexturePosition > 0){
-//			ofSetColor(255);
-//			ofTranslate(0, 0, 1.0 - powf(1-rgbTexturePosition, 2.0));
-//			undistortedRGBImage.draw(1, 1, -2, -2);
-//		}
-//		ofPopMatrix();
-//	}
-//	
-//	if(showDepth){
-//		ofPushMatrix();
-//		ofScale(-1,1,-1);
-//		ofNoFill();
-//		ofSetColor(10,200,255);
-//		glMultMatrixf(depthProjection.getInverse().getPtr());
-//		ofBox(1.99f);
-//		ofPopMatrix();
-//	}
-//	
-//	glDisable(GL_DEPTH_TEST);
-//    ofPopStyle();
-//}
 
 bool ofxRGBDGPURenderer::bindRenderer(){
 
@@ -333,7 +243,7 @@ bool ofxRGBDGPURenderer::bindRenderer(){
     ofRotate(worldRotation.z,0,0,1);
 
 	if(hasRGBImage){
-        meshShader.begin();
+        shader.begin();
         glActiveTexture(GL_TEXTURE1);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -354,10 +264,7 @@ void ofxRGBDGPURenderer::unbindRenderer(){
     }
     
     if(rendererBound && hasRGBImage){
-        meshShader.end();
-//        currentlyBoundShader->end();
-//        currentlyBoundShader = NULL;
-//        }
+        shader.end();
 	}
 
 	ofPopMatrix();
@@ -368,42 +275,34 @@ void ofxRGBDGPURenderer::setupProjectionUniforms(){
     ofVec2f dims = ofVec2f(currentRGBImage->getTextureReference().getWidth(),
                            currentRGBImage->getTextureReference().getHeight());
 
-	meshShader.setUniformTexture("colorTex", currentRGBImage->getTextureReference(), 0);
-	meshShader.setUniformTexture("depthTex", depthTexture, 1);
-    meshShader.setUniform1i("useTexture", useTexture ? 1 : 0);
-    meshShader.setUniform2f("shift", shift.x, shift.y);
-    meshShader.setUniform2f("scale", scale.x, scale.y);
-    meshShader.setUniform2f("dim", dims.x, dims.y);
-    meshShader.setUniform2f("principalPoint", principalPoint.x, principalPoint.y);
-    meshShader.setUniform2f("fov", fx, fy);
-    meshShader.setUniform1f("farClip", farClip);
-	meshShader.setUniform1f("edgeClip", edgeClip);
+	shader.setUniformTexture("colorTex", currentRGBImage->getTextureReference(), 0);
+	shader.setUniformTexture("depthTex", depthTexture, 1);
+    shader.setUniform1i("useTexture", useTexture ? 1 : 0);
+    shader.setUniform2f("shift", shift.x, shift.y);
+    shader.setUniform2f("scale", scale.x, scale.y);
+    shader.setUniform2f("dim", dims.x, dims.y);
+    shader.setUniform2f("principalPoint", principalPoint.x, principalPoint.y);
+    shader.setUniform2f("fov", fx, fy);
+    shader.setUniform1f("farClip", farClip);
+	shader.setUniform1f("edgeClip", edgeClip);
 	if(flipTexture){
 		ofMatrix4x4 flipMatrix;
 		flipMatrix.makeScaleMatrix(-1,1,1);
         rgbMatrix = (depthToRGBView * (flipMatrix * rgbProjection));
-        meshShader.setUniformMatrix4f("tTex", rgbMatrix );
+        shader.setUniformMatrix4f("tTex", rgbMatrix );
 	}
     else{
         rgbMatrix = (depthToRGBView * rgbProjection);
-        meshShader.setUniformMatrix4f("tTex", rgbMatrix);
+        shader.setUniformMatrix4f("tTex", rgbMatrix);
     }
     
-    meshShader.setUniform1f("xsimplify", simplify.x);
-    meshShader.setUniform1f("ysimplify", simplify.y);
+    shader.setUniform1f("xsimplify", simplify.x);
+    shader.setUniform1f("ysimplify", simplify.y);
 }
 
-//void ofxRGBDGPURenderer::drawMesh(){
-//    drawMesh(meshShader);
-//}
-//
-//void ofxRGBDGPURenderer::drawPointCloud(){
-//    drawPointCloud(pointShader);
-//}
-//
-//void ofxRGBDGPURenderer::drawWireFrame(){
-//    drawWireFrame(meshShader);
-//}
+ofShader& ofxRGBDGPURenderer::getShader(){
+    return shader;
+}
 
 void ofxRGBDGPURenderer::draw(ofPolyRenderMode drawMode){
     if(bindRenderer()){
@@ -416,6 +315,7 @@ void ofxRGBDGPURenderer::draw(ofPolyRenderMode drawMode){
             case OF_MESH_FILL:
                 mesh.drawFaces(); break;
         }
+        
         unbindRenderer();
     }
 }
