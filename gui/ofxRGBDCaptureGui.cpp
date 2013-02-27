@@ -18,6 +18,9 @@ ofxRGBDCaptureGui::ofxRGBDCaptureGui(){
     calibrationGenerated = false;
     currentRendererPreviewIndex = 0;
     currentCalibrationImageIndex = 0;
+    hoverPreviewDepth = false;
+    hoverPreviewIR = false;
+    hoverPreviewingCaptured = false;
 }
 
 ofxRGBDCaptureGui::~ofxRGBDCaptureGui(){
@@ -146,7 +149,7 @@ void ofxRGBDCaptureGui::setup(){
 	cam.loadCameraPosition();
 
     createRainbowPallet();
-    depthImage.allocate(640, 480, OF_IMAGE_COLOR);
+    depthImage.allocate(640, 480, OF_IMAGE_GRAYSCALE);
     
     recorder.setup();
 
@@ -168,7 +171,7 @@ void ofxRGBDCaptureGui::update(ofEventArgs& args){
     
 	if(depthImageProvider->isFrameNew()){
         
-        if(currentTab == TabCapture){
+        if(currentTab == TabCapture || currentTab == TabExtrinsics){
             updateDepthImage(depthImageProvider->getRawDepth());
         }
 
@@ -327,7 +330,20 @@ void ofxRGBDCaptureGui::drawExtrinsics(){
 		}
 	}
     
-    if(calibrationGenerated){
+    //Draw RIGHT side previews
+    if(hoverPreviewingCaptured){
+        hoverPreviewImage.draw(previewRectRight);
+        calibrationPreview.draw(previewRectRight);
+    }
+    else if(hoverPreviewDepth){
+        depthImage.draw(previewRectRight);
+        calibrationPreview.draw(previewRectRight);
+    }
+    else if(hoverPreviewIR){
+        depthImageProvider->getRawIRImage().draw(previewRectRight);
+        calibrationPreview.draw(previewRectRight);
+    }
+    else if(calibrationGenerated){
         ofSetColor(255);
         glEnable(GL_DEPTH_TEST);
         cam.begin(previewRectRight);
@@ -339,10 +355,11 @@ void ofxRGBDCaptureGui::drawExtrinsics(){
         ofPushStyle();
         ofNoFill();
         ofRect(previewRectRight);
-        //TODO: add GENERATE calibration error message
+        //TODO: add need GENERATE calibration error message
         
         ofPopStyle();
     }
+    
 }
 
 void ofxRGBDCaptureGui::drawCapture(){
@@ -434,10 +451,36 @@ void ofxRGBDCaptureGui::mouseMoved(ofMouseEventArgs& args){
 
     //CHECK FOR HOVER IN INTRINSICS
     if(currentTab == TabIntrinsics){
-    
+        
     }
     else if(currentTab == TabExtrinsics){
-    
+        hoverPreviewDepth =  hoverPreviewIR = hoverPreviewingCaptured = false;
+        for(int i = alignmentPairs.size()-1; i >= 0; i--){
+            if(alignmentPairs[i]->depthImageRect.inside(args.x,args.y)){
+                if(alignmentPairs[i] == currentAlignmentPair && !alignmentPairs[i]->depthImage.isAllocated()){
+                    hoverPreviewDepth = true;
+                }
+                else{
+                    hoverPreviewImage.setFromPixels(alignmentPairs[i]->depthImage.getPixelsRef());
+                    calibrationPreview.setTestImage(alignmentPairs[i]->depthCheckers);
+                    hoverPreviewingCaptured = true;
+                }
+            }
+            if(alignmentPairs[i]->depthCheckersRect.inside(args.x,args.y)){
+                if(alignmentPairs[i] == currentAlignmentPair && !alignmentPairs[i]->depthCheckers.isAllocated()){
+                    hoverPreviewIR = true;
+                }
+                else{
+                    hoverPreviewImage.setFromPixels(alignmentPairs[i]->depthCheckers.getPixelsRef());
+                    calibrationPreview.setTestImage(alignmentPairs[i]->depthCheckers);
+                    hoverPreviewingCaptured = true;
+                }
+            }
+            
+            if(alignmentPairs[i]->colorCheckersRect.inside(args.x,args.y)){
+                //TODO check for colors to set and make it work within the given size
+            }
+        }
     }
 }
 
@@ -458,11 +501,20 @@ void ofxRGBDCaptureGui::mouseReleased(ofMouseEventArgs& args){
                 //CAPTURE DEPTH IMAGE
                 alignmentPairs[i]->depthPixelsRaw = depthImageProvider->getRawDepth();
                 alignmentPairs[i]->depthImage = recorder.getCompressor().convertTo8BitImage( alignmentPairs[i]->depthPixelsRaw );
+                hoverPreviewImage.setFromPixels(alignmentPairs[i]->depthImage.getPixelsRef());
+                //preview the still of what you just clicked
+                hoverPreviewDepth = false;
+                hoverPreviewingCaptured = true;
+                
                 break;
             }
             if(alignmentPairs[i]->depthCheckersRect.inside(args.x,args.y)){
                 //CAPTURE IR IMAGE
                 alignmentPairs[i]->depthCheckers.setFromPixels(depthImageProvider->getRawIRImage());
+                hoverPreviewImage.setFromPixels(alignmentPairs[i]->depthCheckers.getPixelsRef());
+                //preview the still of what you just clicked
+                hoverPreviewIR = false;
+                hoverPreviewingCaptured = true;
                 break;
             }
             if(alignmentPairs[i]->colorCheckersRect.inside(args.x,args.y)){
@@ -759,6 +811,12 @@ void ofxRGBDCaptureGui::refineDepthCalibration(){
     //TODO impose folder structure
 	depthCalibrationRefined.setIntrinsics(newDepth, depthDistCoeffs);
 	depthCalibrationRefined.save("depthCalibRefined.yml");
+    
+    depthCameraMatrix = depthCalibrationRefined.getDistortedIntrinsics().getCameraMatrix();
+    fov = ofVec2f(depthCameraMatrix.at<double>(0,0), depthCameraMatrix.at<double>(1,1));
+    cout << "fov " << fov << endl;
+    pp = ofVec2f(depthCameraMatrix.at<double>(0,2),depthCameraMatrix.at<double>(1,2));
+    cout << "principle point " << pp << endl;    
 }
 
 void ofxRGBDCaptureGui::generateCorrespondence(){
@@ -898,6 +956,11 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 	
 	setupRenderer();
 
+}
+
+ofVec3f ofxRGBDCaptureGui::depthToWorldFromCalibration(int x, int y, unsigned short z){
+    //    return ofVec3f(((x - pp.x) / 640) * z * fov.x, ((y - pp.y) / 480) * z * fov.y, z);
+    return ofVec3f((x - pp.x) * z / fov.x, (y - pp.y) * z / fov.y, z);
 }
 
 void ofxRGBDCaptureGui::exit(ofEventArgs& args){

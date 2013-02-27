@@ -161,10 +161,12 @@ public:
 	Calibration rgbCalibration;
     Calibration depthCalibrationBase;
 	Calibration depthCalibrationRefined;
+    //depth camera params
+    ofVec2f fov;
+    ofVec2f pp;
 
     vector<ofImage> rgbCalibrationImages;
     int currentCalibrationImageIndex;
-    
     void refineDepthCalibration();
     
     //EXTRINSICS
@@ -172,8 +174,11 @@ public:
 	AlignmentPair* currentAlignmentPair;
     void generateCorrespondence();
     
-    ofVec2f fov;
-    ofVec2f pp;
+    ofImage hoverPreviewImage;
+    bool hoverPreviewDepth;
+    bool hoverPreviewIR;
+    bool hoverPreviewingCaptured;
+    
     ofVec3f depthToWorldFromCalibration(int x, int y, unsigned short z);
     
     vector< vector<Point2f> > kinectImagePoints;
