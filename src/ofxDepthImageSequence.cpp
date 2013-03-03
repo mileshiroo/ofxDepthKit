@@ -41,7 +41,7 @@ bool ofxDepthImageSequence::loadSequence(string newSequenceDirectory){
 		return false;
 	}
 	
-
+	sequenceList.sort();
 	bool checkedForTimestamp = false;
 	unsigned long firstFrameTimeOffset = 0;
 	for(int i = 0; i < numFiles; i++){
