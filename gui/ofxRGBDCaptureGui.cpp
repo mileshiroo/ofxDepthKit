@@ -817,7 +817,7 @@ void ofxRGBDCaptureGui::loadDirectory(string path){
     workingDirectory = path;
 	recorder.setRecordLocation(path, "frame");
 	rgbCalibrationDirectory  = workingDirectory+"/_calibration/rgbCalibration/";
-	depthCalibrationDirectory = workingDirectory+"/_calibration/depthCalibration/";
+//	depthCalibrationDirectory = workingDirectory+"/_calibration/depthCalibration/";
 	correspondenceDirectory = workingDirectory+"/_calibration/correspondence/";
 	matrixDirectory = workingDirectory+"/_calibration/matrices/";
 	
@@ -828,26 +828,30 @@ void ofxRGBDCaptureGui::loadDirectory(string path){
 	else{
 		loadRGBIntrinsicImages(rgbCalibrationDirectory);
 	}
-	dir = ofDirectory(depthCalibrationDirectory);
-	if(!dir.exists()){
-		dir.create(true);
-	}
+//	dir = ofDirectory(depthCalibrationDirectory);
+//	if(!dir.exists()){
+//		dir.create(true);
+//	}
 	dir = ofDirectory(correspondenceDirectory);
 	if(!dir.exists()){
 		dir.create(true);
 	}
+	else{
+		//TODO: load correspondence
+	}
+	
 	dir = ofDirectory(matrixDirectory);
 	if(!dir.exists()){
 		dir.create(true);
 	}
 	else{
-		//Load depth 
+		if(ofFile::doesFileExist(matrixDirectory + "depthCalib.yml")){
+			depthCalibrationRefined.load(matrixDirectory + "depthCalib.yml");
+			btnCalibrateDepthCamera->setLabel("Depth Camera Self-Calibrated!");
+			depthCameraSelfCalibrated = true;
+		}
 	}
 
-	
-	//TODO: load alignments:
-	//TODO: load correspondence
-	//TODO: load depth
 	
 	btnSetDirectory->setLabel("Working Dir: " + path );
 	updateSceneButtons();
@@ -1031,7 +1035,7 @@ void ofxRGBDCaptureGui::refineDepthCalibration(){
     
     //TODO impose folder structure
 	depthCalibrationRefined.setIntrinsics(newDepth, depthDistCoeffs);
-	depthCalibrationRefined.save("depthCalibRefined.yml");
+	depthCalibrationRefined.save(matrixDirectory + "depthCalib.yml");
     
     depthCameraMatrix = depthCalibrationRefined.getDistortedIntrinsics().getCameraMatrix();
     fov = ofVec2f(depthCameraMatrix.at<double>(0,0), depthCameraMatrix.at<double>(1,1));
@@ -1201,10 +1205,9 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 	rgbIntrinsics.setup(cameraMatrix, rgbCalibration.getDistortedIntrinsics().getImageSize());
 	Calibration rgbCalibrationRefined;
 	rgbCalibrationRefined.setIntrinsics(rgbIntrinsics, distCoeffs);
-	rgbCalibrationRefined.save("rgbCalibRefined.yml");
+	rgbCalibrationRefined.save( matrixDirectory + "rgbCalib.yml");
 	
 	setupRenderer();
-
 }
 
 ofVec3f ofxRGBDCaptureGui::depthToWorldFromCalibration(int x, int y, unsigned short z){
