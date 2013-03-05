@@ -10,8 +10,8 @@
 #include "ofxDepthImageProviderFreenect.h"
 
 
-void ofxDepthImageProviderFreenect::setup(){
-	bDeviceFound  = kinect.init(true, true); // shows infrared instead of RGB video image
+void ofxDepthImageProviderFreenect::setup(int deviceId, bool useColor){
+	bDeviceFound  = kinect.init(!useColor, true); // shows infrared instead of RGB video image
 	bDeviceFound &= kinect.open();
 }
 

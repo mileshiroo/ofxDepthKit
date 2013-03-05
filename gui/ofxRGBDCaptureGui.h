@@ -95,7 +95,11 @@ public:
     bool providerSet;
 
     string workingDirectory;
-
+	string rgbCalibrationDirectory;
+	string depthCalibrationDirectory;
+	string correspondenceDirectory;
+	string matrixDirectory;
+	
     RecorderTab currentTab;
 	DepthRenderMode currentRenderMode;
 
@@ -139,6 +143,8 @@ public:
     
 	bool loadSequenceForPlayback( int index );
 	void updateSceneButtons();
+	void disableSceneButtons();
+	void enableSceneButtons();
 	
 	void toggleRecord();
 
@@ -170,6 +176,8 @@ public:
 	void loadRGBIntrinsicImages();
 	void loadRGBIntrinsicImages(string filepath);
 	void loadRGBIntrinsicImages(vector<string> filepaths);
+	void saveRGBIntrinsicImages();
+	
 	bool addRGBImageToIntrinsicSet(ofImage& image, string fileName);
 	vector<ofImage> rgbCalibrationImages;
 	vector<string> rgbCalibrationFileNames;
@@ -181,7 +189,6 @@ public:
     //depth camera params
     ofVec2f fov;
     ofVec2f pp;
-
 	
     int currentCalibrationImageIndex;
     void refineDepthCalibration();
@@ -190,7 +197,8 @@ public:
     //EXTRINSICS
     vector<AlignmentPair*> alignmentPairs;
 	AlignmentPair* currentAlignmentPair;
-    void generateCorrespondence();
+    void saveCorrespondenceImages();
+	void generateCorrespondence();
     
     ofxTextInputField errorTolerance;
     ofxTextInputField checkerboardDimensions;
@@ -209,7 +217,6 @@ public:
     
     vector<Point3f> filteredKinectObjectPoints;
 	vector<Point2f> filteredExternalImagePoints;
-    
     
     //CALIBRATION PREVIEW
     void setupRenderer();

@@ -16,7 +16,7 @@
 class ofxDepthImageProviderFreenect : public ofxDepthImageProvider {
   public:
 	
-	void setup(); 
+	void setup(int deviceId = 0, bool useColor = false); 
 	void update();
 	ofVec3f getWorldCoordinateAt(int x, int y);
 	int maxDepth();	
