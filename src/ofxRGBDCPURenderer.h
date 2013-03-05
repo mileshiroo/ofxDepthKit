@@ -37,14 +37,15 @@ class ofxRGBDCPURenderer : public ofxRGBDRenderer{
     //mesh with only valid vertices
     ofMesh getReducedMesh(bool normalizeTextureCoords,
                           ofVec3f vertexScale = ofVec3f(1,1,1),
-                          bool flipTextureX = false, bool flipTextureY = false);
+                          bool flipTextureX = false, bool flipTextureY = false, float texCoordScale = 1.0);
     
     //TODO: bring to super class
 	float bottomClip;
 	float topClip;
 	float rightClip;
 	float leftClip;
-    
+	
+    bool hasTriangles;
     bool calculateTextureCoordinates;
     bool normalizeTextureCoordinates;    
     void setTextureScaleForImage(ofBaseHasTexture& texture);
@@ -73,7 +74,7 @@ class ofxRGBDCPURenderer : public ofxRGBDRenderer{
 	void setupDrawMatrices();
 	map< ofIndexType, pair<int, int> > indexToPixelCoord;
     
-    bool hasTriangles;
+    
     bool depthOnly;
 	
     void generateTextureCoordinates();  

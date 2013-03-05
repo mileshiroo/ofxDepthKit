@@ -87,6 +87,9 @@ void ofxDepthImageCompressor::convertTo8BitImage(ofShortPixels& pix, ofImage& im
 void ofxDepthImageCompressor::convertTo8BitImage(unsigned short* buf, ofImage& image){
 	int nearPlane = 500;
 	int farPlane = 7000;
+	if(!image.isAllocated()){
+		image.allocate(640,480,OF_IMAGE_GRAYSCALE);
+	}
 	unsigned char* pix = image.getPixels();
     int stride = image.getPixelsRef().getNumChannels();
 	for(int i = 0; i < 640*480; i++){

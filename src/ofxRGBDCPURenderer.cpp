@@ -242,7 +242,7 @@ void ofxRGBDCPURenderer::update(){
     //cout << "updated mesh has " << mesh.getNumIndices()/3 << " triangles " << endl;
 }
 
-ofMesh ofxRGBDCPURenderer::getReducedMesh(bool normalizeTextureCoords, ofVec3f vertexScale, bool flipTextureX, bool flipTextureY){
+ofMesh ofxRGBDCPURenderer::getReducedMesh(bool normalizeTextureCoords, ofVec3f vertexScale, bool flipTextureX, bool flipTextureY, float texCoordScale){
     if(!cacheValidVertices){
         ofLogError("ofxRGBDCPURenderer::getReducedMesh -- Must cache valid verts to get the reduced mesh");
     }

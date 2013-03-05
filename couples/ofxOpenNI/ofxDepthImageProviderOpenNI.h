@@ -14,16 +14,22 @@
 
 class ofxDepthImageProviderOpenNI : public ofxDepthImageProvider {
   public:
+	ofxDepthImageProviderOpenNI();
+	
 
-	void setup();
+	void setContext(ofxOpenNIContext* recordContext);
+	void setup(int deviceId = 0, bool useColor = false);
 	void update();
 	ofVec3f getWorldCoordinateAt(int x, int y);
 	int maxDepth();	
 	void close();
-
+	ofxOpenNIContext* getContext(){ return recordContext; }
+	
   protected:
-	ofxOpenNIContext	recordContext;
+	ofxOpenNIContext*	recordContext;
 	ofxDepthGenerator	recordDepth;
 	ofxIRGenerator		recordImage;
+	ofxImageGenerator	recordColor;
+	bool usingColor;
 
 };

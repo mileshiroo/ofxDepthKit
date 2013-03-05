@@ -35,6 +35,16 @@ bool ofxRGBDScene::isFolderValid(string sourceMediaFolder){
 	return c.loadFromFolder(sourceMediaFolder, false);
 }
 
+vector<string> ofxRGBDScene::getValidVideoExtensions(){
+	vector<string> extensions;
+    extensions.push_back("mov");
+    extensions.push_back("mpg");
+    extensions.push_back("mepg");
+    extensions.push_back("mp4");
+	extensions.push_back("avi");
+	return extensions;
+}
+
 bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder, bool countFrames){
 	
     

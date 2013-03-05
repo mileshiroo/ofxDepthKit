@@ -5,6 +5,8 @@ class ofxRGBDScene {
   public:
     ofxRGBDScene();
     static bool isFolderValid(string sourceMediaFolder);
+	static vector<string> getValidVideoExtensions();
+
     bool loadFromFolder(string sourceMediaFolder, bool countFrames = true);
     bool valid();
 
@@ -29,6 +31,7 @@ class ofxRGBDScene {
     int compressedDepthFrameCount;
     int uncompressedDepthFrameCount;
 
+	
     void clear();
     
 };

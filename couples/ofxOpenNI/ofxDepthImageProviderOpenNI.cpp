@@ -8,21 +8,44 @@
  */
 
 #include "ofxDepthImageProviderOpenNI.h"
+ofxDepthImageProviderOpenNI::ofxDepthImageProviderOpenNI(){
+	usingColor = false;
+	recordContext = NULL;
+}
 
-void ofxDepthImageProviderOpenNI::setup(){
-	bDeviceFound  = recordContext.setup();	// all nodes created by code -> NOT using the xml config file at all
-	bDeviceFound &= recordDepth.setup(&recordContext);
-	bDeviceFound &= recordImage.setup(&recordContext);
-    
+void ofxDepthImageProviderOpenNI::setContext(ofxOpenNIContext* recordContext){
+	this->recordContext = recordContext;
+}
+
+void ofxDepthImageProviderOpenNI::setup(int deviceId, bool useColor){
+	if(recordContext == NULL){
+		recordContext = new ofxOpenNIContext();
+		bDeviceFound  = recordContext->setup();	// all nodes created by code -> NOT using the xml config file at all
+	}
+	bDeviceFound &= recordDepth.setup(recordContext, deviceId);
+	if(useColor){
+		bDeviceFound &= recordColor.setup(recordContext, deviceId);
+	}
+	else{
+		bDeviceFound &= recordImage.setup(recordContext, deviceId);
+	}
+    usingColor = useColor;
     if(!bDeviceFound){
     	ofLogError("ofxDepthImageProviderOpenNI -- OpenNI Device Failed");
     }
 }
 
 void ofxDepthImageProviderOpenNI::update(){
-	recordContext.update();
-	recordImage.update();
-	rawIRImage.setFromPixels(recordImage.getIRPixels(), 640,480, OF_IMAGE_GRAYSCALE);
+	recordContext->update();
+	
+	if(usingColor){
+		recordColor.update();
+		colorImage.setFromPixels(recordColor.getPixels(), 640, 480, OF_IMAGE_COLOR);
+	}
+	else{
+		recordImage.update();
+		rawIRImage.setFromPixels(recordImage.getIRPixels(), 640,480, OF_IMAGE_GRAYSCALE);
+	}
 	recordDepth.update();
 
 	if(recordDepth.isFrameNew()){
@@ -76,5 +99,5 @@ int ofxDepthImageProviderOpenNI::maxDepth(){
 }
 
 void ofxDepthImageProviderOpenNI::close(){
-	recordContext.shutdown();
+	recordContext->shutdown();
 }

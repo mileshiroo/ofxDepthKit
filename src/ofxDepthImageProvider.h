@@ -14,7 +14,7 @@ class ofxDepthImageProvider {
   public:
 	ofxDepthImageProvider();
 	
-	virtual void setup() = 0;
+	virtual void setup(int deviceId = 0, bool useColor = false) = 0;
 	virtual void update() = 0;
 	virtual int maxDepth() = 0;	
 	virtual void close() = 0;
@@ -26,6 +26,8 @@ class ofxDepthImageProvider {
 	ofShortPixels& getRawDepth();
 	ofImage& getRawIRImage();
 //	ofImage& getDepthImage();
+	ofImage& getColorImage();
+	
 	void setDepthModeRainbow(bool useRainbow); //otherwise grayscale
 
   protected:
@@ -38,6 +40,7 @@ class ofxDepthImageProvider {
 	ofShortPixels depthPixels;
 	ofImage rawIRImage;
 	ofImage depthImage;
+	ofImage colorImage;
 
 	
 	

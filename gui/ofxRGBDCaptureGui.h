@@ -79,6 +79,7 @@ public:
     
     void exit(ofEventArgs& args);
     
+	
   protected:
     ofPtr<ofxDepthImageProvider> depthImageProvider;
     ofxTimeline timeline;
@@ -86,7 +87,11 @@ public:
     ofxDepthImageRecorder recorder;
 	ofxCvCheckerboardPreview calibrationPreview;
    	ofxGameCamera cam;
-    
+	
+	ofTrueTypeFont contextHelpTextLarge;
+	ofTrueTypeFont contextHelpTextSmall;
+
+	
     bool providerSet;
 
     string workingDirectory;
@@ -137,6 +142,10 @@ public:
 	
 	void toggleRecord();
 
+	ofColor confirmedColor;
+	ofColor warningColor;
+	ofColor errorColor;
+	
     ofColor downColor;
 	ofColor idleColor;
 	ofColor hoverColor;
@@ -158,21 +167,33 @@ public:
 	unsigned char LUTB[256];
     
     //INTRINSICS
+	void loadRGBIntrinsicImages();
+	void loadRGBIntrinsicImages(string filepath);
+	void loadRGBIntrinsicImages(vector<string> filepaths);
+	bool addRGBImageToIntrinsicSet(ofImage& image, string fileName);
+	vector<ofImage> rgbCalibrationImages;
+	vector<string> rgbCalibrationFileNames;
+
 	Calibration rgbCalibration;
     Calibration depthCalibrationBase;
 	Calibration depthCalibrationRefined;
+	
     //depth camera params
     ofVec2f fov;
     ofVec2f pp;
 
-    vector<ofImage> rgbCalibrationImages;
+	
     int currentCalibrationImageIndex;
     void refineDepthCalibration();
+	bool depthCameraSelfCalibrated;
     
     //EXTRINSICS
     vector<AlignmentPair*> alignmentPairs;
 	AlignmentPair* currentAlignmentPair;
     void generateCorrespondence();
+    
+    ofxTextInputField errorTolerance;
+    ofxTextInputField checkerboardDimensions;
     
     ofImage hoverPreviewImage;
     bool hoverPreviewDepth;
