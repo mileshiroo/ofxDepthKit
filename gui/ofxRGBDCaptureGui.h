@@ -79,7 +79,6 @@ public:
     
     void exit(ofEventArgs& args);
     
-	
   protected:
     ofPtr<ofxDepthImageProvider> depthImageProvider;
     ofxTimeline timeline;
@@ -197,9 +196,11 @@ public:
     //EXTRINSICS
     vector<AlignmentPair*> alignmentPairs;
 	AlignmentPair* currentAlignmentPair;
+    void clearCorrespondenceImages();	
     void saveCorrespondenceImages();
 	void generateCorrespondence();
-    
+	
+	
     ofxTextInputField errorTolerance;
     ofxTextInputField checkerboardDimensions;
     
