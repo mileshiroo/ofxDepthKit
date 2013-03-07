@@ -135,7 +135,8 @@ public:
     void drawExtrinsics();
     void drawCapture();
     void drawPlayback();
-    
+    void drawSceneButtons();
+	
     void loadDirectory();
 	void loadDirectory(string path);
 	void loadDefaultDirectory();

@@ -47,6 +47,7 @@ void ofxRGBDCaptureGui::setup(){
 	timeline.setOffset(ofVec2f(0, frameheight+btnheight*2));
     timeline.addTrack("depth sequence", &depthSequence);
 	timeline.setLoopType(OF_LOOP_NORMAL);
+	timeline.setSpacebarTogglePlay(false);
     timeline.hide();
     
     //TODO: make timeline colors
@@ -449,7 +450,7 @@ void ofxRGBDCaptureGui::drawExtrinsics(){
         depthImageProvider->getRawIRImage().draw(previewRectRight);
         calibrationPreview.draw(previewRectRight);
     }
-    else if(calibrationGenerated){
+    else if(calibrationGenerated && hasIncludedBoards){
 		ofPushStyle();
         glEnable(GL_DEPTH_TEST);
         cam.begin(previewRectRight);
@@ -513,6 +514,7 @@ void ofxRGBDCaptureGui::drawCapture(){
 		ofPopStyle();
 	}
 	
+	drawSceneButtons();
 }
 
 void ofxRGBDCaptureGui::drawPlayback(){
@@ -524,7 +526,33 @@ void ofxRGBDCaptureGui::drawPlayback(){
             updateDepthImage(depthSequence.getDepthImageSequence()->getPixels());
         }
         depthImage.draw(previewRectLeft);
-    }    
+    }
+	drawSceneButtons();
+}
+
+void ofxRGBDCaptureGui::drawSceneButtons(){
+	
+	for(int i = 0; i < btnScenes.size(); i++){
+		if(btnScenes[i].isSelected){
+			ofPushStyle();
+			ofSetColor(timeline.getColors().highlightColor);
+			ofRectangle highlighRect(btnScenes[i].button->x,btnScenes[i].button->y,
+									 btnScenes[i].button->width, btnScenes[i].button->height*.25);
+			
+			ofRect(highlighRect);
+			ofPopStyle();
+		}
+		
+		ofPushStyle();
+		ofSetColor(timeline.getColors().disabledColor);
+		float percentComplete = float(btnScenes[i].sceneRef->compressedDepthFrameCount) / float(btnScenes[i].sceneRef->totalDepthFrameCount);
+		float processedWidth = btnScenes[i].button->width*percentComplete;
+		ofRectangle highlighRect(btnScenes[i].button->x + processedWidth,
+								 btnScenes[i].button->y,
+								 btnScenes[i].button->width-processedWidth, btnScenes[i].button->height);
+		ofRect(highlighRect);
+		ofPopStyle();
+	}
 }
 
 void ofxRGBDCaptureGui::objectDidRollOver(ofxMSAInteractiveObject* object, int x, int y){
@@ -565,7 +593,8 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
         errorTolerance.disable();
         checkerboardDimensions.disable();
         timeline.hide();
-        
+		timeline.stop();
+		
         if(object == btnIntrinsicsTab){
 			disableSceneButtons();
             currentTab = TabIntrinsics;
@@ -594,6 +623,18 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
             timeline.show();
         }
     }
+	else {
+		for(int i = 0; i < btnScenes.size(); i++){
+			if(object == btnScenes[i].button){
+				if(loadSequenceForPlayback( i )){
+					for(int b = 0; b < btnScenes.size(); b++){
+                		btnScenes[b].isSelected = b == i;
+					}
+				}
+                break;
+			}
+		}
+	}
 }
 
 void ofxRGBDCaptureGui::toggleRecord(){
@@ -929,6 +970,7 @@ void ofxRGBDCaptureGui::previewPreviousAlignmentPair(){
 
 void ofxRGBDCaptureGui::loadDirectory(){
     if(recorder.numFramesWaitingCompession() != 0){
+
     	ofSystemAlertDialog("Cannot change directory while footage is compressing.");
 		return;
     }
@@ -955,6 +997,17 @@ void ofxRGBDCaptureGui::loadDirectory(string path){
         return;
     }
     
+	for(int i = 0; i < alignmentPairs.size(); i++){
+		delete alignmentPairs[i];
+	}
+	
+	alignmentPairs.clear();
+	hasIncludedBoards = false;
+	calibrationGenerated = false;
+	rgbCalibrationImages.clear();
+	rgbCalibrationFileNames.clear();
+
+	
     workingDirectory = path;
 	recorder.setRecordLocation(path, "frame");
 	rgbCalibrationDirectory  = workingDirectory+"/_calibration/rgbCalibration/";
