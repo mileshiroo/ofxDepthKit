@@ -39,6 +39,9 @@ void ofxRGBDCaptureGui::setup(){
 	btnheight = 36;
     margin = 12;
 
+	contextHelpTextLarge.loadFont("GUI/NewMedia Fett.ttf", 23);
+	contextHelpTextSmall.loadFont("GUI/NewMedia Fett.ttf", 12);
+
     currentAlignmentPair = new AlignmentPair();
 	currentAlignmentPair->included = true;
 	alignmentPairs.push_back(currentAlignmentPair);
@@ -180,8 +183,6 @@ void ofxRGBDCaptureGui::setup(){
 	rgbCalibration.setSquareSize(squareSize);
 	rgbCalibration.setSubpixelSize(4);
 
-	contextHelpTextLarge.loadFont("GUI/NewMedia Fett.ttf", 23);
-	contextHelpTextSmall.loadFont("GUI/NewMedia Fett.ttf", 12);
 }
 
 void ofxRGBDCaptureGui::setImageProvider(ofxDepthImageProvider* imageProvider){
@@ -324,7 +325,7 @@ void ofxRGBDCaptureGui::drawIntrinsics(){
 	}
 	else{
 		ofPushStyle();
-		string dragText = "Drag & Drop an RGB Image folder or checkerboard files files";
+		string dragText = "Drag & Drop an RGB checkerboard folder or files";
 		contextHelpTextSmall.drawString(dragText,
 										previewRectRight.getCenter().x - contextHelpTextSmall.getStringBoundingBox(dragText, 0, 0).width/2,
 										previewRectRight.y + contextHelpTextSmall.getLineHeight()*2);
@@ -336,6 +337,8 @@ void ofxRGBDCaptureGui::drawIntrinsics(){
 
 void ofxRGBDCaptureGui::drawExtrinsics(){
     
+	ofTexture t;
+	t.drawSubsection(<#float x#>, <#float y#>, <#float w#>, <#float h#>, <#float sx#>, <#float sy#>)
     bool drawCamera = providerSet && depthImageProvider->deviceFound();
 
 	int drawX = previewRectLeft.x;
@@ -997,9 +1000,7 @@ void ofxRGBDCaptureGui::loadDirectory(string path){
         return;
     }
     
-	for(int i = 0; i < alignmentPairs.size(); i++){
-		delete alignmentPairs[i];
-	}
+	clearCorrespondenceImages();
 	
 	alignmentPairs.clear();
 	hasIncludedBoards = false;
@@ -1007,7 +1008,6 @@ void ofxRGBDCaptureGui::loadDirectory(string path){
 	rgbCalibrationImages.clear();
 	rgbCalibrationFileNames.clear();
 
-	
     workingDirectory = path;
 	recorder.setRecordLocation(path, "frame");
 	rgbCalibrationDirectory  = workingDirectory+"/_calibration/rgbCalibration/";
@@ -1028,14 +1028,12 @@ void ofxRGBDCaptureGui::loadDirectory(string path){
 	}
 	else{
 		
-		clearCorrespondenceImages();
-		
 		dir.allowExt("png");
 		dir.listDir();
 		if(dir.numFiles() % 3 != 0){
 			ofLogError("_calibration/Correspondence directory may have stray files.");
 		}
-		
+		//TODO: Load which are saved 
 		for(int i = 0; i < dir.numFiles(); i+=3){
 			string depthCeckersFile  = correspondenceDirectory + ofToString(i/3) + "_checkers.png";
 			string colorCheckersFile = correspondenceDirectory + ofToString(i/3) + "_color_checkers.png";
@@ -1058,12 +1056,12 @@ void ofxRGBDCaptureGui::loadDirectory(string path){
 			}
 			
 		}
-		
-		currentAlignmentPair = new AlignmentPair();
-		currentAlignmentPair->included = true;
-		alignmentPairs.push_back(currentAlignmentPair);
-		
 	}
+	
+	currentAlignmentPair = new AlignmentPair();
+	currentAlignmentPair->included = true;
+	alignmentPairs.push_back(currentAlignmentPair);
+	
 
 	dir = ofDirectory(matrixDirectory);
 	if(!dir.exists()){
