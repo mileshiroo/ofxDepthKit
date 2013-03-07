@@ -145,7 +145,6 @@ public:
 	void disableSceneButtons();
 	void enableSceneButtons();
 	
-	void toggleRecord();
 
 	ofColor confirmedColor;
 	ofColor warningColor;
@@ -184,7 +183,7 @@ public:
 	Calibration rgbCalibration;
     Calibration depthCalibrationBase;
 	Calibration depthCalibrationRefined;
-	
+
     //depth camera params
     ofVec2f fov;
     ofVec2f pp;
@@ -200,6 +199,9 @@ public:
     void saveCorrespondenceImages();
 	void generateCorrespondence();
 	
+	bool hasIncludedBoards;
+	void previewNextAlignmentPair();
+	void previewPreviousAlignmentPair();
 	
     ofxTextInputField errorTolerance;
     ofxTextInputField checkerboardDimensions;
@@ -208,21 +210,23 @@ public:
     bool hoverPreviewDepth;
     bool hoverPreviewIR;
     bool hoverPreviewingCaptured;
-    
+    ofImage previewPixelsUndistorted;
     ofVec3f depthToWorldFromCalibration(int x, int y, unsigned short z);
-    
-    vector< vector<Point2f> > kinectImagePoints;
-    vector< vector<Point2f> > externalRGBPoints;
-    vector< vector<ofVec3f> > kinect3dPoints;
-    vector< vector<Point3f> > objectPoints;
-    
-    vector<Point3f> filteredKinectObjectPoints;
-	vector<Point2f> filteredExternalImagePoints;
-    
+    float squareSize;
+	vector< ofColor > boardColors;
+	
+//	vector<ofVec3f> inlierKinectObjectPoints;
+	ofMesh inlierPoints;
+	
     //CALIBRATION PREVIEW
     void setupRenderer();
     bool calibrationGenerated;
     int currentRendererPreviewIndex;
     ofxRGBDGPURenderer renderer;
+	
+	//RECORDING
+	void toggleRecord();
+
+	
     
 };
