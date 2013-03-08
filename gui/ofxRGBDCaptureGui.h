@@ -136,6 +136,8 @@ public:
     void drawCapture();
     void drawPlayback();
     void drawSceneButtons();
+	void drawCalibrationNumbers();
+	void drawDimensionsEntry();
 	
     void loadDirectory();
 	void loadDirectory(string path);
@@ -146,7 +148,6 @@ public:
 	void disableSceneButtons();
 	void enableSceneButtons();
 	
-
 	ofColor confirmedColor;
 	ofColor warningColor;
 	ofColor errorColor;
@@ -162,7 +163,6 @@ public:
 	float sceneWidth;
 	float margin;
 
-
     //Preview
     void updateDepthImage(ofShortPixels& pixels);
     ofImage depthImage;
@@ -176,6 +176,8 @@ public:
 	void loadRGBIntrinsicImages(string filepath);
 	void loadRGBIntrinsicImages(vector<string> filepaths);
 	void saveRGBIntrinsicImages();
+	
+	void squareSizeChanged(string& args);
 	
 	bool addRGBImageToIntrinsicSet(ofImage& image, string fileName);
 	vector<ofImage> rgbCalibrationImages;
@@ -198,13 +200,14 @@ public:
 	AlignmentPair* currentAlignmentPair;
     void clearCorrespondenceImages();	
     void saveCorrespondenceImages();
+	void saveCorrespondenceIncludes();
 	void generateCorrespondence();
 	
 	bool hasIncludedBoards;
 	void previewNextAlignmentPair();
 	void previewPreviousAlignmentPair();
-	
-    ofxTextInputField errorTolerance;
+
+	string squareSizeFilePath;
     ofxTextInputField checkerboardDimensions;
     
     ofImage hoverPreviewImage;
@@ -215,8 +218,6 @@ public:
     ofVec3f depthToWorldFromCalibration(int x, int y, unsigned short z);
     float squareSize;
 	vector< ofColor > boardColors;
-	
-//	vector<ofVec3f> inlierKinectObjectPoints;
 	ofMesh inlierPoints;
 	
     //CALIBRATION PREVIEW
