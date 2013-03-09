@@ -22,6 +22,7 @@ ofxRGBDCaptureGui::ofxRGBDCaptureGui(){
     hoverPreviewingCaptured = false;
 	depthCameraSelfCalibrated = false;
 	hasIncludedBoards = false;
+	currentRenderModeObject = NULL;
 }
 
 ofxRGBDCaptureGui::~ofxRGBDCaptureGui(){
@@ -31,7 +32,6 @@ ofxRGBDCaptureGui::~ofxRGBDCaptureGui(){
 void ofxRGBDCaptureGui::setup(){
     ofEnableSmoothing();
 
-	
     framewidth = 640;
 	frameheight = 480;
 	thirdWidth = framewidth/3;
@@ -46,7 +46,7 @@ void ofxRGBDCaptureGui::setup(){
 	alignmentPairs.push_back(currentAlignmentPair);
 
     timeline.setup();
-	timeline.setOffset(ofVec2f(0, frameheight+btnheight*2));
+	timeline.setOffset(ofVec2f(0, frameheight+btnheight*3));
     timeline.addTrack("depth sequence", &depthSequence);
 	timeline.setLoopType(OF_LOOP_NORMAL);
 	timeline.setSpacebarTogglePlay(false);
@@ -100,21 +100,42 @@ void ofxRGBDCaptureGui::setup(){
 	buttonSet.push_back(btnPlaybackTab);
     tabSet.push_back(btnPlaybackTab);
     
+	
+	btnRenderBW = new ofxMSAInteractiveObjectWithDelegate();
+	btnRenderBW->setPosAndSize(0, btnheight*2+frameheight, thirdWidth, btnheight);
+	btnRenderBW->setLabel("Blaick & White");
+	btnRenderBW->fontReference = &contextHelpTextSmall;
+	buttonSet.push_back(btnRenderBW);
+    currentRenderModeObject = btnRenderBW;
+	currentRenderMode = RenderBW;
+	
+	btnRenderRainbow = new ofxMSAInteractiveObjectWithDelegate();
+	btnRenderRainbow->setPosAndSize(thirdWidth, btnheight*2+frameheight, thirdWidth, btnheight);
+	btnRenderRainbow->fontReference = &contextHelpTextSmall;
+	btnRenderRainbow->setLabel("Rainbow");
+	buttonSet.push_back(btnRenderRainbow);
+    
+	btnRenderPointCloud = new ofxMSAInteractiveObjectWithDelegate();
+	btnRenderPointCloud->setPosAndSize(thirdWidth*2, btnheight*2+frameheight, thirdWidth, btnheight);
+	btnRenderPointCloud->fontReference = &contextHelpTextSmall;
+	btnRenderPointCloud->setLabel("Pointcloud");
+	buttonSet.push_back(btnRenderPointCloud);
+	
     btnCalibrateDepthCamera =  new ofxMSAInteractiveObjectWithDelegate();
-	btnCalibrateDepthCamera->setPosAndSize(0, btnheight*2+frameheight, totalFrameWidth/2, btnheight*2);
+	btnCalibrateDepthCamera->setPosAndSize(0, btnheight*3+frameheight, totalFrameWidth/2, btnheight*2);
 	btnCalibrateDepthCamera->setLabel("Self-Calibrate Depth Camera");
 	btnCalibrateDepthCamera->fontReference = &contextHelpTextLarge;
     buttonSet.push_back(btnCalibrateDepthCamera);
 
     btnRGBLoadCalibration =  new ofxMSAInteractiveObjectWithDelegate();
-    btnRGBLoadCalibration->setPosAndSize(totalFrameWidth/2, btnheight*2+frameheight, totalFrameWidth/2, btnheight*2);
+    btnRGBLoadCalibration->setPosAndSize(totalFrameWidth/2, btnheight*3+frameheight, totalFrameWidth/2, btnheight*2);
     btnRGBLoadCalibration->setLabel("Load RGB Calibration Images");
 	btnRGBLoadCalibration->fontReference = &contextHelpTextLarge;
     buttonSet.push_back(btnRGBLoadCalibration);
     
     //EXTRINSICS
     btnGenerateCalibration =  new ofxMSAInteractiveObjectWithDelegate();
-    btnGenerateCalibration->setPosAndSize(0, btnheight*2+frameheight, totalFrameWidth, btnheight*2);
+    btnGenerateCalibration->setPosAndSize(0, btnheight*3+frameheight, totalFrameWidth, btnheight*2);
     btnGenerateCalibration->setLabel("Regenerate RGB/Depth Correspondence");
     btnGenerateCalibration->disableAllEvents();
 	btnGenerateCalibration->fontReference = &contextHelpTextLarge;
@@ -122,7 +143,7 @@ void ofxRGBDCaptureGui::setup(){
     
     //CAPTURE
     btnToggleRecord = new ofxMSAInteractiveObjectWithDelegate();
-    btnToggleRecord->setPosAndSize(0, btnheight*2+frameheight, totalFrameWidth, btnheight*2);
+    btnToggleRecord->setPosAndSize(0, btnheight*3+frameheight, totalFrameWidth, btnheight*2);
     btnToggleRecord->setLabel("Toggle Record");
 	btnToggleRecord->fontReference = &contextHelpTextLarge;
     btnToggleRecord->disableAllEvents();
@@ -153,7 +174,14 @@ void ofxRGBDCaptureGui::setup(){
 	updateSceneButtons();
 	
     cam.setup();
+	cam.cameraPositionFile = "calibrationPreviewCamera.xml";
 	cam.loadCameraPosition();
+	cam.autosavePosition = true;
+	
+	pointcloudPreviewCam.setup();
+	pointcloudPreviewCam.cameraPositionFile = "pointcloudPreviewCamera.xml";
+	pointcloudPreviewCam.loadCameraPosition();
+	pointcloudPreviewCam.autosavePosition = true;
 
     createRainbowPallet();
     depthImage.allocate(640, 480, OF_IMAGE_GRAYSCALE);
@@ -161,7 +189,7 @@ void ofxRGBDCaptureGui::setup(){
     recorder.setup();
 
 	boardColors.push_back( ofColor(232,   0, 122) );
-	boardColors.push_back( ofColor(0,  180,  255) );
+	boardColors.push_back( ofColor(0,   180, 255) );
 	boardColors.push_back( ofColor(212, 255,   0) );
 	boardColors.push_back( ofColor( 73, 240, 159) );
 	
@@ -170,8 +198,11 @@ void ofxRGBDCaptureGui::setup(){
 	rgbCalibration.setSquareSize(squareSize);
 	rgbCalibration.setSubpixelSize(4);
 	
+	//pointcloudPreview.setDepthOnly();
+	
 	checkerboardDimensions.setup();
-	checkerboardDimensions.bounds = ofRectangle(contextHelpTextSmall.stringWidth("Square Size (cm)") + previewRectRight.x + 10,previewRectRight.y, 50,
+	checkerboardDimensions.bounds = ofRectangle(contextHelpTextSmall.stringWidth("Square Size (cm)") + previewRectRight.x + 20,
+												previewRectRight.getMaxY() + 1, 50,
 												contextHelpTextSmall.getLineHeight() + 3);
 	checkerboardDimensions.setFont(contextHelpTextSmall);
 	ofAddListener(checkerboardDimensions.textChanged, this, &ofxRGBDCaptureGui::squareSizeChanged);
@@ -188,6 +219,10 @@ void ofxRGBDCaptureGui::setup(){
 void ofxRGBDCaptureGui::setImageProvider(ofxDepthImageProvider* imageProvider){
 	depthImageProvider = ofPtr<ofxDepthImageProvider>( imageProvider );
     depthImageProvider->setup();
+	
+	pointcloudPreview.setDepthImage(depthImageProvider->getRawDepth());
+	pointcloudPreview.setDepthOnly();
+	
     providerSet = true;
 }
 
@@ -197,9 +232,16 @@ void ofxRGBDCaptureGui::update(ofEventArgs& args){
 		return;
 	}
 	
-	
 	depthImageProvider->update();
     
+	if(currentTab == TabPlayback &&
+	   depthSequence.getDepthImageSequence() != NULL &&
+	   depthSequence.getDepthImageSequence()->isLoaded() &&
+	   depthSequence.isFrameNew())
+	{
+		updateDepthImage(depthSequence.getDepthImageSequence()->getPixels());
+	}
+	
 	if(depthImageProvider->isFrameNew()){
         
         if(currentTab != TabPlayback){
@@ -250,6 +292,15 @@ void ofxRGBDCaptureGui::draw(ofEventArgs& args){
     ofRect(highlightRect);
     ofPopStyle();
     
+    if(currentRenderModeObject != NULL && currentTab != TabExtrinsics){
+        ofPushStyle();
+        ofRectangle highlightRect = ofRectangle(currentRenderModeObject->x,currentRenderModeObject->y+currentRenderModeObject->height*.75,
+                                                currentRenderModeObject->width,currentRenderModeObject->height*.25);
+        ofSetColor(timeline.getColors().highlightColor);
+        ofRect(highlightRect);
+        ofPopStyle();
+    }
+	
     timeline.draw();
 
 }
@@ -276,7 +327,7 @@ void ofxRGBDCaptureGui::drawIntrinsics(){
 		}
 		
 		ofPopStyle();
-		depthImage.draw(previewRectLeft);
+		drawDepthImage(previewRectLeft);
     }
     else{
         ofPushStyle();
@@ -487,7 +538,7 @@ void ofxRGBDCaptureGui::drawDimensionsEntry(){
 	ofRect(checkerboardDimensions.bounds);
 	
 	ofSetColor(255);
-	contextHelpTextSmall.drawString("Square Size (cm)", previewRectRight.x, previewRectRight.y + contextHelpTextSmall.getLineHeight());
+	contextHelpTextSmall.drawString("Square Size (cm)", previewRectRight.x, previewRectRight.getMaxY() + contextHelpTextSmall.getLineHeight());
 	checkerboardDimensions.draw();
 	
 	ofSetColor(255);
@@ -495,6 +546,44 @@ void ofxRGBDCaptureGui::drawDimensionsEntry(){
 	ofRect(checkerboardDimensions.bounds);
 	
 	ofPopStyle();
+}
+
+void ofxRGBDCaptureGui::drawDepthImage(ofRectangle& targetRect){
+    if(currentRenderMode == RenderPointCloud){
+//		pointcloudPreviewCam.begin(targetRect);
+//		pointcloudPreview.drawPointCloud();
+		
+		//glEnable(GL_DEPTH_TEST);
+		glEnable(GL_POINT_SMOOTH);
+		glPointSize(2);
+		
+		ofMesh mesh;
+		for(int y = 0; y < 480; y++){
+			for(int x = 0; x < 640; x++){
+				//0.104200 ref dist 120.000000
+				double ref_pix_size = 0.104200;
+				double ref_distance = 120.000000;
+//				double wz = depthImageProvider->getRawDepth().getPixels()[y*640+x];
+				double wz = pointcloudPreview.getDepthImage().getPixels()[y*640+x];
+				double factor = 2 * ref_pix_size * wz / ref_distance;
+				double wx = (double)(x - 640/2) * factor;
+				double wy = (double)(y - 480/2) * factor;
+				mesh.addVertex(ofVec3f(wx,-wy,-wz));
+			}
+		}
+		
+		pointcloudPreviewCam.begin(targetRect);
+		mesh.drawVertices();
+//		pointcloudPreview.drawPointCloud();
+		pointcloudPreviewCam.end();
+		
+//		glDisable(GL_DEPTH_TEST);
+//		pointcloudPreviewCam.end();
+        //drawPointcloud(depthSequence.getDepthImageSequence()->getPixels(), false);
+    }
+    else {
+        depthImage.draw(targetRect);
+    }
 }
 
 void ofxRGBDCaptureGui::drawCalibrationNumbers(){
@@ -531,7 +620,7 @@ void ofxRGBDCaptureGui::drawCalibrationNumbers(){
 void ofxRGBDCaptureGui::drawCapture(){
     bool drawCamera = providerSet && depthImageProvider->deviceFound();
     if(drawCamera){
-        depthImage.draw(previewRectLeft);
+		drawDepthImage(previewRectLeft);
     }
 	else{
 		contextHelpTextSmall.drawString("Depth sensor not found. Reconnect the device and restart the application.", previewRectLeft.x + 30, previewRectLeft.y + 30);
@@ -566,15 +655,16 @@ void ofxRGBDCaptureGui::drawCapture(){
 
 
 void ofxRGBDCaptureGui::drawPlayback(){
-    if(currentRenderMode == RenderPointCloud){
-        //drawPointcloud(depthSequence.getDepthImageSequence()->getPixels(), false);
-    }
-    else {
-        if(depthSequence.getDepthImageSequence() != NULL && depthSequence.getDepthImageSequence()->isLoaded()){
-            updateDepthImage(depthSequence.getDepthImageSequence()->getPixels());
-        }
-        depthImage.draw(previewRectLeft);
-    }
+	
+	if(depthSequence.getDepthImageSequence() != NULL &&
+	   depthSequence.getDepthImageSequence()->isLoaded())
+	{
+		drawDepthImage(previewRectLeft);
+	}
+	else{
+		contextHelpTextSmall.drawString("No playback sequence selected.", previewRectLeft.x + 30, previewRectLeft.y + 30);	
+	}
+	
 	drawSceneButtons();
 }
 
@@ -632,6 +722,28 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
 	else if(object == btnToggleRecord){
         toggleRecord();
     }
+	else if(object == btnRenderBW){
+		currentRenderMode = RenderBW;
+        currentRenderModeObject = btnRenderBW;
+	}
+	else if(object == btnRenderRainbow){
+		currentRenderMode = RenderRainbow;
+        currentRenderModeObject = btnRenderRainbow;
+	}
+	else if(object == btnRenderPointCloud){
+		ofQuaternion baseRotate;
+		baseRotate.makeRotate(180, 0, 1, 0);
+		pointcloudPreviewCam.targetNode.setPosition(0, 0, 0);
+		pointcloudPreviewCam.targetXRot = 180;
+		pointcloudPreviewCam.targetYRot = 0;
+		pointcloudPreviewCam.targetZRot = 0;
+		pointcloudPreviewCam.applyRotation = true;
+		pointcloudPreviewCam.updateRotation();
+		
+		currentRenderMode = RenderPointCloud;
+        currentRenderModeObject = btnRenderPointCloud;
+	}
+
     else if(find(tabSet.begin(),tabSet.end(), object) != tabSet.end()){
         
         btnRGBLoadCalibration->disableAllEvents();
@@ -668,6 +780,9 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
             currentTab = TabPlayback;
             currentTabObject = btnPlaybackTab;
             timeline.show();
+			if(depthSequence.getDepthImageSequence() != NULL && depthSequence.getDepthImageSequence()->isLoaded()){
+				updateDepthImage(depthSequence.getDepthImageSequence()->getPixels());
+			}
         }
     }
 	else {
@@ -856,6 +971,7 @@ void ofxRGBDCaptureGui::mousePressed(ofMouseEventArgs& args){
 
 void ofxRGBDCaptureGui::mouseMoved(ofMouseEventArgs& args){
 	cam.applyRotation = cam.applyTranslation = (currentTab == TabExtrinsics && previewRectRight.inside(args.x, args.y));
+	pointcloudPreviewCam.applyRotation = pointcloudPreviewCam.applyTranslation = (currentRenderMode == RenderPointCloud && currentTab != TabExtrinsics && previewRectLeft.inside(args.x, args.y));
 
     //CHECK FOR HOVER IN INTRINSICS
     if(currentTab == TabIntrinsics){
@@ -1238,7 +1354,7 @@ void ofxRGBDCaptureGui::updateSceneButtons(){
 		btnScene->setDelegate(this);
         btnScene->enableMouseEvents();
         btnScene->disableKeyEvents();
-        
+        btnScene->fontReference = &contextHelpTextSmall;
 		tb.button = btnScene;
 		btnScenes.push_back( tb );
 		
@@ -1423,13 +1539,10 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 	}
 
 	//reset camera view
-	
 	cam.targetNode.setPosition(0, 0, 0);
 	ofQuaternion baseRotate;
 	baseRotate.makeRotate(180, 0, 1, 0);
-	
 	cam.targetNode.setOrientation(baseRotate);
-	//cam.setAnglesFromOrientation();
 	cam.targetXRot = 180;
 	cam.targetYRot = 0;
 	cam.targetZRot = 0;
@@ -1693,8 +1806,12 @@ void ofxRGBDCaptureGui::updateDepthImage(ofShortPixels& pixels){
     if(max_depth == 0){
     	max_depth = 5000;
     }
+	
     //    cout << "updating depth image with max depth of " << max_depth << " render: " << (currentRenderMode == RenderRainbow ? "rainbow" : "b&w") <<  endl;
     if(currentRenderMode == RenderRainbow){
+		if(depthImage.getPixelsRef().getImageType() != OF_IMAGE_COLOR){
+			depthImage.setImageType(OF_IMAGE_COLOR);
+		}
         for(int i = 0; i < 640*480; i++){
             int lookup = pixels.getPixels()[i] / (max_depth / 256);
             //int lookup = ofMap( depthPixels.getPixels()[i], 0, max_depth, 0, 255, true);
@@ -1703,9 +1820,17 @@ void ofxRGBDCaptureGui::updateDepthImage(ofShortPixels& pixels){
             depthImage.getPixels()[(i*3)+2] = LUTB[lookup];
         }
     }
-    else{
+    else if(currentRenderMode == RenderBW){
+		if(depthImage.getPixelsRef().getImageType() != OF_IMAGE_GRAYSCALE){
+			depthImage.setImageType(OF_IMAGE_GRAYSCALE);
+		}
+
         recorder.getCompressor().convertTo8BitImage(pixels, depthImage);
     }
+	else{
+		pointcloudPreview.setDepthImage(pixels);
+		pointcloudPreview.update();
+	}
     
     depthImage.update();	
 }

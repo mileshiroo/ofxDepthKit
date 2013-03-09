@@ -21,6 +21,7 @@ ofxRGBDGPURenderer::ofxRGBDGPURenderer()
     : ofxRGBDRenderer()
 {
     rendererBound = false;
+	depthOnly = false;
     setShaderPath("shaders/unproject");
 }
 
@@ -161,6 +162,7 @@ void ofxRGBDGPURenderer::setSimplification(ofVec2f simplification){
     meshGenerated = true;
 }
 
+
 void ofxRGBDGPURenderer::setDepthImage(ofShortPixels& pix){
     ofxRGBDRenderer::setDepthImage(pix);
     
@@ -198,13 +200,13 @@ void ofxRGBDGPURenderer::update(){
         return;
     }
 
-    if(!calibrationSetup && hasRGBImage){
+    if(!calibrationSetup && hasRGBImage && !depthOnly){
      	ofLogError("ofxRGBDGPURenderer::update() -- no calibration for RGB Image");
         return;
     }
     
-    if(simplify ==  ofVec2f(0,0)){
-        setSimplification(ofVec2f(1.0));
+    if(simplify == ofVec2f(0,0)){
+        setSimplification(ofVec2f(1.0, 1.0));
     }
     
 	depthTexture.loadData(*currentDepthImage);
@@ -226,7 +228,7 @@ bool ofxRGBDGPURenderer::bindRenderer(){
         return false;
     }
     
-    if(!calibrationSetup){
+    if(!calibrationSetup && !depthOnly){
      	ofLogError("ofxRGBDGPURenderer::update() -- no calibration");
         return false;
     }
@@ -242,7 +244,7 @@ bool ofxRGBDGPURenderer::bindRenderer(){
     ofRotate(worldRotation.y,0,1,0);
     ofRotate(worldRotation.z,0,0,1);
 
-	if(hasRGBImage){
+//	if(hasRGBImage){
         shader.begin();
         glActiveTexture(GL_TEXTURE1);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -250,7 +252,7 @@ bool ofxRGBDGPURenderer::bindRenderer(){
         glActiveTexture(GL_TEXTURE0);
 
         setupProjectionUniforms();
-    }
+//    }
     
     rendererBound = true;
     return true;
@@ -263,38 +265,45 @@ void ofxRGBDGPURenderer::unbindRenderer(){
      	return;   
     }
     
-    if(rendererBound && hasRGBImage){
-        shader.end();
-	}
+	shader.end();
+	rendererBound = false;
 
 	ofPopMatrix();
-    rendererBound = false;
 }
 
 void ofxRGBDGPURenderer::setupProjectionUniforms(){
-    ofVec2f dims = ofVec2f(currentRGBImage->getTextureReference().getWidth(),
-                           currentRGBImage->getTextureReference().getHeight());
 
-	shader.setUniformTexture("colorTex", currentRGBImage->getTextureReference(), 0);
+	if(!depthOnly && useTexture){
+		ofVec2f dims = ofVec2f(currentRGBImage->getTextureReference().getWidth(),
+							   currentRGBImage->getTextureReference().getHeight());
+		shader.setUniformTexture("colorTex", currentRGBImage->getTextureReference(), 0);
+		shader.setUniform1i("useTexture", 1);
+		shader.setUniform2f("dim", dims.x, dims.y);
+		shader.setUniform2f("shift", shift.x, shift.y);
+		shader.setUniform2f("scale", scale.x, scale.y);
+	}
+	else{
+		shader.setUniform1i("useTexture", 0);
+	}
+	
 	shader.setUniformTexture("depthTex", depthTexture, 1);
-    shader.setUniform1i("useTexture", useTexture ? 1 : 0);
-    shader.setUniform2f("shift", shift.x, shift.y);
-    shader.setUniform2f("scale", scale.x, scale.y);
-    shader.setUniform2f("dim", dims.x, dims.y);
+//    shader.setUniform1i("useTexture", (useTexture && !depthOnly) ? 1 : 0);
+
+	if(flipTexture){
+		ofMatrix4x4 flipMatrix;
+		flipMatrix.makeScaleMatrix(-1,1,1);
+		rgbMatrix = (depthToRGBView * (flipMatrix * rgbProjection));
+		shader.setUniformMatrix4f("tTex", rgbMatrix );
+	}
+	else{
+		rgbMatrix = (depthToRGBView * rgbProjection);
+		shader.setUniformMatrix4f("tTex", rgbMatrix);
+	}
+
     shader.setUniform2f("principalPoint", principalPoint.x, principalPoint.y);
     shader.setUniform2f("fov", fx, fy);
     shader.setUniform1f("farClip", farClip);
 	shader.setUniform1f("edgeClip", edgeClip);
-	if(flipTexture){
-		ofMatrix4x4 flipMatrix;
-		flipMatrix.makeScaleMatrix(-1,1,1);
-        rgbMatrix = (depthToRGBView * (flipMatrix * rgbProjection));
-        shader.setUniformMatrix4f("tTex", rgbMatrix );
-	}
-    else{
-        rgbMatrix = (depthToRGBView * rgbProjection);
-        shader.setUniformMatrix4f("tTex", rgbMatrix);
-    }
     
     shader.setUniform1f("xsimplify", simplify.x);
     shader.setUniform1f("ysimplify", simplify.y);

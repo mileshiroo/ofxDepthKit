@@ -86,11 +86,14 @@ public:
     ofxDepthImageRecorder recorder;
 	ofxCvCheckerboardPreview calibrationPreview;
    	ofxGameCamera cam;
+	ofxGameCamera pointcloudPreviewCam;
+	
+	ofxRGBDGPURenderer renderer;
+	ofxRGBDGPURenderer pointcloudPreview;
 	
 	ofTrueTypeFont contextHelpTextLarge;
 	ofTrueTypeFont contextHelpTextSmall;
 
-	
     bool providerSet;
 
     string workingDirectory;
@@ -106,6 +109,8 @@ public:
     ofRectangle previewRectRight;
  
     ofxMSAInteractiveObjectWithDelegate* currentTabObject;
+	ofxMSAInteractiveObjectWithDelegate* currentRenderModeObject;
+
     vector<ofxMSAInteractiveObjectWithDelegate*> buttonSet; //all non scene buttons
     
     //TOP LEVEL FOLDER
@@ -116,6 +121,11 @@ public:
     ofxMSAInteractiveObjectWithDelegate* btnExtrinsicsTab;
 	ofxMSAInteractiveObjectWithDelegate* btnRecordTab;
 	ofxMSAInteractiveObjectWithDelegate* btnPlaybackTab;
+
+	//RENDERING
+	ofxMSAInteractiveObjectWithDelegate* btnRenderBW;
+	ofxMSAInteractiveObjectWithDelegate* btnRenderRainbow;
+	ofxMSAInteractiveObjectWithDelegate* btnRenderPointCloud;
 
     //INTRINSICS
     ofxMSAInteractiveObjectWithDelegate* btnRGBLoadCalibration;
@@ -138,6 +148,7 @@ public:
     void drawSceneButtons();
 	void drawCalibrationNumbers();
 	void drawDimensionsEntry();
+	void drawDepthImage(ofRectangle& targetRect);
 	
     void loadDirectory();
 	void loadDirectory(string path);
@@ -176,7 +187,7 @@ public:
 	void loadRGBIntrinsicImages(string filepath);
 	void loadRGBIntrinsicImages(vector<string> filepaths);
 	void saveRGBIntrinsicImages();
-	
+
 	void squareSizeChanged(string& args);
 	
 	bool addRGBImageToIntrinsicSet(ofImage& image, string fileName);
@@ -224,7 +235,7 @@ public:
     void setupRenderer();
     bool calibrationGenerated;
     int currentRendererPreviewIndex;
-    ofxRGBDGPURenderer renderer;
+
 	
 	//RECORDING
 	void toggleRecord();

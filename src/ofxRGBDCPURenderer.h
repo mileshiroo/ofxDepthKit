@@ -20,8 +20,6 @@ class ofxRGBDCPURenderer : public ofxRGBDRenderer{
     ofxRGBDCPURenderer();
     virtual ~ofxRGBDCPURenderer();
     
-	virtual void setDepthOnly();
-
 	virtual void update();    
 	virtual void draw(ofPolyRenderMode);
 
@@ -75,7 +73,7 @@ class ofxRGBDCPURenderer : public ofxRGBDRenderer{
 	map< ofIndexType, pair<int, int> > indexToPixelCoord;
     
     
-    bool depthOnly;
+//    bool depthOnly;
 	
     void generateTextureCoordinates();  
     vector<ofIndexType> baseIndeces;    

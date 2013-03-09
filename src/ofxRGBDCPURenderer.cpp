@@ -42,17 +42,17 @@ ofxRGBDCPURenderer::ofxRGBDCPURenderer(){
 ofxRGBDCPURenderer::~ofxRGBDCPURenderer(){
 }
 
-void ofxRGBDCPURenderer::setDepthOnly(){
-    
-    //default kinect intrinsics
-	fx = 5.7034220279543524e+02;
-	fy = 5.7034220280129011e+02;
-	principalPoint.x = 320;
-	principalPoint.y = 240;
-	imageSize.width = 640;
-	imageSize.height = 480;
-	depthOnly = true;
-}
+//void ofxRGBDCPURenderer::setDepthOnly(){
+//    
+//    //default kinect intrinsics
+//	fx = 5.7034220279543524e+02;
+//	fy = 5.7034220280129011e+02;
+//	principalPoint.x = 320;
+//	principalPoint.y = 240;
+//	imageSize.width = 640;
+//	imageSize.height = 480;
+//	depthOnly = true;
+//}
 
 /*
 bool ofxRGBDCPURenderer::setup(string calibrationDirectory){

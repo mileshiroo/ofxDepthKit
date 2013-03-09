@@ -49,6 +49,38 @@ ofxRGBDRenderer::~ofxRGBDRenderer(){
     
 }
 
+
+void ofxRGBDRenderer::setDepthOnly(){
+    
+    //default kinect intrinsics
+	fx = 5.7034220279543524e+02;
+	fy = 5.7034220280129011e+02;
+	principalPoint.x = 320;
+	principalPoint.y = 240;
+	imageSize.width = 640;
+	imageSize.height = 480;
+	
+	depthOnly = true;
+}
+
+void ofxRGBDRenderer::setDepthOnly(string depthCalibrationPath){
+    
+	ofPushView();
+	
+	depthCalibration.load(depthCalibrationPath);
+    depthCalibration.getDistortedIntrinsics().loadProjectionMatrix();
+    glGetFloatv(GL_PROJECTION_MATRIX, depthProjection.getPtr());
+    ofPopView();
+
+	fx = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(0,0);
+    fy = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(1,1);
+    principalPoint = depthCalibration.getDistortedIntrinsics().getPrincipalPoint();
+    imageSize = depthCalibration.getDistortedIntrinsics().getImageSize();
+
+	depthOnly = true;
+}
+
+
 bool ofxRGBDRenderer::setup(string calibrationDirectory){
 	
 	if(!ofDirectory(calibrationDirectory).exists()){
@@ -150,6 +182,11 @@ void ofxRGBDRenderer::setRGBTexture(ofBaseHasTexture& tex){
 //-----------------------------------------------
 ofBaseHasTexture& ofxRGBDRenderer::getRGBTexture() {
     return *currentRGBImage;
+}
+
+//-----------------------------------------------
+ofShortPixels& ofxRGBDRenderer::getDepthImage(){
+	return *currentDepthImage;
 }
 
 //-----------------------------------------------

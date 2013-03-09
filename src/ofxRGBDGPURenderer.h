@@ -49,9 +49,7 @@ class ofxRGBDGPURenderer : public ofxRGBDRenderer {
 
 	ofTexture& getDepthTexture();
     
-  protected:	
-	ofVec2f simplify;
-
+  protected:
     ofShader shader;
     string shaderPath;
     bool rendererBound;

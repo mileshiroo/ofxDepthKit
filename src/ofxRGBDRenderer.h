@@ -27,8 +27,9 @@ public:
                string rotationPath, string translationPath);
 	bool setup(string calibrationDirectory);
     
-//    virtual void setDepthOnly();
-
+    void setDepthOnly();
+	void setDepthOnly(string depthCalibration);
+	
     void setRGBTexture(ofBaseHasTexture& tex);
     void setDepthImage(ofShortPixels& pix);
     ofBaseHasTexture& getRGBTexture();
@@ -104,7 +105,8 @@ public:
 	ofxCv::Calibration depthCalibration, rgbCalibration;
     cv::Mat rotationDepthToRGB, translationDepthToRGB;
     float fx, fy;
-    
+	
+    bool depthOnly;
 	bool hasDepthImage;
 	bool hasRGBImage;
     
@@ -112,7 +114,8 @@ public:
 	ofShortPixels* currentDepthImage;
 	
     //ofVboMesh mesh;
-    ofMesh mesh;
+    //ofMesh mesh;
+	ofVboMesh mesh;
 	ofMatrix4x4 depthToRGBView;
 	ofMatrix4x4 rgbProjection;
     ofMatrix4x4 rgbMatrix;
