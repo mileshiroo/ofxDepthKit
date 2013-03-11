@@ -289,16 +289,68 @@ void ofxRGBDGPURenderer::setupProjectionUniforms(){
 	shader.setUniformTexture("depthTex", depthTexture, 1);
 //    shader.setUniform1i("useTexture", (useTexture && !depthOnly) ? 1 : 0);
 
-	if(flipTexture){
-		ofMatrix4x4 flipMatrix;
-		flipMatrix.makeScaleMatrix(-1,1,1);
-		rgbMatrix = (depthToRGBView * (flipMatrix * rgbProjection));
-		shader.setUniformMatrix4f("tTex", rgbMatrix );
-	}
-	else{
+//	if(flipTexture){
+//		ofMatrix4x4 flipMatrix;
+//		flipMatrix.makeScaleMatrix(-1,1,1);
+//		rgbMatrix = (depthToRGBView * (flipMatrix * rgbProjection));
+//		shader.setUniformMatrix4f("tTex", rgbMatrix );
+//	}
+//	else{
 		rgbMatrix = (depthToRGBView * rgbProjection);
 		shader.setUniformMatrix4f("tTex", rgbMatrix);
-	}
+		
+		//float* translatefv = translationDepthToRGB.ptr<float>();
+		ofVec3f Rtranslate(translationDepthToRGB.at<double>(0,0),
+						   translationDepthToRGB.at<double>(1,0),
+						   translationDepthToRGB.at<double>(2,0));
+		
+//		cout << "translate " << Rtranslate << endl;
+	
+		Mat rx3;
+		cv::Rodrigues(rotationDepthToRGB, rx3);
+		float rotation3fv[9] = {
+			float(rx3.at<double>(0,0)),float(rx3.at<double>(1,0)),float(rx3.at<double>(2,0)),
+			float(rx3.at<double>(0,1)),float(rx3.at<double>(1,1)),float(rx3.at<double>(2,1)),
+			float(rx3.at<double>(0,2)),float(rx3.at<double>(1,2)),float(rx3.at<double>(2,2))
+		};
+	
+		Mat dis = rgbCalibration.getDistCoeffs();
+		ofVec3f disortionK = ofVec3f(dis.at<double>(0,0),
+									 dis.at<double>(0,1),
+									 dis.size().height == 5 ? dis.at<double>(0,4) : 0);
+		ofVec2f disortionP = ofVec2f(dis.at<double>(0,2),dis.at<double>(0,3));
+		
+//		cout << (dis.size().height) << " disort K " << disortionK << " Disort P " << disortionP << endl;
+//		cout << " " << rx3.size().width << " " << rx3.size().height << endl;
+//		cout << rx3.at<double>(0,0) << " " << rx3.at<double>(0,1) << " " << rx3.at<double>(0,2) << endl;
+//		cout << rx3.at<double>(1,0) << " " << rx3.at<double>(1,1) << " " << rx3.at<double>(1,2) << endl;
+//		cout << rx3.at<double>(2,0) << " " << rx3.at<double>(2,1) << " " << rx3.at<double>(2,2) << endl;
+	
+		//double* rotationdv = rx3.ptr<double>();
+//		cout << "rotate " << rotationdv[0] << " " << rotationdv[1] << " " << rotationdv[2] << endl;
+//		cout << "translate" << translatefv[0] << " " << translatefv[1] << " " << translatefv[2] << endl;
+		shader.setUniform3f("dK", disortionK.x, disortionK.y, disortionK.z);
+		shader.setUniform2f("dP", disortionP.x, disortionP.y);
+	
+		glUniformMatrix3fv(shader.getUniformLocation("colorRotate"), 1, GL_FALSE, rotation3fv);
+		shader.setUniform3f("colorTranslate", Rtranslate.x,Rtranslate.y,Rtranslate.z);
+	
+		ofVec2f colorFOV(rgbCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(0,0),
+						 rgbCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(1,1));
+		ofVec2f colorPP = toOf( rgbCalibration.getDistortedIntrinsics().getPrincipalPoint() );
+
+		
+		shader.setUniform2f("colorFOV", colorFOV.x, colorFOV.y );
+		shader.setUniform2f("colorPP", colorPP.x,colorPP.y);
+		
+//		shader.setUniformMatrix3f();
+		/*
+		uniform mat3 colorRotate;
+		uniform vec3 colorTranslate;
+		uniform vec2 colorFOV;
+		uniform vec2 colorPP;
+		*/
+//	}
 
     shader.setUniform2f("principalPoint", principalPoint.x, principalPoint.y);
     shader.setUniform2f("fov", fx, fy);

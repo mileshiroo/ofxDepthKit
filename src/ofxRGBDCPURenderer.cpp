@@ -311,6 +311,7 @@ void ofxRGBDCPURenderer::generateTextureCoordinates(vector<ofVec3f>& points, vec
                   rgbCalibration.getDistortedIntrinsics().getCameraMatrix(),
                   rgbCalibration.getDistCoeffs(),
                   imagePoints);
+	
     cv::Size rgbImage = rgbCalibration.getDistortedIntrinsics().getImageSize();
     for(int i = 0; i < imagePoints.size(); i++) {
         ofVec2f texCd = ofVec2f(imagePoints[i].x, imagePoints[i].y);

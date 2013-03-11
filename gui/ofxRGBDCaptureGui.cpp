@@ -32,6 +32,8 @@ ofxRGBDCaptureGui::~ofxRGBDCaptureGui(){
 void ofxRGBDCaptureGui::setup(){
     ofEnableSmoothing();
 
+	renderer = &gpuRenderer;
+	
     framewidth = 640;
 	frameheight = 480;
 	thirdWidth = framewidth/3;
@@ -196,7 +198,7 @@ void ofxRGBDCaptureGui::setup(){
 	calibrationPreview.setup(10, 7, squareSize);
 	rgbCalibration.setPatternSize(10, 7);
 	rgbCalibration.setSquareSize(squareSize);
-	rgbCalibration.setSubpixelSize(4);
+	rgbCalibration.setSubpixelSize(11);
 	
 	//pointcloudPreview.setDepthOnly();
 	
@@ -260,16 +262,23 @@ void ofxRGBDCaptureGui::update(ofEventArgs& args){
 void ofxRGBDCaptureGui::setupRenderer(){
 	currentRendererPreviewIndex = MIN(currentRendererPreviewIndex, alignmentPairs.size()-1);
 	
-    renderer.reloadShader();
+//    renderer.reloadShader();
 //	renderer.setup("rgbCalibRefined.yml",
 //				   "depthCalibRefined.yml", "rotationDepthToRGB.yml", "translationDepthToRGB.yml");
-	renderer.setup(matrixDirectory);
-	renderer.flipTexture = true;
 	
-	renderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
-	renderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
-	renderer.update();
-    
+	cpuRenderer.setup(matrixDirectory);
+	gpuRenderer.setup(matrixDirectory);
+	cpuRenderer.flipTexture = true;
+	gpuRenderer.flipTexture = true;
+	
+	gpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
+	gpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
+	gpuRenderer.update();
+
+	cpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
+	cpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
+	cpuRenderer.update();
+
 }
 void ofxRGBDCaptureGui::draw(ofEventArgs& args){
 	if(currentTab == TabIntrinsics){
@@ -352,6 +361,13 @@ void ofxRGBDCaptureGui::drawIntrinsics(){
 
 		if(rgbCalibration.isReady()){
 			drawCalibrationNumbers();
+			float error = rgbCalibration.getReprojectionError(currentCalibrationImageIndex);
+			string currentError = "Total Error: " + ofToString(rgbCalibration.getReprojectionError(),3) + " " + rgbCalibrationFileNames[currentCalibrationImageIndex] + " Error: " + ofToString(error, 3);
+			ofSetColor(0);
+			ofRect(previewRectRight.x, previewRectRight.getMaxY()-1, contextHelpTextSmall.stringWidth(currentError) + 20, -contextHelpTextSmall.getLineHeight()+10);
+			ofSetColor(255);
+			contextHelpTextSmall.drawString(currentError, previewRectRight.x+10, previewRectRight.getMaxY()-contextHelpTextSmall.getLineHeight()-5);
+			
 		}
 		ofPopStyle();
 	}
@@ -390,90 +406,88 @@ void ofxRGBDCaptureGui::drawExtrinsics(){
 			depthImageProvider->getRawIRImage().draw(currentAlignmentPair->depthCheckersRect);
 			calibrationPreview.draw(currentAlignmentPair->depthCheckersRect);
 		}
-
-		for(int i = 0; i < MIN(alignmentPairs.size(), 4); i++){
-			
-			float subRectWidth  = framewidth*.25;
-			float subRectHeight = frameheight*.25;
-			
-			//DRAW ACTUAL IMAGES
-			if(alignmentPairs[i]->depthImage.isAllocated()){
-				alignmentPairs[i]->depthImage.draw(alignmentPairs[i]->depthImageRect);
-			}
-			if(alignmentPairs[i]->depthCheckers.isAllocated()){
-				alignmentPairs[i]->depthCheckers.draw(alignmentPairs[i]->depthCheckersRect);
-			}
-			
-			if(alignmentPairs[i]->colorCheckers.isAllocated()){
-				alignmentPairs[i]->colorCheckers.draw(alignmentPairs[i]->colorCheckersRect);
-			}
-			
-			//DRAW DELETE/INCLUDE/IGNORE BUTTONS
-			if(alignmentPairs[i] != currentAlignmentPair){
-				
-				ofPushStyle();
-				ofSetColor(0);
-				//TODO: add colors
-				ofRect(alignmentPairs[i]->deleteRect);
-				ofRect(alignmentPairs[i]->includeRect);
-				ofSetColor(255);
-				
-				contextHelpTextSmall.drawString("[X]", alignmentPairs[i]->deleteRect.x + 5,
-												alignmentPairs[i]->deleteRect.y + alignmentPairs[i]->deleteRect.height/2 + contextHelpTextSmall.getLineHeight() *.5);
-				string includeString = alignmentPairs[i]->included ? "IGNORE" : "INCLUDE";
-				contextHelpTextSmall.drawString(includeString, alignmentPairs[i]->includeRect.x + 5,
-												alignmentPairs[i]->includeRect.y + + alignmentPairs[i]->includeRect.height/2 + contextHelpTextSmall.getLineHeight() * .5);
-				ofPopStyle();
-
-				ofPushStyle();
-				ofSetColor(255);
-				ofNoFill();
-				
-				ofRect(alignmentPairs[i]->deleteRect);
-				ofRect(alignmentPairs[i]->includeRect);
-				ofPopStyle();
-				
-			}
-			
-			//DRAW IMAGES
-			alignmentPairs[i]->deleteRect = ofRectangle(drawX,
-														drawY,
-														30,subRectHeight);
-			
-			alignmentPairs[i]->depthImageRect = ofRectangle(drawX+30, drawY, subRectWidth, subRectHeight);
-			alignmentPairs[i]->depthCheckersRect = alignmentPairs[i]->depthImageRect;
-			alignmentPairs[i]->depthCheckersRect.x += subRectWidth;
-			
-			alignmentPairs[i]->colorCheckersRect = alignmentPairs[i]->depthCheckersRect;
-			alignmentPairs[i]->colorCheckersRect.x += subRectWidth;
-			alignmentPairs[i]->colorCheckersRect.width *= (16./9.) / (4./3.); //aspect shift
-			
-	//		alignmentPairs[i]->deleteRect = ofRectangle(alignmentPairs[i]->colorCheckersRect.getMaxX(),
-	//                                                    drawY,
-	//                                                    framewidth - alignmentPairs[i]->colorCheckersRect.getMaxX(), subRectHeight/2);
-			alignmentPairs[i]->includeRect = alignmentPairs[i]->colorCheckersRect;
-			alignmentPairs[i]->includeRect.x += alignmentPairs[i]->colorCheckersRect.width;
-			alignmentPairs[i]->includeRect.width = framewidth - alignmentPairs[i]->colorCheckersRect.getMaxX();
-			
-			ofPushStyle();
-			
-			if(alignmentPairs[i]->included){
-				ofNoFill();
-				ofSetColor(boardColors[i]);
-			}
-			else{
-				ofFill();
-				ofSetColor(128, 200);
-			}
-			ofRect(alignmentPairs[i]->depthImageRect);
-			ofRect(alignmentPairs[i]->depthCheckersRect);
-			ofRect(alignmentPairs[i]->colorCheckersRect);
-			
-			ofPopStyle();
-			
-			drawY += subRectHeight;
+	}
+	for(int i = 0; i < MIN(alignmentPairs.size(), 4); i++){
+		
+		float subRectWidth  = framewidth*.25;
+		float subRectHeight = frameheight*.25;
+		
+		//DRAW ACTUAL IMAGES
+		if(alignmentPairs[i]->depthImage.isAllocated()){
+			alignmentPairs[i]->depthImage.draw(alignmentPairs[i]->depthImageRect);
+		}
+		if(alignmentPairs[i]->depthCheckers.isAllocated()){
+			alignmentPairs[i]->depthCheckers.draw(alignmentPairs[i]->depthCheckersRect);
 		}
 		
+		if(alignmentPairs[i]->colorCheckers.isAllocated()){
+			alignmentPairs[i]->colorCheckers.draw(alignmentPairs[i]->colorCheckersRect);
+		}
+		
+		//DRAW DELETE/INCLUDE/IGNORE BUTTONS
+		if(alignmentPairs[i] != currentAlignmentPair){
+			
+			ofPushStyle();
+			ofSetColor(0);
+			//TODO: add colors
+			ofRect(alignmentPairs[i]->deleteRect);
+			ofRect(alignmentPairs[i]->includeRect);
+			ofSetColor(255);
+			
+			contextHelpTextSmall.drawString("[X]", alignmentPairs[i]->deleteRect.x + 5,
+											alignmentPairs[i]->deleteRect.y + alignmentPairs[i]->deleteRect.height/2 + contextHelpTextSmall.getLineHeight() *.5);
+			string includeString = alignmentPairs[i]->included ? "IGNORE" : "INCLUDE";
+			contextHelpTextSmall.drawString(includeString, alignmentPairs[i]->includeRect.x + 5,
+											alignmentPairs[i]->includeRect.y + + alignmentPairs[i]->includeRect.height/2 + contextHelpTextSmall.getLineHeight() * .5);
+			ofPopStyle();
+
+			ofPushStyle();
+			ofSetColor(255);
+			ofNoFill();
+			
+			ofRect(alignmentPairs[i]->deleteRect);
+			ofRect(alignmentPairs[i]->includeRect);
+			ofPopStyle();
+			
+		}
+		
+		//DRAW IMAGES
+		alignmentPairs[i]->deleteRect = ofRectangle(drawX,
+													drawY,
+													30,subRectHeight);
+		
+		alignmentPairs[i]->depthImageRect = ofRectangle(drawX+30, drawY, subRectWidth, subRectHeight);
+		alignmentPairs[i]->depthCheckersRect = alignmentPairs[i]->depthImageRect;
+		alignmentPairs[i]->depthCheckersRect.x += subRectWidth;
+		
+		alignmentPairs[i]->colorCheckersRect = alignmentPairs[i]->depthCheckersRect;
+		alignmentPairs[i]->colorCheckersRect.x += subRectWidth;
+		alignmentPairs[i]->colorCheckersRect.width *= (16./9.) / (4./3.); //aspect shift
+		
+//		alignmentPairs[i]->deleteRect = ofRectangle(alignmentPairs[i]->colorCheckersRect.getMaxX(),
+//                                                    drawY,
+//                                                    framewidth - alignmentPairs[i]->colorCheckersRect.getMaxX(), subRectHeight/2);
+		alignmentPairs[i]->includeRect = alignmentPairs[i]->colorCheckersRect;
+		alignmentPairs[i]->includeRect.x += alignmentPairs[i]->colorCheckersRect.width;
+		alignmentPairs[i]->includeRect.width = framewidth - alignmentPairs[i]->colorCheckersRect.getMaxX();
+		
+		ofPushStyle();
+		
+		if(alignmentPairs[i]->included){
+			ofNoFill();
+			ofSetColor(boardColors[i]);
+		}
+		else{
+			ofFill();
+			ofSetColor(128, 200);
+		}
+		ofRect(alignmentPairs[i]->depthImageRect);
+		ofRect(alignmentPairs[i]->depthCheckersRect);
+		ofRect(alignmentPairs[i]->colorCheckersRect);
+		
+		ofPopStyle();
+		
+		drawY += subRectHeight;
 	}
 	
     
@@ -496,7 +510,7 @@ void ofxRGBDCaptureGui::drawExtrinsics(){
         cam.begin(previewRectRight);
         
 		ofSetColor(255);
-		renderer.drawMesh();
+		renderer->drawMesh();
 		
 		ofPushMatrix();
 		ofScale(-1, -1, 1);
@@ -606,14 +620,7 @@ void ofxRGBDCaptureGui::drawCalibrationNumbers(){
 									ofToString(rgbCalibration.getDistCoeffs().at<double>(2),4) + " " +
 									ofToString(rgbCalibration.getDistCoeffs().at<double>(3),4),
 									btnRGBLoadCalibration->x+previewRectRight.width/2+10,btnRGBLoadCalibration->y+55);
-	
-	
-	float error = rgbCalibration.getReprojectionError(currentCalibrationImageIndex);
-	string currentError = "Total Error: " + ofToString(rgbCalibration.getReprojectionError(),3) + " " + rgbCalibrationFileNames[currentCalibrationImageIndex] + " Error: " + ofToString(error, 3);
-	ofSetColor(0);
-	ofRect(previewRectRight.x, previewRectRight.getMaxY()-1, contextHelpTextSmall.stringWidth(currentError) + 20, -contextHelpTextSmall.getLineHeight()+10);
-	ofSetColor(255);
-	contextHelpTextSmall.drawString(currentError, previewRectRight.x+10, previewRectRight.getMaxY()-contextHelpTextSmall.getLineHeight()-5);
+		
 	
 }
 
@@ -1092,7 +1099,9 @@ void ofxRGBDCaptureGui::mouseReleased(ofMouseEventArgs& args){
 }
 
 void ofxRGBDCaptureGui::keyPressed(ofKeyEventArgs& args){
-    
+    if(args.key == 'R'){
+		gpuRenderer.reloadShader();
+	}
 }
 
 void ofxRGBDCaptureGui::keyReleased(ofKeyEventArgs& args){
@@ -1115,7 +1124,12 @@ void ofxRGBDCaptureGui::keyReleased(ofKeyEventArgs& args){
 			timeline.togglePlay();
 		}
 	}
-
+	if(args.key == OF_KEY_UP){
+		renderer = &gpuRenderer;
+	}
+	else if(args.key == OF_KEY_DOWN){
+		renderer = &cpuRenderer;
+	}
 }
 
 void ofxRGBDCaptureGui::previewNextAlignmentPair(){
@@ -1124,13 +1138,20 @@ void ofxRGBDCaptureGui::previewNextAlignmentPair(){
 		return;
 	}
 	currentRendererPreviewIndex = (currentRendererPreviewIndex + 1) % (alignmentPairs.size()-1);
-	renderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
-	previewPixelsUndistorted.setFromPixels(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
-	rgbCalibration.undistort( toCv(previewPixelsUndistorted) );
-	previewPixelsUndistorted.reloadTexture();
-	renderer.setRGBTexture(previewPixelsUndistorted);
+	cpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
+	gpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
 	
-	renderer.update();
+//	previewPixelsUndistorted.setFromPixels(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
+//	rgbCalibration.undistort( toCv(previewPixelsUndistorted) );
+//	previewPixelsUndistorted.reloadTexture();
+//	cpuRenderer.setRGBTexture(previewPixelsUndistorted);
+//	gpuRenderer.setRGBTexture(previewPixelsUndistorted);
+
+	cpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
+	gpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
+	
+	cpuRenderer.update();
+	gpuRenderer.update();
 
 }
 
@@ -1143,10 +1164,14 @@ void ofxRGBDCaptureGui::previewPreviousAlignmentPair(){
 	if(currentRendererPreviewIndex < 0){
 		currentRendererPreviewIndex = alignmentPairs.size()-2;
 	}
-	renderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
-	renderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
-	renderer.update();
-	
+	gpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
+	gpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
+	gpuRenderer.update();
+
+	cpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
+	cpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
+	cpuRenderer.update();
+
 }
 
 void ofxRGBDCaptureGui::loadDirectory(){
@@ -1439,7 +1464,7 @@ void ofxRGBDCaptureGui::dragEvent(ofDragInfo& dragInfo){
 }
 
 void ofxRGBDCaptureGui::refineDepthCalibration(){
-	depthCalibrationBase.load("depthCalibBase.yml");
+	depthCalibrationBase.load(matrixDirectory + "depthCalibBase.yml");
 	int width  = depthImageProvider->getRawIRImage().getWidth();
 	int height = depthImageProvider->getRawIRImage().getHeight();
 	vector<Point3f> depthObjectCollection;
@@ -1650,8 +1675,8 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 				filteredExternalImagePoints.push_back( externalRGBPoints[i][j] );
 				numPointsFound++;
 				
-				inlierPoints.addColor( boardColors[ boardIndex ] );
-				inlierPoints.addVertex( kinect3dPoints[i][j] );
+//				inlierPoints.addColor( boardColors[ boardIndex ] );
+//				inlierPoints.addVertex( kinect3dPoints[i][j] );
 
 			}
 			else{
@@ -1683,26 +1708,22 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 	cout << "Initial RGB Distortion " << distCoeffs << endl;
 	cout << "Camera image size " << rgbCalibration.getDistortedIntrinsics().getImageSize().width << " " << rgbCalibration.getDistortedIntrinsics().getImageSize().height << endl;
 	
-    //	int flags = CV_CALIB_FIX_INTRINSIC;
+	
+    /*
     int flags = CV_CALIB_USE_INTRINSIC_GUESS;// | CV_CALIB_FIX_INTRINSIC;
 	double rms  = calibrateCamera(cvObjectPoints, cvImagePoints, cv::Size(rgbCalibration.getDistortedIntrinsics().getImageSize()), cameraMatrix, distCoeffs,rotations,translations, flags); //todo fix distortion
 	rotationDepthToRGB = rotations[0];
 	translationDepthToRGB = translations[0];
 	cout << "RMS IS " << rms << endl;
+	*/
 	
-//	for(int i= 0; i < inliers.total(); i++){
-//		inlierPoints.addColor( boardColors[ indexToBoard[ inliers.at<int>(i) ] ] );
-//		inlierPoints.addVertex( toOf(filteredKinectObjectPoints[inliers.at<int>(i)]) );
-//	}
-
-/*
     Mat inliers;
 	solvePnPRansac(filteredKinectObjectPoints, filteredExternalImagePoints,
                    cameraMatrix, distCoeffs,
                    rotationDepthToRGB, translationDepthToRGB,
-                   false,//use intrinsics guess
+                   true,//use intrinsics guess
                    100, //iterations
-                   1, //reprojection error
+				   1.5, //reprojection error
                    numPointsFound, //min inliers
                    inliers ); //output inliers
 	
@@ -1712,20 +1733,11 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 		inlierPoints.addColor( boardColors[ indexToBoard[ inliers.at<int>(i) ] ] );
 		inlierPoints.addVertex( toOf(filteredKinectObjectPoints[inliers.at<int>(i)]) );
 	}
-*/	
-	
-    //    cout << inl.size() << endl;
-    
-    //	rotationDepthToRGB = rotations[0];
-    //	translationDepthToRGB = translations[0];
-	
-	//cvFindExtrinsicCameraParams2(cvOjectPoints[0], cvImagePoints[0], cameraMatrix, distCoeffs,rotations,translations);
-    //	cout << "Calibrate RMS is " << rms << endl;
 	
 	cout << "Final camera matrix is " << cameraMatrix << endl;
 	cout << "Final distortion coefficients " << distCoeffs << endl;
-	cout << "RGB->Depth rotation " << rotationDepthToRGB << endl;
-	cout << "RGB->Detph translation " << translationDepthToRGB << endl;
+	cout << "Depth->RGB rotation " << rotationDepthToRGB << endl;
+	cout << "Depth->RGB translation " << translationDepthToRGB << endl;
 	
 	saveMat(rotationDepthToRGB, matrixDirectory + "rotationDepthToRGB.yml");
 	saveMat(translationDepthToRGB, matrixDirectory + "translationDepthToRGB.yml");

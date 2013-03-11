@@ -60,16 +60,6 @@ public:
     ofVec3f worldPosition;
 	ofVec3f worldRotation;
     
-    /*
-    bool bindRenderer(); //built in shader
-    bool bindRenderer(ofShader& customShader); //any custom shader
-    void unbindRenderer();
-    
-    //called inside of bind/unbind
-    void setupProjectionUniforms(ofShader& shader);
-    void reloadShader();
-    */
-    
     //fun way of visualizing the calibration
     void drawProjectionDebug(bool showDepth, bool showRGB, float rgbTexturePosition);
     
@@ -78,10 +68,6 @@ public:
 	//2 for half, or 4 for quarter;
 	virtual void setSimplification(ofVec2f simplification) = 0;
 	ofVec2f getSimplification();
-    
-//  void drawMesh(ofShader& customShader);
-//	void drawPointCloud(ofShader& customShader);
-//	void drawWireFrame(ofShader& customShader);
     
 	//populated with vertices, texture coords, and indeces
 	ofMesh& getMesh();
@@ -96,9 +82,6 @@ public:
 	ofVec2f simplify;
     
     bool meshGenerated;
-    //bool shaderBound;
-//    ofShader* currentlyBoundShader;
-//    bool rendererBound;
     
     cv::Point2d principalPoint;
     cv::Size imageSize;
@@ -113,14 +96,9 @@ public:
 	ofBaseHasTexture* currentRGBImage;
 	ofShortPixels* currentDepthImage;
 	
-    //ofVboMesh mesh;
-    //ofMesh mesh;
 	ofVboMesh mesh;
 	ofMatrix4x4 depthToRGBView;
 	ofMatrix4x4 rgbProjection;
     ofMatrix4x4 rgbMatrix;
 	ofMatrix4x4 depthProjection;
-	
-//	ofShader meshShader;
-    
 };
