@@ -296,7 +296,7 @@ void ofxRGBDGPURenderer::setupProjectionUniforms(){
 //		shader.setUniformMatrix4f("tTex", rgbMatrix );
 //	}
 //	else{
-		rgbMatrix = (depthToRGBView * rgbProjection);
+//		rgbMatrix = (depthToRGBView * rgbProjection);
 		shader.setUniformMatrix4f("tTex", rgbMatrix);
 		
 		//float* translatefv = translationDepthToRGB.ptr<float>();
@@ -304,16 +304,22 @@ void ofxRGBDGPURenderer::setupProjectionUniforms(){
 						   translationDepthToRGB.at<double>(1,0),
 						   translationDepthToRGB.at<double>(2,0));
 		
+	
 //		cout << "translate " << Rtranslate << endl;
 	
 		Mat rx3;
 		cv::Rodrigues(rotationDepthToRGB, rx3);
+	
+		if(flipTexture){
+
+		}
+	
 		float rotation3fv[9] = {
 			float(rx3.at<double>(0,0)),float(rx3.at<double>(1,0)),float(rx3.at<double>(2,0)),
 			float(rx3.at<double>(0,1)),float(rx3.at<double>(1,1)),float(rx3.at<double>(2,1)),
 			float(rx3.at<double>(0,2)),float(rx3.at<double>(1,2)),float(rx3.at<double>(2,2))
 		};
-	
+
 		Mat dis = rgbCalibration.getDistCoeffs();
 		ofVec3f disortionK = ofVec3f(dis.at<double>(0,0),
 									 dis.at<double>(0,1),
