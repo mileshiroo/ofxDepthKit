@@ -42,51 +42,6 @@ ofxRGBDCPURenderer::ofxRGBDCPURenderer(){
 ofxRGBDCPURenderer::~ofxRGBDCPURenderer(){
 }
 
-//void ofxRGBDCPURenderer::setDepthOnly(){
-//    
-//    //default kinect intrinsics
-//	fx = 5.7034220279543524e+02;
-//	fy = 5.7034220280129011e+02;
-//	principalPoint.x = 320;
-//	principalPoint.y = 240;
-//	imageSize.width = 640;
-//	imageSize.height = 480;
-//	depthOnly = true;
-//}
-
-/*
-bool ofxRGBDCPURenderer::setup(string calibrationDirectory){
- 	if(!ofDirectory(calibrationDirectory).exists()){
-		ofLogError("ofxRGBDRenderer --- Calibration directory doesn't exist: " + calibrationDirectory);
-		return false;
-	}
-	
-	depthCalibration.load(calibrationDirectory+"/depthCalib.yml");
-	rgbCalibration.load(calibrationDirectory+"/rgbCalib.yml");
-	
-	loadMat(rotationDepthToRGB, calibrationDirectory+"/rotationDepthToRGB.yml");
-	loadMat(translationDepthToRGB, calibrationDirectory+"/translationDepthToRGB.yml");
-    
-	fov.x = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(0,0);
-	fov.y = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(1,1);
-	principalPoint = depthCalibration.getDistortedIntrinsics().getPrincipalPoint();
-    
-//  Point2d fov = depthCalibration.getDistortedIntrinsics().getFov();
-//	angleFov.x = tanf(ofDegToRad(fov.x) / 2) * 2;
-//	angleFov.y = tanf(ofDegToRad(fov.y) / 2) * 2;
-//  cout << "fx and fy " << fx << " " << fy << endl;
-	
-	imageSize = depthCalibration.getDistortedIntrinsics().getImageSize();
-	depthOnly = false;
-	
-	return (calibrationSetup = true);   
-}
-*/
-
-//ofVec2f ofxRGBDCPURenderer::getSimplification(){
-//    return simplify;
-//}
-
 void ofxRGBDCPURenderer::setSimplification(ofVec2f simplification){
     
     if(!calibrationSetup && !depthOnly){
@@ -362,29 +317,6 @@ void ofxRGBDCPURenderer::setPivotToMeshCenter(){
 	pivot = center;
 }
 
-
-//void ofxRGBDCPURenderer::setTexture(ofBaseHasTexture& texture){
-//	currentTexture = &texture;
-//	setTextureScaleForImage(texture);
-//}
-//
-//void ofxRGBDCPURenderer::setDepthPixels(ofShortPixels& pixels){
-//	currentDepthPixels = &pixels;
-//}
-
-
-//void ofxRGBDCPURenderer::draw(){
-//	if(currentTexture != NULL){
-//		draw(*currentTexture);
-//	}
-//	else {
-//		ofPushMatrix();
-//		setupDrawMatrices();
-//		mesh.drawWireframe();
-//		ofPopMatrix();
-//	}
-//}
-
 void ofxRGBDCPURenderer::setupDrawMatrices(){
 	ofTranslate(worldPosition);
 	
@@ -435,32 +367,6 @@ void ofxRGBDCPURenderer::draw(ofPolyRenderMode drawMode){
     ofPopMatrix();
 }
 
-
-
-/*
-void ofxRGBDCPURenderer::draw(ofBaseHasTexture& texture){
-    if(!calibrationSetup){
-        ofLogError("ofxRGBDCPURenderer::draw -- Failed. Calibration is not set up");
-        return;
-    }
-    if(!hasTriangles){
-        ofLogError("ofxRGBDCPURenderer::draw -- Failed. Mesh has no geometry");
-        return;
-    }
-    if(depthOnly){
-        ofLogError("ofxRGBDCPURenderer::draw -- Failed. MeshBuilder is set to depth only");
-        return;
-    }
-    
-    ofPushMatrix();
-	setupDrawMatrices();
-    texture.getTextureReference().bind();
-	mesh.draw();
-    texture.getTextureReference().unbind();
-    ofPopMatrix();
-}
- */
-
 void ofxRGBDCPURenderer::setTextureScaleForImage(ofBaseHasTexture& texture){
 	if(!calibrationSetup){
 		ofLogError("ofxRGBDCPURenderer::setTextureScaleForImage") << "must set up matrices before setting texture scale";
@@ -471,7 +377,3 @@ void ofxRGBDCPURenderer::setTextureScaleForImage(ofBaseHasTexture& texture){
     textureScale = ofVec2f(float(texture.getTextureReference().getWidth() / float(rgbImage.width)),
                            float(texture.getTextureReference().getHeight()) / float(rgbImage.height) );    
 }
-
-//void ofxRGBDCPURenderer::setXYShift(ofVec2f newShift){
-//    shift = newShift;
-//}
