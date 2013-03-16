@@ -1,8 +1,9 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxRGBDCPURenderer.h"
+#include "ofxRGBDRenderer.h"
 #include "ofxRGBDPlayer.h"
+#include "ofxXmlSettings.h"
 
 class ofxRGBDVideoExporter {
   public:
@@ -10,7 +11,7 @@ class ofxRGBDVideoExporter {
 	ofxRGBDVideoExporter();
 	~ofxRGBDVideoExporter();
 
-	void setRenderer(ofxRGBDCPURenderer* renderer);
+	void setRenderer(ofxRGBDRenderer* renderer);
 	void setPlayer(ofxRGBDPlayer* player);
 	
 	void render(string outputPath, string clipName);
@@ -24,7 +25,7 @@ class ofxRGBDVideoExporter {
 	ofColor getColorForZDepth(unsigned short z);
 	void writeMetaFile(string outputDirectory);
 	
-	ofxRGBDCPURenderer* renderer;
+	ofxRGBDRenderer* renderer;
 	ofxRGBDPlayer* player;
 	
 	ofRectangle videoRectangle;

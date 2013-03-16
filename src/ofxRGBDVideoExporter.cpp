@@ -15,7 +15,7 @@ ofxRGBDVideoExporter::~ofxRGBDVideoExporter(){
 	
 }
 
-void ofxRGBDVideoExporter::setRenderer(ofxRGBDCPURenderer* renderer){
+void ofxRGBDVideoExporter::setRenderer(ofxRGBDRenderer* renderer){
 	this->renderer = renderer;
 }
 
@@ -30,11 +30,13 @@ void ofxRGBDVideoExporter::render(string outputPath, string clipName){
 		return;
 	}
 
-//	if(renderer == NULL){
-//		ofLogError("ofxRGBDVideoExporter::render -- renderer is null");
-//		return;
-//	}
+	if(renderer == NULL){
+		ofLogError("ofxRGBDVideoExporter::render -- renderer is null");
+		return;
+	}
 
+	writeMetaFile(outputPath);
+	
 	outputImage.allocate(videoRectangle.getWidth() + 640, videoRectangle.getHeight(), OF_IMAGE_COLOR);
 	
 	for(int i = inoutPoint.min; i < inoutPoint.max; i++){
@@ -59,6 +61,63 @@ void ofxRGBDVideoExporter::render(string outputPath, string clipName){
 		player->getVideoPlayer()->update();
 		player->update();
 	}
+}
+
+void ofxRGBDVideoExporter::writeMetaFile(string outputDirectory){
+	//write calibration into an xml file
+
+	ofxXmlSettings calibration;
+	calibration.addTag("depthIntrinsics");
+	calibration.pushTag("depthIntrinsics");
+	
+	calibration.addValue("ppx", renderer->depthPrincipalPoint.x);
+	calibration.addValue("ppy", renderer->depthPrincipalPoint.y);
+	calibration.addValue("fovx", renderer->depthFOV.x);
+	calibration.addValue("fovy", renderer->depthFOV.y);
+	calibration.addValue("width", renderer->depthImageSize.width);
+	calibration.addValue("height", renderer->depthImageSize.height);
+	calibration.popTag();//depthIntrinsics
+	
+	calibration.addTag("colorIntrinsics");
+	calibration.pushTag("colorIntrinsics");
+	calibration.addValue("ppx", renderer->colorPrincipalPoint.x);
+	calibration.addValue("ppy", renderer->colorPrincipalPoint.y);
+	calibration.addValue("fovx", renderer->colorFOV.x);
+	calibration.addValue("fovy", renderer->colorFOV.y);
+	calibration.addValue("width", renderer->colorImageSize.width);
+	calibration.addValue("height", renderer->colorImageSize.height);
+	
+	calibration.addTag("dK");
+	calibration.pushTag("dK");
+	for(int i = 0; i < 3; i++) calibration.addValue("k" + ofToString(i), renderer->distortionK[i] );
+	calibration.popTag();//dK
+
+	calibration.addTag("dP");
+	calibration.pushTag("dP");
+	for(int i = 0; i < 2; i++) calibration.addValue("p" + ofToString(i), renderer->distortionP[i] );
+	calibration.popTag();//dP
+
+	calibration.popTag();//colorIntrinsics
+
+	calibration.addTag("extrinsics");
+	calibration.pushTag("extrinsics");
+	calibration.addTag("rotation");
+	calibration.pushTag("rotation");
+	for(int i = 0; i < 9; i++) calibration.addValue("r" + ofToString(i), renderer->depthToRGBRotation[i] );
+	calibration.popTag();
+	
+	calibration.addTag("translation");
+	calibration.pushTag("translation");
+	for(int i = 0; i < 3; i++) calibration.addValue("t" + ofToString(i), renderer->depthToRGBTranslation[i]);
+	calibration.popTag();//translation
+	
+	calibration.popTag();//extrinsics
+	
+	calibration.addValue("minDepth", minDepth);
+	calibration.addValue("maxDepth", maxDepth);
+	
+	calibration.save(outputDirectory + "/_calibration.xml");
+	
 }
 
 ofColor ofxRGBDVideoExporter::getColorForZDepth(unsigned short z){

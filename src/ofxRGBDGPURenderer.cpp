@@ -114,9 +114,9 @@ void ofxRGBDGPURenderer::setSimplification(ofVec2f simplification){
     int x = 0;
     int y = 0;
     
-    int gw = ceil(imageSize.width / simplify.x);
+    int gw = ceil(depthImageSize.width / simplify.x);
     int w = gw*simplify.x;
-    int h = imageSize.height;
+    int h = depthImageSize.height;
     
 	for (float ystep = 0; ystep < h-simplify.y; ystep += simplify.y){
 		for (float xstep = 0; xstep < w-simplify.x; xstep += simplify.x){
@@ -144,16 +144,16 @@ void ofxRGBDGPURenderer::setSimplification(ofVec2f simplification){
 	}
     
 	mesh.clearVertices();
-	for (float y = 0; y < imageSize.height; y += simplify.y){
-		for (float x = 0; x < imageSize.width; x += simplify.x){
+	for (float y = 0; y < depthImageSize.height; y += simplify.y){
+		for (float x = 0; x < depthImageSize.width; x += simplify.x){
 			mesh.addVertex(ofVec3f(x,y,0));
 		}
 	}
 
     if(addColors){
         mesh.clearColors();
-        for (float y = 0; y < imageSize.height; y += simplify.y){
-            for (float x = 0; x < imageSize.width; x += simplify.x){
+        for (float y = 0; y < depthImageSize.height; y += simplify.y){
+            for (float x = 0; x < depthImageSize.width; x += simplify.x){
                 mesh.addColor(ofFloatColor(1.0,1.0,1.0,1.0));
             }
         }        
@@ -281,14 +281,19 @@ void ofxRGBDGPURenderer::setupProjectionUniforms(){
 		shader.setUniform2f("dim", dims.x, dims.y);
 		shader.setUniform2f("shift", shift.x, shift.y);
 		shader.setUniform2f("scale", scale.x, scale.y);
+		shader.setUniform3f("dK", distortionK.x, distortionK.y, distortionK.z);
+		shader.setUniform2f("dP", distortionP.x, distortionP.y);
+		glUniformMatrix3fv(shader.getUniformLocation("colorRotate"), 1, GL_FALSE, depthToRGBRotation);
+		shader.setUniform3f("colorTranslate", depthToRGBTranslation.x,depthToRGBTranslation.y,depthToRGBTranslation.z);
+		shader.setUniform2f("colorFOV", colorFOV.x, colorFOV.y );
+		shader.setUniform2f("colorPP", colorPrincipalPoint.x, colorPrincipalPoint.y);
 	}
 	else{
 		shader.setUniform1i("useTexture", 0);
 	}
 	
 	shader.setUniformTexture("depthTex", depthTexture, 1);
-//    shader.setUniform1i("useTexture", (useTexture && !depthOnly) ? 1 : 0);
-
+	
 //	if(flipTexture){
 //		ofMatrix4x4 flipMatrix;
 //		flipMatrix.makeScaleMatrix(-1,1,1);
@@ -297,34 +302,29 @@ void ofxRGBDGPURenderer::setupProjectionUniforms(){
 //	}
 //	else{
 //		rgbMatrix = (depthToRGBView * rgbProjection);
-		shader.setUniformMatrix4f("tTex", rgbMatrix);
+//		shader.setUniformMatrix4f("tTex", rgbMatrix);
 		
 		//float* translatefv = translationDepthToRGB.ptr<float>();
-		ofVec3f Rtranslate(translationDepthToRGB.at<double>(0,0),
-						   translationDepthToRGB.at<double>(1,0),
-						   translationDepthToRGB.at<double>(2,0));
+//		ofVec3f Rtranslate(translationDepthToRGB.at<double>(0,0),
+//						   translationDepthToRGB.at<double>(1,0),
+//						   translationDepthToRGB.at<double>(2,0));
 		
 	
 //		cout << "translate " << Rtranslate << endl;
 	
-		Mat rx3;
-		cv::Rodrigues(rotationDepthToRGB, rx3);
-	
-		if(flipTexture){
-
-		}
-	
-		float rotation3fv[9] = {
-			float(rx3.at<double>(0,0)),float(rx3.at<double>(1,0)),float(rx3.at<double>(2,0)),
-			float(rx3.at<double>(0,1)),float(rx3.at<double>(1,1)),float(rx3.at<double>(2,1)),
-			float(rx3.at<double>(0,2)),float(rx3.at<double>(1,2)),float(rx3.at<double>(2,2))
-		};
-
-		Mat dis = rgbCalibration.getDistCoeffs();
-		ofVec3f disortionK = ofVec3f(dis.at<double>(0,0),
-									 dis.at<double>(0,1),
-									 dis.size().height == 5 ? dis.at<double>(0,4) : 0);
-		ofVec2f disortionP = ofVec2f(dis.at<double>(0,2),dis.at<double>(0,3));
+//		Mat rx3;
+//		cv::Rodrigues(rotationDepthToRGB, rx3);
+//		float rotation3fv[9] = {
+//			float(rx3.at<double>(0,0)),float(rx3.at<double>(1,0)),float(rx3.at<double>(2,0)),
+//			float(rx3.at<double>(0,1)),float(rx3.at<double>(1,1)),float(rx3.at<double>(2,1)),
+//			float(rx3.at<double>(0,2)),float(rx3.at<double>(1,2)),float(rx3.at<double>(2,2))
+//		};
+//
+//		Mat dis = rgbCalibration.getDistCoeffs();
+//		ofVec3f disortionK = ofVec3f(dis.at<double>(0,0),
+//									 dis.at<double>(0,1),
+//									 dis.size().height == 5 ? dis.at<double>(0,4) : 0);
+//		ofVec2f disortionP = ofVec2f(dis.at<double>(0,2),dis.at<double>(0,3));
 		
 //		cout << (dis.size().height) << " disort K " << disortionK << " Disort P " << disortionP << endl;
 //		cout << " " << rx3.size().width << " " << rx3.size().height << endl;
@@ -335,34 +335,15 @@ void ofxRGBDGPURenderer::setupProjectionUniforms(){
 		//double* rotationdv = rx3.ptr<double>();
 //		cout << "rotate " << rotationdv[0] << " " << rotationdv[1] << " " << rotationdv[2] << endl;
 //		cout << "translate" << translatefv[0] << " " << translatefv[1] << " " << translatefv[2] << endl;
-		shader.setUniform3f("dK", disortionK.x, disortionK.y, disortionK.z);
-		shader.setUniform2f("dP", disortionP.x, disortionP.y);
-	
-		glUniformMatrix3fv(shader.getUniformLocation("colorRotate"), 1, GL_FALSE, rotation3fv);
-		shader.setUniform3f("colorTranslate", Rtranslate.x,Rtranslate.y,Rtranslate.z);
-	
-		ofVec2f colorFOV(rgbCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(0,0),
-						 rgbCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(1,1));
-		ofVec2f colorPP = toOf( rgbCalibration.getDistortedIntrinsics().getPrincipalPoint() );
-
 		
-		shader.setUniform2f("colorFOV", colorFOV.x, colorFOV.y );
-		shader.setUniform2f("colorPP", colorPP.x,colorPP.y);
-		
-//		shader.setUniformMatrix3f();
-		/*
-		uniform mat3 colorRotate;
-		uniform vec3 colorTranslate;
-		uniform vec2 colorFOV;
-		uniform vec2 colorPP;
-		*/
 //	}
 
-    shader.setUniform2f("principalPoint", principalPoint.x, principalPoint.y);
-    shader.setUniform2f("fov", fx, fy);
+    shader.setUniform2f("principalPoint", depthPrincipalPoint.x, depthPrincipalPoint.y);
+    shader.setUniform2f("fov", depthFOV.x, depthFOV.y);
     shader.setUniform1f("farClip", farClip);
 	shader.setUniform1f("edgeClip", edgeClip);
-    
+	
+    //TODO: vectorize in shader
     shader.setUniform1f("xsimplify", simplify.x);
     shader.setUniform1f("ysimplify", simplify.y);
 }

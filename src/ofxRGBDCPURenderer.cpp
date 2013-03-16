@@ -64,9 +64,9 @@ void ofxRGBDCPURenderer::setSimplification(ofVec2f simplification){
     int x = 0;
     int y = 0;
     
-    int gw = ceil(imageSize.width / simplify.x);
+    int gw = ceil(depthImageSize.width / simplify.x);
     int w = gw*simplify.x;
-    int h = imageSize.height;
+    int h = depthImageSize.height;
     
 	for (float ystep = 0; ystep < h-simplify.y; ystep += simplify.y){
 		for (float xstep = 0; xstep < w-simplify.x; xstep += simplify.x){
@@ -92,8 +92,8 @@ void ofxRGBDCPURenderer::setSimplification(ofVec2f simplification){
 	}
     
 	mesh.clearVertices();
-	for (float y = 0; y < imageSize.height; y += simplify.y){
-		for (float x = 0; x < imageSize.width; x += simplify.x){
+	for (float y = 0; y < depthImageSize.height; y += simplify.y){
+		for (float x = 0; x < depthImageSize.width; x += simplify.x){
             indexToPixelCoord[ mesh.getVertices().size() ] = make_pair(x,y);
 			mesh.addVertex(ofVec3f(x,y,0));
 		}
@@ -101,8 +101,8 @@ void ofxRGBDCPURenderer::setSimplification(ofVec2f simplification){
     
     if(addColors){
         mesh.clearColors();
-        for (float y = 0; y < imageSize.height; y += simplify.y){
-            for (float x = 0; x < imageSize.width; x += simplify.x){
+        for (float y = 0; y < depthImageSize.height; y += simplify.y){
+            for (float x = 0; x < depthImageSize.width; x += simplify.x){
                 mesh.addColor(ofFloatColor(1.0,1.0,1.0,1.0));
             }
         }        
@@ -110,8 +110,8 @@ void ofxRGBDCPURenderer::setSimplification(ofVec2f simplification){
     
     if(calculateTextureCoordinates){
         mesh.clearTexCoords();
-        for (float y = 0; y < imageSize.height; y+=simplify.y){
-            for (float x = 0; x < imageSize.width; x+=simplify.x){
+        for (float y = 0; y < depthImageSize.height; y+=simplify.y){
+            for (float x = 0; x < depthImageSize.width; x+=simplify.x){
                 mesh.addTexCoord(ofVec2f(0,0));
             }
         }
@@ -132,10 +132,10 @@ void ofxRGBDCPURenderer::update(){
 		return;
 	}
 
-	if(currentDepthImage->getWidth() != imageSize.width ||
-       currentDepthImage->getHeight() != imageSize.height)
+	if(currentDepthImage->getWidth() != depthImageSize.width ||
+       currentDepthImage->getHeight() != depthImageSize.height)
     {
-		ofLogError("ofxRGBDCPURenderer::update") << "depth pix dimensions don't match, provided " << ofVec2f(currentDepthImage->getWidth(), currentDepthImage->getHeight()) << " expecting " << ofVec2f(imageSize.width,imageSize.height);
+		ofLogError("ofxRGBDCPURenderer::update") << "depth pix dimensions don't match, provided " << ofVec2f(currentDepthImage->getWidth(), currentDepthImage->getHeight()) << " expecting " << ofVec2f(depthImageSize.width,depthImageSize.height);
 		return;
 	}
     
@@ -147,15 +147,15 @@ void ofxRGBDCPURenderer::update(){
     hasTriangles = false;
 	validVertIndices.clear();
     unsigned short* ptr = currentDepthImage->getPixels();
-    for(float y = 0; y < imageSize.height; y += simplify.y) {
-        for(float x = 0; x < imageSize.width; x += simplify.x) {
+    for(float y = 0; y < depthImageSize.height; y += simplify.y) {
+        for(float x = 0; x < depthImageSize.width; x += simplify.x) {
 			
 			ofVec3f point;
-			unsigned short z = ptr[int(y)*imageSize.width+int(x)];
-			if(x >= imageSize.width*leftClip &&
-			   x <= imageSize.width*rightClip &&
-			   y >= imageSize.height*topClip &&
-			   y <= imageSize.height*bottomClip &&
+			unsigned short z = ptr[int(y) * int(depthImageSize.width) + int(x)];
+			if(x >= depthImageSize.width*leftClip &&
+			   x <= depthImageSize.width*rightClip &&
+			   y >= depthImageSize.height*topClip &&
+			   y <= depthImageSize.height*bottomClip &&
 			   z > nearClip &&
 			   z <= farClip)
 			{
@@ -267,6 +267,7 @@ void ofxRGBDCPURenderer::generateTextureCoordinates(vector<ofVec3f>& points, vec
                   rgbCalibration.getDistCoeffs(),
                   imagePoints);
 	
+	//TODO turn into matrix transform!
     cv::Size rgbImage = rgbCalibration.getDistortedIntrinsics().getImageSize();
     for(int i = 0; i < imagePoints.size(); i++) {
         ofVec2f texCd = ofVec2f(imagePoints[i].x, imagePoints[i].y);
@@ -292,7 +293,8 @@ ofVec3f ofxRGBDCPURenderer::getWorldPoint(float x, float y, ofShortPixels& pixel
 }
 
 ofVec3f ofxRGBDCPURenderer::getWorldPoint(float x, float y, unsigned short z){
-	return ofVec3f( (x - principalPoint.x) * z / fx, (y - principalPoint.y) * z / fy, z);
+	return ofVec3f( (x - depthPrincipalPoint.x) * z / depthFOV.x,
+				    (y - depthPrincipalPoint.y) * z / depthFOV.y, z);
 }
 
 pair<int,int> ofxRGBDCPURenderer::getPixelLocationForIndex(ofIndexType index){

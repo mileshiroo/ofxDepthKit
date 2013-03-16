@@ -30,8 +30,6 @@ class ofxRGBDCPURenderer : public ofxRGBDRenderer{
 	void setPivotToMeshCenter();
     void setSimplification(ofVec2f simplify);
     
-    //contains un-index vertices
-//    ofMesh& getMesh();
     //mesh with only valid vertices
     ofMesh getReducedMesh(bool normalizeTextureCoords,
                           ofVec3f vertexScale = ofVec3f(1,1,1),
@@ -58,22 +56,15 @@ class ofxRGBDCPURenderer : public ofxRGBDRenderer{
     //returns the x,y coord in the image for the given
     pair<int,int> getPixelLocationForIndex(ofIndexType index);
 
-//	ofBaseHasTexture* currentTexture;
-
 	//after this call, texCoords will be the same size as points, full of texture coords;
 	void generateTextureCoordinates(vector<ofVec3f>& points, vector<ofVec2f>& texCoords);
 	ofVec2f getTextureCoordinateForPoint(ofVec3f point);
 	
   private:
     
-//    cv::Point2d principalPoint;
-//    cv::Size imageSize;
-    
 	void setupDrawMatrices();
 	map< ofIndexType, pair<int, int> > indexToPixelCoord;
     
-    
-//    bool depthOnly;
 	
     void generateTextureCoordinates();  
     vector<ofIndexType> baseIndeces;    

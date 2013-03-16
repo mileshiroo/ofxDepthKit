@@ -74,31 +74,43 @@ public:
 	
     ofxCv::Calibration& getRGBCalibration();
 	ofxCv::Calibration& getDepthCalibration();
+	
 	ofMatrix4x4& getDepthToRGBTransform();
 	ofMatrix4x4& getRGBMatrix();
-	ofTexture& getDepthTexture();
     
-  protected:
-	ofVec2f simplify;
-    
-    bool meshGenerated;
-    
-    cv::Point2d principalPoint;
-    cv::Size imageSize;
-	ofxCv::Calibration depthCalibration, rgbCalibration;
-    cv::Mat rotationDepthToRGB, translationDepthToRGB;
-    float fx, fy;
+	//broken out intrinsics/extrinics for easy access
+	ofVec2f depthPrincipalPoint;
+	ofVec2f depthFOV;
+	ofRectangle depthImageSize;
 	
-    bool depthOnly;
-	bool hasDepthImage;
-	bool hasRGBImage;
-    
+	ofVec2f colorPrincipalPoint;
+	ofVec2f colorFOV;
+	ofRectangle colorImageSize;
+
+	//broken out extrinsics
+	float depthToRGBRotation[9];
+	ofVec3f depthToRGBTranslation;
+	ofVec3f distortionK;
+	ofVec2f distortionP;
+
+  protected:
+	ofVboMesh mesh;
 	ofBaseHasTexture* currentRGBImage;
 	ofShortPixels* currentDepthImage;
-	
-	ofVboMesh mesh;
+	ofVec2f simplify;
+    bool meshGenerated;
+	bool depthOnly;
+	bool hasDepthImage;
+	bool hasRGBImage;
+
+	//ofxCv calibration intrinsics/extrinsics
+	ofxCv::Calibration depthCalibration, rgbCalibration;
+    cv::Mat rotationDepthToRGB, translationDepthToRGB;
+
+	//No longer used
 	ofMatrix4x4 depthToRGBView;
 	ofMatrix4x4 rgbProjection;
     ofMatrix4x4 rgbMatrix;
 	ofMatrix4x4 depthProjection;
+	
 };
