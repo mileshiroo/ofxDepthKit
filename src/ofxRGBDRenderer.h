@@ -94,7 +94,8 @@ public:
 	ofVec2f distortionP;
 
   protected:
-	ofVboMesh mesh;
+	//ofVboMesh mesh;
+	ofMesh mesh;
 	ofBaseHasTexture* currentRGBImage;
 	ofShortPixels* currentDepthImage;
 	ofVec2f simplify;

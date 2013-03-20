@@ -29,7 +29,7 @@ class ofxDepthImageProvider {
 	ofImage& getColorImage();
 	
 	void setDepthModeRainbow(bool useRainbow); //otherwise grayscale
-
+	
   protected:
 	bool bDepthImageDirty;
 	bool bUseRainbow;

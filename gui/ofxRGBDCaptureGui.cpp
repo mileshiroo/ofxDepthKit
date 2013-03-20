@@ -1464,7 +1464,7 @@ void ofxRGBDCaptureGui::dragEvent(ofDragInfo& dragInfo){
 }
 
 void ofxRGBDCaptureGui::refineDepthCalibration(){
-	depthCalibrationBase.load(matrixDirectory + "depthCalibBase.yml");
+	depthCalibrationBase.load("depthCalibBase.yml");
 	int width  = depthImageProvider->getRawIRImage().getWidth();
 	int height = depthImageProvider->getRawIRImage().getHeight();
 	vector<Point3f> depthObjectCollection;

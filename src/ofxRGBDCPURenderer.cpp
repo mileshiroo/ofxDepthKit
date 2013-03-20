@@ -342,7 +342,7 @@ void ofxRGBDCPURenderer::draw(ofPolyRenderMode drawMode){
     }
     
     if(!hasTriangles){
-        ofLogError("ofxRGBDCPURenderer::draw -- Failed. Mesh has no geometry");
+//        ofLogError("ofxRGBDCPURenderer::draw -- Failed. Mesh has no geometry");
         return;
     }
 
