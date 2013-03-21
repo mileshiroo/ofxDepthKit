@@ -105,7 +105,7 @@ void ofxRGBDCaptureGui::setup(){
 	
 	btnRenderBW = new ofxMSAInteractiveObjectWithDelegate();
 	btnRenderBW->setPosAndSize(0, btnheight*2+frameheight, thirdWidth, btnheight);
-	btnRenderBW->setLabel("Blaick & White");
+	btnRenderBW->setLabel("Black & White");
 	btnRenderBW->fontReference = &contextHelpTextSmall;
 	buttonSet.push_back(btnRenderBW);
     currentRenderModeObject = btnRenderBW;
@@ -317,25 +317,20 @@ void ofxRGBDCaptureGui::draw(ofEventArgs& args){
 void ofxRGBDCaptureGui::drawIntrinsics(){
     //left side is Kinect
     bool drawCamera = providerSet && depthImageProvider->deviceFound();
+	if(depthCameraSelfCalibrated){
+		ofFill();
+		ofSetColor(confirmedColor, 50);
+		ofRect(*btnCalibrateDepthCamera);
+		ofSetColor(255);
+		contextHelpTextSmall.drawString("Field of View: " + ofToString(fov.x,2) + " x " + ofToString(fov.y,2) +
+										"\nPrincipal Point: " +  ofToString(pp.x,2) + " x " + ofToString(pp.y,2),
+										btnCalibrateDepthCamera->x+10,btnCalibrateDepthCamera->y+55);		
+	}
+
     if(drawCamera){
-		ofPushStyle();
-		//DRAW CONFIRMATION RECTANGLE
-		if(depthCameraSelfCalibrated){
-			ofFill();
-			ofSetColor(confirmedColor, 50);
-			ofRect(*btnCalibrateDepthCamera);
-			ofSetColor(255);
-			contextHelpTextSmall.drawString("Field of View: " + ofToString(fov.x,2) + " x " + ofToString(fov.y,2) +
-											"\nPrincipal Point: " +  ofToString(pp.x,2) + " x " + ofToString(pp.y,2),
-											btnCalibrateDepthCamera->x+10,btnCalibrateDepthCamera->y+55);
-		}
-		else{
-			ofSetColor(warningColor, 50);
-			ofFill();
-			ofRect(*btnCalibrateDepthCamera);
-		}
-		
-		ofPopStyle();
+//		ofPushStyle();
+//		//DRAW CONFIRMATION RECTANGLE
+//		ofPopStyle();
 		drawDepthImage(previewRectLeft);
     }
     else{
@@ -884,7 +879,7 @@ void ofxRGBDCaptureGui::loadRGBIntrinsicImages(vector<string> filepaths){
 			}
 		}
 		else{
-			ofSystemAlertDialog("Unsupported file type: " + shortFilename + ". Please use ");
+			ofSystemAlertDialog("Unsupported file type: " + shortFilename + ". Please use mov, png, or jpg");
 			continue;
 		}
 		
@@ -940,7 +935,7 @@ bool ofxRGBDCaptureGui::addRGBImageToIntrinsicSet(ofImage& image, string fileNam
 }
 
 void ofxRGBDCaptureGui::squareSizeChanged(string& args){
-	squareSize = ofToFloat(checkerboardDimensions.text);
+	squareSize = ofToFloat(args);
 	if(squareSize <= 0 && !checkerboardDimensions.getIsEditing()){
 		squareSize = 2.54;
 	}
@@ -1220,6 +1215,7 @@ void ofxRGBDCaptureGui::loadDirectory(string path){
 	
 	string newSize;
 	if(ofFile::doesFileExist(squareSizeFilePath)){
+		cout << "found existing size at path " << squareSizeFilePath << endl;
 		ofBuffer squareSizebuf = ofBufferFromFile(squareSizeFilePath);
 		newSize = squareSizebuf.getText();
 	}
@@ -1228,7 +1224,15 @@ void ofxRGBDCaptureGui::loadDirectory(string path){
 	}
 	squareSizeChanged(newSize);
 
-	ofDirectory dir;
+	ofDirectory dir = ofDirectory(rgbCalibrationDirectory);
+	if(!dir.exists()){
+		dir.create(true);
+	}
+	else{
+		loadRGBIntrinsicImages(rgbCalibrationDirectory);
+	}
+
+	bool existingRGBCalibration = false;
 	dir = ofDirectory(matrixDirectory);
 	if(!dir.exists()){
 		dir.create(true);
@@ -1245,16 +1249,9 @@ void ofxRGBDCaptureGui::loadDirectory(string path){
 		}
 		
 		if(ofFile::doesFileExist(matrixDirectory + "rgbCalib.yml")){
+			existingRGBCalibration = true;
 			rgbCalibration.load(matrixDirectory + "rgbCalib.yml");
 		}
-	}
-
-	dir = ofDirectory(rgbCalibrationDirectory);
-	if(!dir.exists()){
-		dir.create(true);
-	}
-	else{
-		loadRGBIntrinsicImages(rgbCalibrationDirectory);
 	}
 	
 	dir = ofDirectory(correspondenceDirectory);
@@ -1269,7 +1266,6 @@ void ofxRGBDCaptureGui::loadDirectory(string path){
 			ofLogError("_calibration/Correspondence directory may have stray files.");
 		}
 		
-		//TODO: Load which are saved
 		for(int i = 0; i < dir.numFiles(); i+=3){
 			ofxXmlSettings includedImages;
 			includedImages.loadFile(correspondenceDirectory + "inclusions.xml");
@@ -1287,7 +1283,6 @@ void ofxRGBDCaptureGui::loadDirectory(string path){
 				pair->depthCheckers.loadImage(depthCeckersFile);
 				pair->depthCheckers.setImageType(OF_IMAGE_GRAYSCALE);
 				pair->colorCheckers.loadImage(colorCheckersFile);
-				
 				pair->included = includedImages.getValue("checkers_"+ofToString(i/3), true);
 				hasIncludedBoards |= pair->included;
 				alignmentPairs.push_back(pair);
@@ -1302,9 +1297,10 @@ void ofxRGBDCaptureGui::loadDirectory(string path){
 	currentAlignmentPair->included = true;
 	alignmentPairs.push_back(currentAlignmentPair);
 	
-	
-	if(hasIncludedBoards){
-		generateCorrespondence();
+	if(existingRGBCalibration && hasIncludedBoards){
+		calibrationGenerated = true;
+		//generateCorrespondence();
+		setupRenderer();
 	}
 
 	btnSetDirectory->setLabel("Working Dir: " + path );
@@ -1436,15 +1432,16 @@ void ofxRGBDCaptureGui::dragEvent(ofDragInfo& dragInfo){
                 if(alignmentPairs[i]->colorCheckersRect.inside(dragInfo.position)){
                     alignmentPairs[i]->colorCheckers.loadImage(filename);
                 }
-            }
-        
-			
-            if(currentAlignmentPair->depthImage.isAllocated() && currentAlignmentPair->depthCheckers.isAllocated()){
-                currentAlignmentPair = new AlignmentPair();
-				currentAlignmentPair->included = true;
 				
-                alignmentPairs.push_back(currentAlignmentPair);
+				hasIncludedBoards = true;
             }
+			
+//            if(currentAlignmentPair->depthImage.isAllocated() && currentAlignmentPair->depthCheckers.isAllocated()){
+//                currentAlignmentPair = new AlignmentPair();
+//				currentAlignmentPair->included = true;
+//				
+//                alignmentPairs.push_back(currentAlignmentPair);
+//            }
         }
         
         //if(extension == "mov" || extension == "mp4"){
@@ -1507,15 +1504,21 @@ void ofxRGBDCaptureGui::refineDepthCalibration(){
     
     //TODO impose folder structure
 	depthCalibrationRefined.setIntrinsics(newDepth, depthDistCoeffs);
-	depthCalibrationRefined.save(matrixDirectory + "depthCalib.yml");
 
     depthCameraMatrix = depthCalibrationRefined.getDistortedIntrinsics().getCameraMatrix();
     fov = ofVec2f(depthCameraMatrix.at<double>(0,0), depthCameraMatrix.at<double>(1,1));
     pp = ofVec2f(depthCameraMatrix.at<double>(0,2),depthCameraMatrix.at<double>(1,2));
-    cout << "fov " << fov << endl;
-    cout << "principal point " << pp << endl;
-	btnCalibrateDepthCamera->setLabel("Depth Camera Self-Calibrated!");
-	depthCameraSelfCalibrated = true;
+	
+	if(abs( 320 - pp.x) > 2 || abs(240 - pp.x) > 2 ){
+		ofSystemAlertDialog("Self Calibration failed. Make sure the depth camera is pointed out into space and is seeing a wide range of depth values.");
+	}
+	else{
+		cout << "fov " << fov << endl;
+		cout << "principal point " << pp << endl;
+		btnCalibrateDepthCamera->setLabel("Depth Camera Self-Calibrated!");
+		depthCalibrationRefined.save(matrixDirectory + "depthCalib.yml");
+		depthCameraSelfCalibrated = true;
+	}
 }
 
 //TODO: need a way to load correspondence from XML/folder on start up
@@ -1595,7 +1598,7 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 	
 
 //    inlierKinectObjectPoints.clear();
-	cout << "TRACKING DOWN MISSING ** " << endl;
+	
 	
 	int numAlignmentPairsReady = 0;
 	for(int i = 0; i < alignmentPairs.size(); i++){
@@ -1633,9 +1636,6 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
                 }
 			}
 			
-			cout << "TRACKING DOWN MISSING 1 ** board " << i << " Kinect image points? " << kinectPoints.size() << endl;
-			cout << "TRACKING DOWN MISSING 2 ** board " << i << " Kinect image points? " << externalPoints.size() << endl;
-			
 			kinectImagePoints.push_back( kinectPoints );
 			externalRGBPoints.push_back( externalPoints );
 			vector<ofVec3f> new3dPoints;
@@ -1643,16 +1643,12 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 				unsigned short* pix = alignmentPairs[i]->depthPixelsRaw.getPixels();
 				unsigned short z = pix[int(kinectPoints[j].x) + int(kinectPoints[j].y) * 640];
 				ofVec3f worldPoint = depthToWorldFromCalibration(int(kinectPoints[j].x), int(kinectPoints[j].y), z);
-				if(j == kinectPoints.size() - 1){
-					cout << cout << "TRACKING DOWN MISSING  ** last dot z " << i << " " << z << endl;
-				}
 				new3dPoints.push_back( worldPoint );
 			}
 			kinect3dPoints.push_back(new3dPoints);
 			
 			//treat the external cam as
 			objectPoints.push_back( Calibration::createObjectPoints(cv::Size(10,7), squareSize, CHESSBOARD));
-			
 		}
 	}
     
@@ -1674,13 +1670,6 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 				filteredKinectObjectPoints.push_back( toCv(kinect3dPoints[i][j]) );
 				filteredExternalImagePoints.push_back( externalRGBPoints[i][j] );
 				numPointsFound++;
-				
-//				inlierPoints.addColor( boardColors[ boardIndex ] );
-//				inlierPoints.addVertex( kinect3dPoints[i][j] );
-
-			}
-			else{
-				cout << "TRACKING DOWN MISSING 1 ** Skpping: " << kinect3dPoints.size() << endl;
 			}
 		}
 		
@@ -1739,18 +1728,24 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 	cout << "Depth->RGB rotation " << rotationDepthToRGB << endl;
 	cout << "Depth->RGB translation " << translationDepthToRGB << endl;
 	
-	saveMat(rotationDepthToRGB, matrixDirectory + "rotationDepthToRGB.yml");
-	saveMat(translationDepthToRGB, matrixDirectory + "translationDepthToRGB.yml");
-	
-	//save refined RGB
-	Intrinsics rgbIntrinsics;
-	rgbIntrinsics.setup(cameraMatrix, rgbCalibration.getDistortedIntrinsics().getImageSize());
-	Calibration rgbCalibrationRefined;
-	rgbCalibrationRefined.setIntrinsics(rgbIntrinsics, distCoeffs);
-	rgbCalibrationRefined.save( matrixDirectory + "rgbCalib.yml");
-	calibrationGenerated = true;
-	
-	setupRenderer();
+	if(inliers.total() == 0){
+		ofSystemAlertDialog("Calibration failed. Try including a different set of checkerboard triplets and trying again.");
+		calibrationGenerated = false;
+	}
+	else{
+		saveMat(rotationDepthToRGB, matrixDirectory + "rotationDepthToRGB.yml");
+		saveMat(translationDepthToRGB, matrixDirectory + "translationDepthToRGB.yml");
+		
+		//save refined RGB
+		Intrinsics rgbIntrinsics;
+		rgbIntrinsics.setup(cameraMatrix, rgbCalibration.getDistortedIntrinsics().getImageSize());
+		Calibration rgbCalibrationRefined;
+		rgbCalibrationRefined.setIntrinsics(rgbIntrinsics, distCoeffs);
+		rgbCalibrationRefined.save( matrixDirectory + "rgbCalib.yml");
+		calibrationGenerated = true;
+		
+		setupRenderer();
+	}
 }
 
 ofVec3f ofxRGBDCaptureGui::depthToWorldFromCalibration(int x, int y, unsigned short z){
