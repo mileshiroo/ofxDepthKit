@@ -29,70 +29,6 @@ ofxRGBDGPURenderer::~ofxRGBDGPURenderer(){
 
 }
 
-/*
-bool ofxRGBDGPURenderer::setup(string calibrationDirectory){
-	
-	if(!ofDirectory(calibrationDirectory).exists()){
-		ofLogError("ofxRGBDGPURenderer --- Calibration directory doesn't exist: " + calibrationDirectory);
-		return false;
-	}
-	return setup(calibrationDirectory+"/rgbCalib.yml", calibrationDirectory+"/depthCalib.yml",
-		  		calibrationDirectory+"/rotationDepthToRGB.yml", calibrationDirectory+"/translationDepthToRGB.yml");
-	
-}
-
-bool ofxRGBDGPURenderer::setup(string rgbIntrinsicsPath, string depthIntrinsicsPath, string rotationPath, string translationPath){
-//	rgbCalibration.setFillFrame(false);
-//	depthCalibration.setFillFrame(false);
-	depthCalibration.load(depthIntrinsicsPath);
-	rgbCalibration.load(rgbIntrinsicsPath);
-	
-	loadMat(rotationDepthToRGB, rotationPath);
-	loadMat(translationDepthToRGB, translationPath);
-    
-    depthToRGBView = ofxCv::makeMatrix(rotationDepthToRGB, translationDepthToRGB);
-	
-    ofPushView();
-	rgbCalibration.getDistortedIntrinsics().loadProjectionMatrix();
-    glGetFloatv(GL_PROJECTION_MATRIX, rgbProjection.getPtr());
-	ofPopView();
-	
-	ofPushView();
-	depthCalibration.getDistortedIntrinsics().loadProjectionMatrix();
-	glGetFloatv(GL_PROJECTION_MATRIX, depthProjection.getPtr());
-	ofPopView();
-	
-	rgbMatrix = (depthToRGBView * rgbProjection);
-	
-//	Point2d fov = depthCalibration.getUndistortedIntrinsics().getFov();
-//	fx = tanf(ofDegToRad(fov.x) / 2) * 2;
-//	fy = tanf(ofDegToRad(fov.y) / 2) * 2;
-//	fx = depthCalibration.getUndistortedIntrinsics().getCameraMatrix().at<double>(0,0);
-//	fy = depthCalibration.getUndistortedIntrinsics().getCameraMatrix().at<double>(1,1);
-//	principalPoint = depthCalibration.getUndistortedIntrinsics().getPrincipalPoint();
-//	imageSize = depthCalibration.getUndistortedIntrinsics().getImageSize();
-	
-    fx = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(0,0);
-	fy = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(1,1);
-	principalPoint = depthCalibration.getDistortedIntrinsics().getPrincipalPoint();
-	imageSize = depthCalibration.getDistortedIntrinsics().getImageSize();
-    
-
-//  cout << "successfully loaded calibration: fx + fy is " << fx << " " << fy  << endl;
-//	cout << "RGB Camera Matrix is " << rgbCalibration.getDistortedIntrinsics().getCameraMatrix() << endl;
-//	cout << "RGB Distortion coefficients " << rgbCalibration.getDistCoeffs() << endl;
-//	cout << "Depth Camera Matrix is " << depthCalibration.getDistortedIntrinsics().getCameraMatrix() << endl;
-//	cout << "Depth Distortion coefficients " << depthCalibration.getDistCoeffs() << endl;
-//	cout << "RGB->Depth rotation " << rotationDepthToRGB << endl;
-//	cout << "RGB->Depth translation " << translationDepthToRGB << endl;
-//	cout << "RGB Aspect Ratio " << rgbCalibration.getDistortedIntrinsics().getAspectRatio() << endl;
-//	cout << "RGB Focal Length " << rgbCalibration.getDistortedIntrinsics().getFocalLength() << endl;
-
-    calibrationSetup = true;
-	return true;
-}
-*/
-
 
 void ofxRGBDGPURenderer::setSimplification(ofVec2f simplification){
     
@@ -114,9 +50,9 @@ void ofxRGBDGPURenderer::setSimplification(ofVec2f simplification){
     int x = 0;
     int y = 0;
     
-    int gw = ceil(imageSize.width / simplify.x);
+    int gw = ceil(depthImageSize.width / simplify.x);
     int w = gw*simplify.x;
-    int h = imageSize.height;
+    int h = depthImageSize.height;
     
 	for (float ystep = 0; ystep < h-simplify.y; ystep += simplify.y){
 		for (float xstep = 0; xstep < w-simplify.x; xstep += simplify.x){
@@ -144,16 +80,16 @@ void ofxRGBDGPURenderer::setSimplification(ofVec2f simplification){
 	}
     
 	mesh.clearVertices();
-	for (float y = 0; y < imageSize.height; y += simplify.y){
-		for (float x = 0; x < imageSize.width; x += simplify.x){
+	for (float y = 0; y < depthImageSize.height; y += simplify.y){
+		for (float x = 0; x < depthImageSize.width; x += simplify.x){
 			mesh.addVertex(ofVec3f(x,y,0));
 		}
 	}
 
     if(addColors){
         mesh.clearColors();
-        for (float y = 0; y < imageSize.height; y += simplify.y){
-            for (float x = 0; x < imageSize.width; x += simplify.x){
+        for (float y = 0; y < depthImageSize.height; y += simplify.y){
+            for (float x = 0; x < depthImageSize.width; x += simplify.x){
                 mesh.addColor(ofFloatColor(1.0,1.0,1.0,1.0));
             }
         }        
@@ -281,30 +217,25 @@ void ofxRGBDGPURenderer::setupProjectionUniforms(){
 		shader.setUniform2f("dim", dims.x, dims.y);
 		shader.setUniform2f("shift", shift.x, shift.y);
 		shader.setUniform2f("scale", scale.x, scale.y);
+		shader.setUniform3f("dK", distortionK.x, distortionK.y, distortionK.z);
+		shader.setUniform2f("dP", distortionP.x, distortionP.y);
+		
+		glUniformMatrix3fv(shader.getUniformLocation("colorRotate"), 1, GL_FALSE, depthToRGBRotation);
+		
+		shader.setUniform3f("colorTranslate", depthToRGBTranslation.x,depthToRGBTranslation.y,depthToRGBTranslation.z);
+		shader.setUniform2f("colorFOV", colorFOV.x, colorFOV.y );
+		shader.setUniform2f("colorPP", colorPrincipalPoint.x, colorPrincipalPoint.y);
 	}
 	else{
 		shader.setUniform1i("useTexture", 0);
 	}
 	
 	shader.setUniformTexture("depthTex", depthTexture, 1);
-//    shader.setUniform1i("useTexture", (useTexture && !depthOnly) ? 1 : 0);
-
-	if(flipTexture){
-		ofMatrix4x4 flipMatrix;
-		flipMatrix.makeScaleMatrix(-1,1,1);
-		rgbMatrix = (depthToRGBView * (flipMatrix * rgbProjection));
-		shader.setUniformMatrix4f("tTex", rgbMatrix );
-	}
-	else{
-		rgbMatrix = (depthToRGBView * rgbProjection);
-		shader.setUniformMatrix4f("tTex", rgbMatrix);
-	}
-
-    shader.setUniform2f("principalPoint", principalPoint.x, principalPoint.y);
-    shader.setUniform2f("fov", fx, fy);
+    shader.setUniform2f("principalPoint", depthPrincipalPoint.x, depthPrincipalPoint.y);
+    shader.setUniform2f("fov", depthFOV.x, depthFOV.y);
     shader.setUniform1f("farClip", farClip);
 	shader.setUniform1f("edgeClip", edgeClip);
-    
+    //TODO: vectorize in shader
     shader.setUniform1f("xsimplify", simplify.x);
     shader.setUniform1f("ysimplify", simplify.y);
 }

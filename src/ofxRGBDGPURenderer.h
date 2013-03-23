@@ -39,15 +39,14 @@ class ofxRGBDGPURenderer : public ofxRGBDRenderer {
 	void reloadShader();
 
     ofShader& getShader();
-
+	ofTexture& getDepthTexture();
+	
 	//sets a level of simplification,
 	//should be either 1 for none
 	//2 for half, or 4 for quarter;
 	virtual void setSimplification(ofVec2f simplification);
 	
     void draw(ofPolyRenderMode drawMode);
-
-	ofTexture& getDepthTexture();
     
   protected:
     ofShader shader;

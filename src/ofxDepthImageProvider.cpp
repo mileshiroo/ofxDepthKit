@@ -49,6 +49,7 @@ ofImage& ofxDepthImageProvider::getRawIRImage(){
 ofImage& ofxDepthImageProvider::getColorImage(){
 	return colorImage;
 }
+
 /*
 ofImage& ofxDepthImageProvider::getDepthImage(){
     

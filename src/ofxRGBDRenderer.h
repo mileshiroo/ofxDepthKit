@@ -60,16 +60,6 @@ public:
     ofVec3f worldPosition;
 	ofVec3f worldRotation;
     
-    /*
-    bool bindRenderer(); //built in shader
-    bool bindRenderer(ofShader& customShader); //any custom shader
-    void unbindRenderer();
-    
-    //called inside of bind/unbind
-    void setupProjectionUniforms(ofShader& shader);
-    void reloadShader();
-    */
-    
     //fun way of visualizing the calibration
     void drawProjectionDebug(bool showDepth, bool showRGB, float rgbTexturePosition);
     
@@ -79,48 +69,49 @@ public:
 	virtual void setSimplification(ofVec2f simplification) = 0;
 	ofVec2f getSimplification();
     
-//  void drawMesh(ofShader& customShader);
-//	void drawPointCloud(ofShader& customShader);
-//	void drawWireFrame(ofShader& customShader);
-    
 	//populated with vertices, texture coords, and indeces
 	ofMesh& getMesh();
 	
     ofxCv::Calibration& getRGBCalibration();
 	ofxCv::Calibration& getDepthCalibration();
+	
 	ofMatrix4x4& getDepthToRGBTransform();
 	ofMatrix4x4& getRGBMatrix();
-	ofTexture& getDepthTexture();
     
-  protected:
-	ofVec2f simplify;
-    
-    bool meshGenerated;
-    //bool shaderBound;
-//    ofShader* currentlyBoundShader;
-//    bool rendererBound;
-    
-    cv::Point2d principalPoint;
-    cv::Size imageSize;
-	ofxCv::Calibration depthCalibration, rgbCalibration;
-    cv::Mat rotationDepthToRGB, translationDepthToRGB;
-    float fx, fy;
+	//broken out intrinsics/extrinics for easy access
+	ofVec2f depthPrincipalPoint;
+	ofVec2f depthFOV;
+	ofRectangle depthImageSize;
 	
-    bool depthOnly;
-	bool hasDepthImage;
-	bool hasRGBImage;
-    
+	ofVec2f colorPrincipalPoint;
+	ofVec2f colorFOV;
+	ofRectangle colorImageSize;
+
+	//broken out extrinsics
+	float depthToRGBRotation[9];
+	ofVec3f depthToRGBTranslation;
+	ofVec3f distortionK;
+	ofVec2f distortionP;
+
+  protected:
+	//ofVboMesh mesh;
+	ofMesh mesh;
 	ofBaseHasTexture* currentRGBImage;
 	ofShortPixels* currentDepthImage;
-	
-    //ofVboMesh mesh;
-    //ofMesh mesh;
-	ofVboMesh mesh;
+	ofVec2f simplify;
+    bool meshGenerated;
+	bool depthOnly;
+	bool hasDepthImage;
+	bool hasRGBImage;
+
+	//ofxCv calibration intrinsics/extrinsics
+	ofxCv::Calibration depthCalibration, rgbCalibration;
+    cv::Mat rotationDepthToRGB, translationDepthToRGB;
+
+	//No longer used
 	ofMatrix4x4 depthToRGBView;
 	ofMatrix4x4 rgbProjection;
     ofMatrix4x4 rgbMatrix;
 	ofMatrix4x4 depthProjection;
 	
-//	ofShader meshShader;
-    
 };

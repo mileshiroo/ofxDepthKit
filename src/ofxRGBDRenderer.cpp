@@ -49,35 +49,45 @@ ofxRGBDRenderer::~ofxRGBDRenderer(){
     
 }
 
-
 void ofxRGBDRenderer::setDepthOnly(){
     
     //default kinect intrinsics
-	fx = 5.7034220279543524e+02;
-	fy = 5.7034220280129011e+02;
-	principalPoint.x = 320;
-	principalPoint.y = 240;
-	imageSize.width = 640;
-	imageSize.height = 480;
+	depthFOV.x = 5.7034220279543524e+02;
+	depthFOV.y = 5.7034220280129011e+02;
+	depthPrincipalPoint.x = 320;
+	depthPrincipalPoint.y = 240;
+	depthImageSize.width = 640;
+	depthImageSize.height = 480;
 	
 	depthOnly = true;
+    if(!meshGenerated){
+        setSimplification(ofVec2f(1,1));
+		meshGenerated = true;
+    }	
 }
 
 void ofxRGBDRenderer::setDepthOnly(string depthCalibrationPath){
     
+	//NO LONGER USED ---
 	ofPushView();
-	
 	depthCalibration.load(depthCalibrationPath);
     depthCalibration.getDistortedIntrinsics().loadProjectionMatrix();
     glGetFloatv(GL_PROJECTION_MATRIX, depthProjection.getPtr());
     ofPopView();
+	///------------------
 
-	fx = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(0,0);
-    fy = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(1,1);
-    principalPoint = depthCalibration.getDistortedIntrinsics().getPrincipalPoint();
-    imageSize = depthCalibration.getDistortedIntrinsics().getImageSize();
-
+	depthFOV.x = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(0,0);
+    depthFOV.y = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(1,1);
+    depthPrincipalPoint = toOf(depthCalibration.getDistortedIntrinsics().getPrincipalPoint());
+    depthImageSize = ofRectangle(0, 0,
+								 depthCalibration.getDistortedIntrinsics().getImageSize().width,
+								 depthCalibration.getDistortedIntrinsics().getImageSize().height);
 	depthOnly = true;
+    if(!meshGenerated){
+        setSimplification(ofVec2f(1,1));
+		meshGenerated = true;
+    }
+	
 }
 
 
@@ -101,6 +111,7 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath,
     loadMat(rotationDepthToRGB, rotationPath);
     loadMat(translationDepthToRGB, translationPath);
 
+	//NO LONGER USED------
     depthToRGBView = ofxCv::makeMatrix(rotationDepthToRGB, translationDepthToRGB);
 
     ofPushView();
@@ -112,9 +123,9 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath,
     depthCalibration.getDistortedIntrinsics().loadProjectionMatrix();
     glGetFloatv(GL_PROJECTION_MATRIX, depthProjection.getPtr());
     ofPopView();
-
     rgbMatrix = (depthToRGBView * rgbProjection);
-
+	///-------
+	
     //	Point2d fov = depthCalibration.getUndistortedIntrinsics().getFov();
     //	fx = tanf(ofDegToRad(fov.x) / 2) * 2;
     //	fy = tanf(ofDegToRad(fov.y) / 2) * 2;
@@ -123,10 +134,40 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath,
     //	principalPoint = depthCalibration.getUndistortedIntrinsics().getPrincipalPoint();
     //	imageSize = depthCalibration.getUndistortedIntrinsics().getImageSize();
 
-    fx = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(0,0);
-    fy = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(1,1);
-    principalPoint = depthCalibration.getDistortedIntrinsics().getPrincipalPoint();
-    imageSize = depthCalibration.getDistortedIntrinsics().getImageSize();
+	//intrinsics
+    depthFOV.x = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(0,0);
+    depthFOV.y = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(1,1);
+    depthPrincipalPoint = toOf(depthCalibration.getDistortedIntrinsics().getPrincipalPoint());
+    depthImageSize = ofRectangle(0, 0,
+								 depthCalibration.getDistortedIntrinsics().getImageSize().width,
+								 depthCalibration.getDistortedIntrinsics().getImageSize().height);
+
+	colorFOV.x = rgbCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(0,0);
+	colorFOV.y = rgbCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(1,1);
+	colorPrincipalPoint = toOf( rgbCalibration.getDistortedIntrinsics().getPrincipalPoint() );
+	colorImageSize = ofRectangle(0,0,
+								 rgbCalibration.getDistortedIntrinsics().getImageSize().width,
+								 rgbCalibration.getDistortedIntrinsics().getImageSize().height);
+	
+	//extrinsics
+	depthToRGBTranslation = ofVec3f(translationDepthToRGB.at<double>(0,0),
+									translationDepthToRGB.at<double>(1,0),
+									translationDepthToRGB.at<double>(2,0));
+	//openFrameworkds needs a better Matrix3x3 class...
+	Mat rx3;
+	cv::Rodrigues(rotationDepthToRGB, rx3);
+	float rotation3fv[9] = {
+		float(rx3.at<double>(0,0)),float(rx3.at<double>(1,0)),float(rx3.at<double>(2,0)),
+		float(rx3.at<double>(0,1)),float(rx3.at<double>(1,1)),float(rx3.at<double>(2,1)),
+		float(rx3.at<double>(0,2)),float(rx3.at<double>(1,2)),float(rx3.at<double>(2,2))
+	};
+	memcpy(depthToRGBRotation, rotation3fv, sizeof(float)*3*3);
+	
+	Mat dis = rgbCalibration.getDistCoeffs();
+	distortionK = ofVec3f(dis.at<double>(0,0),
+						  dis.at<double>(0,1),
+						  dis.size().height == 5 ? dis.at<double>(0,4) : 0);
+	distortionP = ofVec2f(dis.at<double>(0,2),dis.at<double>(0,3));
 
     //  cout << "successfully loaded calibration: fx + fy is " << fx << " " << fy  << endl;
     //	cout << "RGB Camera Matrix is " << rgbCalibration.getDistortedIntrinsics().getCameraMatrix() << endl;
@@ -139,9 +180,10 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath,
     //	cout << "RGB Focal Length " << rgbCalibration.getDistortedIntrinsics().getFocalLength() << endl;
 
     calibrationSetup = true;
-
+	depthOnly = false;
     if(!meshGenerated){
         setSimplification(ofVec2f(1,1));
+		meshGenerated = true;
     }
     
     return true;

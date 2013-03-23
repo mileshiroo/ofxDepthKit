@@ -42,51 +42,6 @@ ofxRGBDCPURenderer::ofxRGBDCPURenderer(){
 ofxRGBDCPURenderer::~ofxRGBDCPURenderer(){
 }
 
-//void ofxRGBDCPURenderer::setDepthOnly(){
-//    
-//    //default kinect intrinsics
-//	fx = 5.7034220279543524e+02;
-//	fy = 5.7034220280129011e+02;
-//	principalPoint.x = 320;
-//	principalPoint.y = 240;
-//	imageSize.width = 640;
-//	imageSize.height = 480;
-//	depthOnly = true;
-//}
-
-/*
-bool ofxRGBDCPURenderer::setup(string calibrationDirectory){
- 	if(!ofDirectory(calibrationDirectory).exists()){
-		ofLogError("ofxRGBDRenderer --- Calibration directory doesn't exist: " + calibrationDirectory);
-		return false;
-	}
-	
-	depthCalibration.load(calibrationDirectory+"/depthCalib.yml");
-	rgbCalibration.load(calibrationDirectory+"/rgbCalib.yml");
-	
-	loadMat(rotationDepthToRGB, calibrationDirectory+"/rotationDepthToRGB.yml");
-	loadMat(translationDepthToRGB, calibrationDirectory+"/translationDepthToRGB.yml");
-    
-	fov.x = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(0,0);
-	fov.y = depthCalibration.getDistortedIntrinsics().getCameraMatrix().at<double>(1,1);
-	principalPoint = depthCalibration.getDistortedIntrinsics().getPrincipalPoint();
-    
-//  Point2d fov = depthCalibration.getDistortedIntrinsics().getFov();
-//	angleFov.x = tanf(ofDegToRad(fov.x) / 2) * 2;
-//	angleFov.y = tanf(ofDegToRad(fov.y) / 2) * 2;
-//  cout << "fx and fy " << fx << " " << fy << endl;
-	
-	imageSize = depthCalibration.getDistortedIntrinsics().getImageSize();
-	depthOnly = false;
-	
-	return (calibrationSetup = true);   
-}
-*/
-
-//ofVec2f ofxRGBDCPURenderer::getSimplification(){
-//    return simplify;
-//}
-
 void ofxRGBDCPURenderer::setSimplification(ofVec2f simplification){
     
     if(!calibrationSetup && !depthOnly){
@@ -109,9 +64,9 @@ void ofxRGBDCPURenderer::setSimplification(ofVec2f simplification){
     int x = 0;
     int y = 0;
     
-    int gw = ceil(imageSize.width / simplify.x);
+    int gw = ceil(depthImageSize.width / simplify.x);
     int w = gw*simplify.x;
-    int h = imageSize.height;
+    int h = depthImageSize.height;
     
 	for (float ystep = 0; ystep < h-simplify.y; ystep += simplify.y){
 		for (float xstep = 0; xstep < w-simplify.x; xstep += simplify.x){
@@ -137,8 +92,8 @@ void ofxRGBDCPURenderer::setSimplification(ofVec2f simplification){
 	}
     
 	mesh.clearVertices();
-	for (float y = 0; y < imageSize.height; y += simplify.y){
-		for (float x = 0; x < imageSize.width; x += simplify.x){
+	for (float y = 0; y < depthImageSize.height; y += simplify.y){
+		for (float x = 0; x < depthImageSize.width; x += simplify.x){
             indexToPixelCoord[ mesh.getVertices().size() ] = make_pair(x,y);
 			mesh.addVertex(ofVec3f(x,y,0));
 		}
@@ -146,8 +101,8 @@ void ofxRGBDCPURenderer::setSimplification(ofVec2f simplification){
     
     if(addColors){
         mesh.clearColors();
-        for (float y = 0; y < imageSize.height; y += simplify.y){
-            for (float x = 0; x < imageSize.width; x += simplify.x){
+        for (float y = 0; y < depthImageSize.height; y += simplify.y){
+            for (float x = 0; x < depthImageSize.width; x += simplify.x){
                 mesh.addColor(ofFloatColor(1.0,1.0,1.0,1.0));
             }
         }        
@@ -155,8 +110,8 @@ void ofxRGBDCPURenderer::setSimplification(ofVec2f simplification){
     
     if(calculateTextureCoordinates){
         mesh.clearTexCoords();
-        for (float y = 0; y < imageSize.height; y+=simplify.y){
-            for (float x = 0; x < imageSize.width; x+=simplify.x){
+        for (float y = 0; y < depthImageSize.height; y+=simplify.y){
+            for (float x = 0; x < depthImageSize.width; x+=simplify.x){
                 mesh.addTexCoord(ofVec2f(0,0));
             }
         }
@@ -177,10 +132,10 @@ void ofxRGBDCPURenderer::update(){
 		return;
 	}
 
-	if(currentDepthImage->getWidth() != imageSize.width ||
-       currentDepthImage->getHeight() != imageSize.height)
+	if(currentDepthImage->getWidth() != depthImageSize.width ||
+       currentDepthImage->getHeight() != depthImageSize.height)
     {
-		ofLogError("ofxRGBDCPURenderer::update") << "depth pix dimensions don't match, provided " << ofVec2f(currentDepthImage->getWidth(), currentDepthImage->getHeight()) << " expecting " << ofVec2f(imageSize.width,imageSize.height);
+		ofLogError("ofxRGBDCPURenderer::update") << "depth pix dimensions don't match, provided " << ofVec2f(currentDepthImage->getWidth(), currentDepthImage->getHeight()) << " expecting " << ofVec2f(depthImageSize.width,depthImageSize.height);
 		return;
 	}
     
@@ -192,15 +147,15 @@ void ofxRGBDCPURenderer::update(){
     hasTriangles = false;
 	validVertIndices.clear();
     unsigned short* ptr = currentDepthImage->getPixels();
-    for(float y = 0; y < imageSize.height; y += simplify.y) {
-        for(float x = 0; x < imageSize.width; x += simplify.x) {
+    for(float y = 0; y < depthImageSize.height; y += simplify.y) {
+        for(float x = 0; x < depthImageSize.width; x += simplify.x) {
 			
 			ofVec3f point;
-			unsigned short z = ptr[int(y)*imageSize.width+int(x)];
-			if(x >= imageSize.width*leftClip &&
-			   x <= imageSize.width*rightClip &&
-			   y >= imageSize.height*topClip &&
-			   y <= imageSize.height*bottomClip &&
+			unsigned short z = ptr[int(y) * int(depthImageSize.width) + int(x)];
+			if(x >= depthImageSize.width*leftClip &&
+			   x <= depthImageSize.width*rightClip &&
+			   y >= depthImageSize.height*topClip &&
+			   y <= depthImageSize.height*bottomClip &&
 			   z > nearClip &&
 			   z <= farClip)
 			{
@@ -311,6 +266,8 @@ void ofxRGBDCPURenderer::generateTextureCoordinates(vector<ofVec3f>& points, vec
                   rgbCalibration.getDistortedIntrinsics().getCameraMatrix(),
                   rgbCalibration.getDistCoeffs(),
                   imagePoints);
+	
+	//TODO turn into matrix transform!
     cv::Size rgbImage = rgbCalibration.getDistortedIntrinsics().getImageSize();
     for(int i = 0; i < imagePoints.size(); i++) {
         ofVec2f texCd = ofVec2f(imagePoints[i].x, imagePoints[i].y);
@@ -336,7 +293,8 @@ ofVec3f ofxRGBDCPURenderer::getWorldPoint(float x, float y, ofShortPixels& pixel
 }
 
 ofVec3f ofxRGBDCPURenderer::getWorldPoint(float x, float y, unsigned short z){
-	return ofVec3f( (x - principalPoint.x) * z / fx, (y - principalPoint.y) * z / fy, z);
+	return ofVec3f( (x - depthPrincipalPoint.x) * z / depthFOV.x,
+				    (y - depthPrincipalPoint.y) * z / depthFOV.y, z);
 }
 
 pair<int,int> ofxRGBDCPURenderer::getPixelLocationForIndex(ofIndexType index){
@@ -361,29 +319,6 @@ void ofxRGBDCPURenderer::setPivotToMeshCenter(){
 	pivot = center;
 }
 
-
-//void ofxRGBDCPURenderer::setTexture(ofBaseHasTexture& texture){
-//	currentTexture = &texture;
-//	setTextureScaleForImage(texture);
-//}
-//
-//void ofxRGBDCPURenderer::setDepthPixels(ofShortPixels& pixels){
-//	currentDepthPixels = &pixels;
-//}
-
-
-//void ofxRGBDCPURenderer::draw(){
-//	if(currentTexture != NULL){
-//		draw(*currentTexture);
-//	}
-//	else {
-//		ofPushMatrix();
-//		setupDrawMatrices();
-//		mesh.drawWireframe();
-//		ofPopMatrix();
-//	}
-//}
-
 void ofxRGBDCPURenderer::setupDrawMatrices(){
 	ofTranslate(worldPosition);
 	
@@ -407,7 +342,7 @@ void ofxRGBDCPURenderer::draw(ofPolyRenderMode drawMode){
     }
     
     if(!hasTriangles){
-        ofLogError("ofxRGBDCPURenderer::draw -- Failed. Mesh has no geometry");
+//        ofLogError("ofxRGBDCPURenderer::draw -- Failed. Mesh has no geometry");
         return;
     }
 
@@ -434,32 +369,6 @@ void ofxRGBDCPURenderer::draw(ofPolyRenderMode drawMode){
     ofPopMatrix();
 }
 
-
-
-/*
-void ofxRGBDCPURenderer::draw(ofBaseHasTexture& texture){
-    if(!calibrationSetup){
-        ofLogError("ofxRGBDCPURenderer::draw -- Failed. Calibration is not set up");
-        return;
-    }
-    if(!hasTriangles){
-        ofLogError("ofxRGBDCPURenderer::draw -- Failed. Mesh has no geometry");
-        return;
-    }
-    if(depthOnly){
-        ofLogError("ofxRGBDCPURenderer::draw -- Failed. MeshBuilder is set to depth only");
-        return;
-    }
-    
-    ofPushMatrix();
-	setupDrawMatrices();
-    texture.getTextureReference().bind();
-	mesh.draw();
-    texture.getTextureReference().unbind();
-    ofPopMatrix();
-}
- */
-
 void ofxRGBDCPURenderer::setTextureScaleForImage(ofBaseHasTexture& texture){
 	if(!calibrationSetup){
 		ofLogError("ofxRGBDCPURenderer::setTextureScaleForImage") << "must set up matrices before setting texture scale";
@@ -470,7 +379,3 @@ void ofxRGBDCPURenderer::setTextureScaleForImage(ofBaseHasTexture& texture){
     textureScale = ofVec2f(float(texture.getTextureReference().getWidth() / float(rgbImage.width)),
                            float(texture.getTextureReference().getHeight()) / float(rgbImage.height) );    
 }
-
-//void ofxRGBDCPURenderer::setXYShift(ofVec2f newShift){
-//    shift = newShift;
-//}

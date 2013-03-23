@@ -14,7 +14,7 @@
 #include "ofxDepthImageProvider.h"
 #include "ofxRGBDScene.h"
 #include "ofxRGBDGPURenderer.h"
-
+#include "ofxRGBDCPURenderer.h"
 typedef enum {
     TabIntrinsics,
 	TabExtrinsics,
@@ -88,8 +88,11 @@ public:
    	ofxGameCamera cam;
 	ofxGameCamera pointcloudPreviewCam;
 	
-	ofxRGBDGPURenderer renderer;
-	ofxRGBDGPURenderer pointcloudPreview;
+	ofxRGBDRenderer* renderer;
+	ofxRGBDCPURenderer cpuRenderer;
+	ofxRGBDGPURenderer gpuRenderer;
+	
+	ofxRGBDCPURenderer pointcloudPreview;
 	
 	ofTrueTypeFont contextHelpTextLarge;
 	ofTrueTypeFont contextHelpTextSmall;
