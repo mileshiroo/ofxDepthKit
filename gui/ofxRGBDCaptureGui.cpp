@@ -163,9 +163,10 @@ void ofxRGBDCaptureGui::setup(){
     
     ofRegisterMouseEvents(this);
     ofRegisterKeyEvents(this);
-    
+	#ifndef TARGET_WIN32
     ofAddListener(ofEvents().fileDragEvent, this, &ofxRGBDCaptureGui::dragEvent);
-    ofAddListener(ofEvents().update, this, &ofxRGBDCaptureGui::update);
+	#endif
+	ofAddListener(ofEvents().update, this, &ofxRGBDCaptureGui::update);
     ofAddListener(ofEvents().draw, this, &ofxRGBDCaptureGui::draw);
     ofAddListener(ofEvents().exit, this, &ofxRGBDCaptureGui::exit);
 	
@@ -725,16 +726,16 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
 	else if(object == btnRenderBW){
 		currentRenderMode = RenderBW;
         currentRenderModeObject = btnRenderBW;
-	}
+	}	
 	else if(object == btnRenderRainbow){
 		currentRenderMode = RenderRainbow;
         currentRenderModeObject = btnRenderRainbow;
 	}
 	else if(object == btnRenderPointCloud){
 		ofQuaternion baseRotate;
-		baseRotate.makeRotate(180, 0, 1, 0);
+		baseRotate.makeRotate(0, 0, 1, 0);
 		pointcloudPreviewCam.targetNode.setPosition(0, 0, 0);
-		pointcloudPreviewCam.targetXRot = 180;
+		pointcloudPreviewCam.targetXRot = 0;
 		pointcloudPreviewCam.targetYRot = 0;
 		pointcloudPreviewCam.targetZRot = 0;
 		pointcloudPreviewCam.applyRotation = true;
@@ -1387,7 +1388,8 @@ void ofxRGBDCaptureGui::enableSceneButtons(){
 void ofxRGBDCaptureGui::dragEvent(ofDragInfo& dragInfo){
 	string filename = dragInfo.files[0];
 	string extension = ofToLower(ofFilePath::getFileExt(filename));
-    
+    cout << "drag event!!" << endl;
+
 	bool draggedIntoImageRect = currentTab == TabIntrinsics && previewRectRight.inside( dragInfo.position );
 	if(draggedIntoImageRect) {
 		loadRGBIntrinsicImages(dragInfo.files);
