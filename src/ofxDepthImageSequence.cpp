@@ -41,7 +41,7 @@ bool ofxDepthImageSequence::loadSequence(string newSequenceDirectory){
 		return false;
 	}
 	
-
+	sequenceList.sort();
 	bool checkedForTimestamp = false;
 	unsigned long firstFrameTimeOffset = 0;
 	for(int i = 0; i < numFiles; i++){
@@ -74,11 +74,8 @@ bool ofxDepthImageSequence::loadSequence(string newSequenceDirectory){
 				}
 			}
 		}
-
-		images.push_back( img );
 	}
 	
-	//currentFrame = -1;
     if(framesHaveTimestamps){
 	    durationInMillis = images[images.size()-1].timestamp;
     }
