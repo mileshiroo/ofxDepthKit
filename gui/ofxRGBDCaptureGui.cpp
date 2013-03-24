@@ -1509,7 +1509,7 @@ void ofxRGBDCaptureGui::refineDepthCalibration(){
     fov = ofVec2f(depthCameraMatrix.at<double>(0,0), depthCameraMatrix.at<double>(1,1));
     pp = ofVec2f(depthCameraMatrix.at<double>(0,2),depthCameraMatrix.at<double>(1,2));
 	
-	if(abs( 320 - pp.x) > 2 || abs(240 - pp.x) > 2 ){
+	if(abs(320 - pp.x) > 2 || abs(240 - pp.y) > 2 ){
 		ofSystemAlertDialog("Self Calibration failed. Make sure the depth camera is pointed out into space and is seeing a wide range of depth values.");
 	}
 	else{

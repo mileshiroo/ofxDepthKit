@@ -34,7 +34,10 @@ public:
     void setDepthImage(ofShortPixels& pix);
     ofBaseHasTexture& getRGBTexture();
     ofShortPixels& getDepthImage();
-    
+	
+	//compensates for textures scaled from the original calibration
+    void setTextureScaleForImage(ofBaseHasTexture& texture);
+	
 	virtual void update() = 0;
     void drawMesh();
 	void drawPointCloud();
@@ -99,6 +102,7 @@ public:
 	ofBaseHasTexture* currentRGBImage;
 	ofShortPixels* currentDepthImage;
 	ofVec2f simplify;
+	ofVec2f textureScale;
     bool meshGenerated;
 	bool depthOnly;
 	bool hasDepthImage;

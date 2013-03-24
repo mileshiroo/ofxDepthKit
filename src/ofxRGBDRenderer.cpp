@@ -32,7 +32,8 @@ ofxRGBDRenderer::ofxRGBDRenderer(){
     
 	farClip = 6000;
     //meshRotate = ofVec3f(0,0,0);
-    
+    textureScale = ofVec2f(1.0, 1.0);
+	
 	hasDepthImage = false;
 	hasRGBImage = false;
     
@@ -153,15 +154,30 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath,
 	depthToRGBTranslation = ofVec3f(translationDepthToRGB.at<double>(0,0),
 									translationDepthToRGB.at<double>(1,0),
 									translationDepthToRGB.at<double>(2,0));
-	//openFrameworkds needs a better Matrix3x3 class...
 	Mat rx3;
-	cv::Rodrigues(rotationDepthToRGB, rx3);
-	float rotation3fv[9] = {
-		float(rx3.at<double>(0,0)),float(rx3.at<double>(1,0)),float(rx3.at<double>(2,0)),
-		float(rx3.at<double>(0,1)),float(rx3.at<double>(1,1)),float(rx3.at<double>(2,1)),
-		float(rx3.at<double>(0,2)),float(rx3.at<double>(1,2)),float(rx3.at<double>(2,2))
-	};
-	memcpy(depthToRGBRotation, rotation3fv, sizeof(float)*3*3);
+
+	if(rotationDepthToRGB.rows == 3 && rotationDepthToRGB.cols == 3) {
+		cout << "LOADING 3x3 ROTATION!" << endl;
+		rotationDepthToRGB.copyTo(rx3);
+		float rotation3fv[9] = {
+			float(rx3.at<double>(0,0)),float(rx3.at<double>(1,0)),float(rx3.at<double>(2,0)),
+			float(rx3.at<double>(0,1)),float(rx3.at<double>(1,1)),float(rx3.at<double>(2,1)),
+			float(rx3.at<double>(0,2)),float(rx3.at<double>(1,2)),float(rx3.at<double>(2,2))
+		};
+		memcpy(depthToRGBRotation, rotation3fv, sizeof(float)*3*3);
+	}
+	else {
+		//openFrameworkds needs a better Matrix3x3 class...
+		cv::Rodrigues(rotationDepthToRGB, rx3);
+		float rotation3fv[9] = {
+			float(rx3.at<double>(0,0)),float(rx3.at<double>(1,0)),float(rx3.at<double>(2,0)),
+			float(rx3.at<double>(0,1)),float(rx3.at<double>(1,1)),float(rx3.at<double>(2,1)),
+			float(rx3.at<double>(0,2)),float(rx3.at<double>(1,2)),float(rx3.at<double>(2,2))
+		};
+		memcpy(depthToRGBRotation, rotation3fv, sizeof(float)*3*3);
+	}
+	
+
 	
 	Mat dis = rgbCalibration.getDistCoeffs();
 	distortionK = ofVec3f(dis.at<double>(0,0),
@@ -218,7 +234,19 @@ void ofxRGBDRenderer::setDepthImage(ofShortPixels& pix){
 //-----------------------------------------------
 void ofxRGBDRenderer::setRGBTexture(ofBaseHasTexture& tex){
 	currentRGBImage = &tex;
+	setTextureScaleForImage(tex);
 	hasRGBImage = true;
+}
+
+//-----------------------------------------------
+void ofxRGBDRenderer::setTextureScaleForImage(ofBaseHasTexture& texture){
+	if(calibrationSetup){
+		cv::Size rgbImage = rgbCalibration.getDistortedIntrinsics().getImageSize();
+		textureScale = ofVec2f(float(texture.getTextureReference().getWidth() / float(rgbImage.width)),
+							   float(texture.getTextureReference().getHeight()) / float(rgbImage.height) );
+		
+		cout << "Setting texture scale to " << textureScale << endl;
+	}
 }
 
 //-----------------------------------------------

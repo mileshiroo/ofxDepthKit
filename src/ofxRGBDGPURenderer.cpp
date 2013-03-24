@@ -180,15 +180,14 @@ bool ofxRGBDGPURenderer::bindRenderer(){
     ofRotate(worldRotation.y,0,1,0);
     ofRotate(worldRotation.z,0,0,1);
 
-//	if(hasRGBImage){
-        shader.begin();
-        glActiveTexture(GL_TEXTURE1);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glActiveTexture(GL_TEXTURE0);
 
-        setupProjectionUniforms();
-//    }
+	shader.begin();
+	glActiveTexture(GL_TEXTURE1);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glActiveTexture(GL_TEXTURE0);
+
+	setupProjectionUniforms();
     
     rendererBound = true;
     return true;
@@ -215,12 +214,14 @@ void ofxRGBDGPURenderer::setupProjectionUniforms(){
 		shader.setUniformTexture("colorTex", currentRGBImage->getTextureReference(), 0);
 		shader.setUniform1i("useTexture", 1);
 		shader.setUniform2f("dim", dims.x, dims.y);
+		shader.setUniform2f("textureScale", textureScale.x, textureScale.y);
 		shader.setUniform2f("shift", shift.x, shift.y);
 		shader.setUniform2f("scale", scale.x, scale.y);
 		shader.setUniform3f("dK", distortionK.x, distortionK.y, distortionK.z);
 		shader.setUniform2f("dP", distortionP.x, distortionP.y);
-		
-		glUniformMatrix3fv(shader.getUniformLocation("colorRotate"), 1, GL_FALSE, depthToRGBRotation);
+	
+		//glUniformMatrix3fv(shader.getUniformLocation("colorRotate"), 1, GL_FALSE, depthToRGBRotation);
+		glUniformMatrix3fv( glGetUniformLocation(shader.getProgram(), "colorRotate"), 1, GL_FALSE,depthToRGBRotation);
 		
 		shader.setUniform3f("colorTranslate", depthToRGBTranslation.x,depthToRGBTranslation.y,depthToRGBTranslation.z);
 		shader.setUniform2f("colorFOV", colorFOV.x, colorFOV.y );
@@ -235,6 +236,7 @@ void ofxRGBDGPURenderer::setupProjectionUniforms(){
     shader.setUniform2f("fov", depthFOV.x, depthFOV.y);
     shader.setUniform1f("farClip", farClip);
 	shader.setUniform1f("edgeClip", edgeClip);
+	
     //TODO: vectorize in shader
     shader.setUniform1f("xsimplify", simplify.x);
     shader.setUniform1f("ysimplify", simplify.y);

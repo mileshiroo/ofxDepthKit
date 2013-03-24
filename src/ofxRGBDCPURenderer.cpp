@@ -29,9 +29,6 @@ ofxRGBDCPURenderer::ofxRGBDCPURenderer(){
 	mirror = false;
 	scale = ofVec2f(1,1);
 	
-//	currentTexture = NULL;
-//	currentDepthPixels = NULL;
-
 	cacheValidVertices = false;
 	
 	pivot = ofVec3f(0,0,0);
@@ -367,15 +364,4 @@ void ofxRGBDCPURenderer::draw(ofPolyRenderMode drawMode){
     }
     
     ofPopMatrix();
-}
-
-void ofxRGBDCPURenderer::setTextureScaleForImage(ofBaseHasTexture& texture){
-	if(!calibrationSetup){
-		ofLogError("ofxRGBDCPURenderer::setTextureScaleForImage") << "must set up matrices before setting texture scale";
-		return;
-	}
-	
-    cv::Size rgbImage = rgbCalibration.getDistortedIntrinsics().getImageSize();
-    textureScale = ofVec2f(float(texture.getTextureReference().getWidth() / float(rgbImage.width)),
-                           float(texture.getTextureReference().getHeight()) / float(rgbImage.height) );    
 }
