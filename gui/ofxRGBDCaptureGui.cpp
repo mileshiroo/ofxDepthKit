@@ -230,12 +230,7 @@ void ofxRGBDCaptureGui::setImageProvider(ofxDepthImageProvider* imageProvider){
 
 
 void ofxRGBDCaptureGui::update(ofEventArgs& args){
-	if(!providerSet || !depthImageProvider->deviceFound()){
-		return;
-	}
 	
-	depthImageProvider->update();
-    
 	if(currentTab == TabPlayback &&
 	   depthSequence.getDepthImageSequence() != NULL &&
 	   depthSequence.getDepthImageSequence()->isLoaded() &&
@@ -244,6 +239,11 @@ void ofxRGBDCaptureGui::update(ofEventArgs& args){
 		updateDepthImage(depthSequence.getDepthImageSequence()->getPixels());
 	}
 	
+	if(!providerSet || !depthImageProvider->deviceFound()){
+		return;
+	}
+	
+	depthImageProvider->update();
 	if(depthImageProvider->isFrameNew()){
         
         if(currentTab != TabPlayback){
@@ -1136,12 +1136,6 @@ void ofxRGBDCaptureGui::previewNextAlignmentPair(){
 	cpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
 	gpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
 	
-//	previewPixelsUndistorted.setFromPixels(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
-//	rgbCalibration.undistort( toCv(previewPixelsUndistorted) );
-//	previewPixelsUndistorted.reloadTexture();
-//	cpuRenderer.setRGBTexture(previewPixelsUndistorted);
-//	gpuRenderer.setRGBTexture(previewPixelsUndistorted);
-
 	cpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
 	gpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
 	
@@ -1588,17 +1582,7 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 	
     saveCorrespondenceImages();
 	
-//	kinect3dPoints.clear();
-//	kinectImagePoints.clear();
-//	externalRGBPoints.clear();
-//	objectPoints.clear();
-//	filteredKinectObjectPoints.clear();
-//	filteredExternalImagePoints.clear();
 	inlierPoints.clear();
-	
-
-//    inlierKinectObjectPoints.clear();
-	
 	
 	int numAlignmentPairsReady = 0;
 	for(int i = 0; i < alignmentPairs.size(); i++){
