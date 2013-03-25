@@ -244,8 +244,6 @@ void ofxRGBDRenderer::setTextureScaleForImage(ofBaseHasTexture& texture){
 		cv::Size rgbImage = rgbCalibration.getDistortedIntrinsics().getImageSize();
 		textureScale = ofVec2f(float(texture.getTextureReference().getWidth() / float(rgbImage.width)),
 							   float(texture.getTextureReference().getHeight()) / float(rgbImage.height) );
-		
-		cout << "Setting texture scale to " << textureScale << endl;
 	}
 }
 
