@@ -561,7 +561,6 @@ void ofxRGBDCaptureGui::drawDepthImage(ofRectangle& targetRect){
     if(currentRenderMode == RenderPointCloud){
 //		pointcloudPreviewCam.begin(targetRect);
 //		pointcloudPreview.drawPointCloud();
-		
 		//glEnable(GL_DEPTH_TEST);
 		glEnable(GL_POINT_SMOOTH);
 		glPointSize(2);
@@ -733,19 +732,20 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
         currentRenderModeObject = btnRenderRainbow;
 	}
 	else if(object == btnRenderPointCloud){
-		ofQuaternion baseRotate;
-		baseRotate.makeRotate(180, 0, 1, 0);
-		pointcloudPreviewCam.targetNode.setPosition(0, 0, 0);
-		pointcloudPreviewCam.targetXRot = 180;
-		pointcloudPreviewCam.targetYRot = 0;
-		pointcloudPreviewCam.targetZRot = 0;
-		pointcloudPreviewCam.applyRotation = true;
-		pointcloudPreviewCam.updateRotation();
-		
+		pointcloudPreviewCam.setPosition(0, 0, 0);
+		pointcloudPreviewCam.setOrientation(ofQuaternion());
+		pointcloudPreviewCam.rotate(0, ofVec3f(0,1,0));
+		pointcloudPreviewCam.setAnglesFromOrientation();
+	
 		currentRenderMode = RenderPointCloud;
         currentRenderModeObject = btnRenderPointCloud;
-	}
 
+		if(depthSequence.getDepthImageSequence() != NULL &&
+		   depthSequence.getDepthImageSequence()->isLoaded())
+		{
+			updateDepthImage(depthSequence.getDepthImageSequence()->getPixels());
+		}
+	}
     else if(find(tabSet.begin(),tabSet.end(), object) != tabSet.end()){
         
         btnRGBLoadCalibration->disableAllEvents();
