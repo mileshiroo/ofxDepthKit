@@ -41,7 +41,7 @@ void ofxTLVideoDepthAlignmentScrubber::draw(){
 //		else{
 //			videoFrame = alignedFrames[i].videoMillis;
 //		}
-//        
+//		
 		int screenX = millisToScreenX( alignedFrames[i].videoMillis );
 		if(i == selectedPairIndex){
 			ofSetColor(timeline->getColors().textColor);
@@ -51,9 +51,9 @@ void ofxTLVideoDepthAlignmentScrubber::draw(){
 		}
 		
 		ofLine(screenX, bounds.y, 
-               screenX, bounds.y+bounds.height);
-        timeline->getFont().drawString("video: " + ofToString(ofxTimecode::timecodeForMillis(alignedFrames[i].videoMillis)), screenX+10, bounds.y+15);
-        timeline->getFont().drawString("depth: " + ofToString(ofxTimecode::timecodeForMillis(alignedFrames[i].depthMillis) + " milliseconds: " + ofToString(alignedFrames[i].depthMillis) ), screenX+10, bounds.y+35);
+			   screenX, bounds.y+bounds.height);
+		timeline->getFont().drawString("video: " + ofToString(ofxTimecode::timecodeForMillis(alignedFrames[i].videoMillis)), screenX+10, bounds.y+15);
+		timeline->getFont().drawString("depth: " + ofToString(ofxTimecode::timecodeForMillis(alignedFrames[i].depthMillis) + " milliseconds: " + ofToString(alignedFrames[i].depthMillis) ), screenX+10, bounds.y+35);
 		//ofDrawBitmapString("video: " + ofToString(ofxTimecode::timecodeForMillis(alignedFrames[i].videoMillis)), ofPoint(screenX+10, bounds.y+15));
 		//ofDrawBitmapString("depth: " + ofToString(ofxTimecode::timecodeForMillis(alignedFrames[i].depthMillis)), ofPoint(screenX+10, bounds.y+35));
 	}
@@ -92,7 +92,7 @@ bool ofxTLVideoDepthAlignmentScrubber::mousePressed(ofMouseEventArgs& args, long
 //		long videoMillis;
 //		if(depthSequence->doFramesHaveTimestamps()){
 ////			videoMillis = videoSequence->getPlayer()->getTotalNumFrames() * alignedFrames[i].videoMillis / (videoSequence->getPlayer()->getDuration()*1000.0);
-//            float videoPercent = alignedFrames[i].videoMillis / (videoSequence->getPlayer()->getDuration()*1000.0);
+//			float videoPercent = alignedFrames[i].videoMillis / (videoSequence->getPlayer()->getDuration()*1000.0);
 //			videoMillis = videoPercent * videoSequence->getPlayer()->getTotalNumFrames();			
 //		}
 //		else{
@@ -141,8 +141,8 @@ void ofxTLVideoDepthAlignmentScrubber::mouseReleased(ofMouseEventArgs& args, lon
 
 void ofxTLVideoDepthAlignmentScrubber::registerCurrentAlignment(){
 	if(depthSequence->doFramesHaveTimestamps()){
-        double videoSeconds = videoSequence->getCurrentTime();
-        long depthMillis = depthSequence->getSelectedTimeInMillis();
+		double videoSeconds = videoSequence->getCurrentTime();
+		long depthMillis = depthSequence->getSelectedTimeInMillis();
 		pairSequence->addAlignedTime(long(1000*videoSeconds), depthMillis);
 	}
 	else{
@@ -171,7 +171,7 @@ void ofxTLVideoDepthAlignmentScrubber::load(){
 		pairSequence = ofPtr<ofxRGBDVideoDepthSequence>( new ofxRGBDVideoDepthSequence() );
 	}
 	if(xmlFileName == ""){
-        pairSequence->reset();
+		pairSequence->reset();
 		ofLogError("ofxTLVideoDepthAlignmentScrubber -- loading no save file");
 		return;
 	}

@@ -20,7 +20,7 @@ int ofxDepthHoleFiller::setIterations(int newIterations){
 
 int ofxDepthHoleFiller::setKernelSize(int newKernelSize){
 	kernelSize = ofClamp(newKernelSize, 1, 20);	
-    
+	
 	if(kernelSize % 2 == 0){
 		kernelSize++;
 	}
@@ -37,15 +37,15 @@ int ofxDepthHoleFiller::getKernelSize(){
 
 void ofxDepthHoleFiller::close(ofShortPixels& depthPixels){
 	if(enable){
-        Mat original = toCv(depthPixels);
+		Mat original = toCv(depthPixels);
 		Mat filledMask;
-        Mat dilated;
-        
+		Mat dilated;
+		
 		Mat m_element_m = getStructuringElement(MORPH_RECT, cv::Size(kernelSize, kernelSize));
-        morphologyEx(original, dilated, MORPH_CLOSE, m_element_m, cv::Point(-1,-1), iterations);
-        
-        cv::compare(original, 0, filledMask, CMP_EQ);
-        cv::add(original, dilated, original, filledMask);        
-    
+		morphologyEx(original, dilated, MORPH_CLOSE, m_element_m, cv::Point(-1,-1), iterations);
+		
+		cv::compare(original, 0, filledMask, CMP_EQ);
+		cv::add(original, dilated, original, filledMask);		
+	
 	}	
 }
