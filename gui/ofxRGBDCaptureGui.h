@@ -96,7 +96,8 @@ public:
 	
 	ofTrueTypeFont contextHelpTextLarge;
 	ofTrueTypeFont contextHelpTextSmall;
-
+	ofRectangle hoverRect;
+	
     bool providerSet;
 
     string workingDirectory;
