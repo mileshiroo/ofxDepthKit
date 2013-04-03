@@ -15,7 +15,7 @@ ofxRGBDVideoExporter::~ofxRGBDVideoExporter(){
 	
 }
 
-void ofxRGBDVideoExporter::setRenderer(ofxRGBDRenderer* renderer){
+void ofxRGBDVideoExporter::setRenderer(ofxRGBDCPURenderer* renderer){
 	this->renderer = renderer;
 }
 
@@ -37,7 +37,7 @@ void ofxRGBDVideoExporter::render(string outputPath, string clipName){
 
 	writeMetaFile(outputPath);
 	
-	outputImage.allocate(videoRectangle.getWidth() + 640, videoRectangle.getHeight(), OF_IMAGE_COLOR);
+	outputImage.allocate(videoRectangle.getWidth(), videoRectangle.getHeight() + 480, OF_IMAGE_COLOR);
 	
 	for(int i = inoutPoint.min; i < inoutPoint.max; i++){
 		
@@ -49,10 +49,34 @@ void ofxRGBDVideoExporter::render(string outputPath, string clipName){
 		ofShortPixels& p = player->getDepthPixels();
 		for(int y = 0; y < p.getHeight(); y++){
 			for(int x = 0; x < p.getWidth(); x++){
-				outputImage.setColor(videoRectangle.getWidth() + x, y, getColorForZDepth(p.getPixels()[ p.getPixelIndex(x, y)] ));
+				outputImage.setColor(x, videoRectangle.getHeight() + y, getColorForZDepth(p.getPixels()[ p.getPixelIndex(x, y)] ));
 			}
 		}
 		
+        //  Process Normals on PCL
+        //
+        ofxPCL::PointCloud pc;
+        //ofxPCL::convert(meshBuilder.getMesh(), pc);
+        ofxPCL::convert( renderer->getReducedMesh(false), pc);
+        
+        ofxPCL::PointNormalPointCloud pc_n;
+        ofxPCL::normalEstimation(pc, pc_n );
+        
+        //  Make a new mesh with that information
+        //
+        ofMesh mesh = ofxPCL::toOF(pc_n);
+        memset(outputImage.getPixels(), 0, outputImage.getWidth()*outputImage.getHeight()*3);
+        cout << "normals generated, building image for " << renderer->validVertIndices.size() << " verts " << endl;
+        
+        //  Use the new mesh and the valid verteces ( from the original ) to make an image
+        //
+        for(int i = 0; i < renderer->validVertIndices.size(); i++){
+            ofVec3f norm = ( mesh.getNormals()[ i ] + ofVec3f(1.0, 1.0, 1.0) ) / 2.0;
+            pair<int,int> pixelCoord = renderer->getPixelLocationForIndex( renderer->validVertIndices[i]  );
+            outputImage.setColor(videoRectangle.getWidth() + pixelCoord.first,
+                                 videoRectangle.getHeight() + pixelCoord.second, ofColor(norm.x*255,norm.y*255,norm.z*255) );
+        }
+        
 		char filename[1024];
 		sprintf(filename, "%s/%s%05d.png", outputPath.c_str(), clipName.c_str(), player->getVideoPlayer()->getCurrentFrame());
 		ofSaveImage(outputImage, filename);

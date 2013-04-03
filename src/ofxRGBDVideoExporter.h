@@ -2,8 +2,11 @@
 
 #include "ofMain.h"
 #include "ofxRGBDRenderer.h"
+#include "ofxRGBDCPURenderer.h"
 #include "ofxRGBDPlayer.h"
 #include "ofxXmlSettings.h"
+
+#include "ofxPCL.h"
 
 class ofxRGBDVideoExporter {
   public:
@@ -11,7 +14,7 @@ class ofxRGBDVideoExporter {
 	ofxRGBDVideoExporter();
 	~ofxRGBDVideoExporter();
 
-	void setRenderer(ofxRGBDRenderer* renderer);
+	void setRenderer(ofxRGBDCPURenderer* renderer);
 	void setPlayer(ofxRGBDPlayer* player);
 	
 	void render(string outputPath, string clipName);
@@ -25,9 +28,9 @@ class ofxRGBDVideoExporter {
 	ofColor getColorForZDepth(unsigned short z);
 	void writeMetaFile(string outputDirectory);
 	
-	ofxRGBDRenderer* renderer;
-	ofxRGBDPlayer* player;
+	ofxRGBDCPURenderer* renderer;  // It has a mesh, call .getReducedMesh();
+	ofxRGBDPlayer*      player;
 	
 	ofRectangle videoRectangle;
-	ofPixels outputImage;
+	ofPixels    outputImage;
 };
