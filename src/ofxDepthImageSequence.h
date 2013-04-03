@@ -12,58 +12,58 @@
 
 class DepthImage {
   public:
-    string path;
-    long timestamp;
-    int frameNumber;
+	string path;
+	long timestamp;
+	int frameNumber;
 	ofShortPixels pixels;
 
 };
 
 class ofxDepthImageSequence {
   public:
-    ofxDepthImageSequence();
-    ~ofxDepthImageSequence();
+	ofxDepthImageSequence();
+	~ofxDepthImageSequence();
 
-    bool loadSequence(string sequenceDirectory);
-    bool isLoaded();
-    bool doFramesHaveTimestamps();
+	bool loadSequence(string sequenceDirectory);
+	bool isLoaded();
+	bool doFramesHaveTimestamps();
 
-    string getSequenceDirectory();
-    
-    int getCurrentFrame();
-    long getCurrentMilliseconds();
-    float getCurrentSeconds();
-    
-    int frameForTime(long timeInMillis);
+	string getSequenceDirectory();
+	
+	int getCurrentFrame();
+	long getCurrentMilliseconds();
+	float getCurrentSeconds();
+	
+	int frameForTime(long timeInMillis);
 
 	void setFrame(int frame);
 	void setTimeInSeconds(float timeInSeconds);
 	void setTimeInMilliseconds(long timeInMillis);
 	
-    long getDurationInMillis();
-    float getDurationInSeconds();
+	long getDurationInMillis();
+	float getDurationInSeconds();
 	int getTotalNumFrames();
 	
-    void updatePixels();
-    
-    ofShortPixels& getPixels();
-    void getPixelsAtTime(long timeInMillis, ofShortPixels& pixels);
-    
-    vector<DepthImage>& getImageArray();
-    ofxDepthImageCompressor& getCompressor();
-    
+	void updatePixels();
+	
+	ofShortPixels& getPixels();
+	void getPixelsAtTime(long timeInMillis, ofShortPixels& pixels);
+	
+	vector<DepthImage>& getImageArray();
+	ofxDepthImageCompressor& getCompressor();
+	
   protected:
-    ofxDepthImageCompressor compressor;
-    
-    bool sequenceLoaded;
-    bool framesHaveTimestamps;
-    string sequenceDirectory;
-    
-    vector<DepthImage> images;
-    ofShortPixels pixels;
-    int currentPixelsFrame; //represents what's loaded in pixels currently
+	ofxDepthImageCompressor compressor;
+	
+	bool sequenceLoaded;
+	bool framesHaveTimestamps;
+	string sequenceDirectory;
+	
+	vector<DepthImage> images;
+	ofShortPixels pixels;
+	int currentPixelsFrame; //represents what's loaded in pixels currently
 	int currentFrame; //represents the latest selection
-    long durationInMillis;
+	long durationInMillis;
 	
 	
 };

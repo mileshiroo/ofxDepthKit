@@ -67,6 +67,9 @@ void ofxRGBDVideoExporter::writeMetaFile(string outputDirectory){
 	//write calibration into an xml file
 
 	ofxXmlSettings calibration;
+	calibration.addTag("calibration");
+	calibration.pushTag("calibration");
+	
 	calibration.addTag("depthIntrinsics");
 	calibration.pushTag("depthIntrinsics");
 	
@@ -116,7 +119,10 @@ void ofxRGBDVideoExporter::writeMetaFile(string outputDirectory){
 	calibration.addValue("minDepth", minDepth);
 	calibration.addValue("maxDepth", maxDepth);
 	
-	calibration.save(outputDirectory + "/_calibration.xml");
+	calibration.popTag(); //calibration
+	
+	//calibration.save(outputDirectory + "/_calibration.xml");
+	calibration.saveFile(outputDirectory + "/_calibration.xml");
 	
 }
 

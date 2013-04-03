@@ -42,7 +42,7 @@ class ofxDepthImageRecorder {
 	ofxDepthImageRecorder();
 	~ofxDepthImageRecorder();
 
-    vector<ofxRGBDScene*>& getScenes();
+	vector<ofxRGBDScene*>& getScenes();
 	
 	void setup();
 	void toggleRecord();
@@ -56,7 +56,7 @@ class ofxDepthImageRecorder {
 	int numFramesWaitingCompession();
 	int numDirectoriesWaitingCompression();
 	
-    ofxDepthImageCompressor& getCompressor();
+	ofxDepthImageCompressor& getCompressor();
 	void shutdown();
 	
 	unsigned long recordingStartTime; //in millis -- potentially should make this more accurate
@@ -65,30 +65,30 @@ class ofxDepthImageRecorder {
 	void recorderThreadCallback();
 	
   protected:
-    
+	
 	ofxDepthImageCompressor compressor;
 	ofxRGBDRecorderThread recorderThread;
 	ofxRGBDEncoderThread encoderThread;
-    
+	
 	bool recording;
 	
-    void incrementTake();
-    
-    //start converting the current directory
-    vector<ofxRGBDScene*> takes;
+	void incrementTake();
+	
+	//start converting the current directory
+	vector<ofxRGBDScene*> takes;
 	void compressCurrentTake();
 	void updateTakes();
-	int compressingTakeIndex;    
-    
+	int compressingTakeIndex;	
+	
 	int framesToCompress;
 	
 	//unsigned short* encodingBuffer;
 	//unsigned short* lastFramePixs;
 	ofShortPixels encodingBuffer;
-    ofShortPixels lastFramePixs;
-    
+	ofShortPixels lastFramePixs;
+	
 	int folderCount;
-    string currentFolderPrefix;
+	string currentFolderPrefix;
 	string targetDirectory;
 	string targetFilePrefix;
 	int currentFrame;
@@ -96,6 +96,6 @@ class ofxDepthImageRecorder {
 	ofxMSATimer msaTimer;
 	queue<QueuedFrame> saveQueue;
 	//queue<string> encodeDirectories;
-    //queue<Take*> encodeDirectories;
-    queue<ofxRGBDScene*> encodeDirectories;
+	//queue<Take*> encodeDirectories;
+	queue<ofxRGBDScene*> encodeDirectories;
 };

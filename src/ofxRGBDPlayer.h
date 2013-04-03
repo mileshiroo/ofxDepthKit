@@ -24,60 +24,59 @@
 
 #include "ofMain.h"
 #include "ofxXmlSettings.h"
-#include "ofxRGBDAlignment.h"
 #include "ofxRGBDScene.h"
 #include "ofxRGBDVideoDepthSequence.h"
 #include "ofxDepthImageSequence.h"
 
 class ofxRGBDPlayer {
   public:  
-    ofxRGBDPlayer();
-    ~ofxRGBDPlayer();
-    
-    bool setup(string sceneDirectory, bool forceHires = false);
-    bool setup(ofxRGBDScene scene, bool forceHires = false);
-    void update();
-    
-    bool isLoaded();
-    bool isFrameNew();
-    
-    void play();
-    void stop();
-    void togglePlay();
-    
-    ofVec2f getXYShift();
-    ofVec2f getXYScale();
-    
+	ofxRGBDPlayer();
+	~ofxRGBDPlayer();
+	
+	bool setup(string sceneDirectory, bool forceHires = false);
+	bool setup(ofxRGBDScene scene, bool forceHires = false);
+	void update();
+	
+	bool isLoaded();
+	bool isFrameNew();
+	
+	void play();
+	void stop();
+	void togglePlay();
+	
+	ofVec2f getXYShift();
+	ofVec2f getXYScale();
+	
 	void saveShiftValues();
 	
-    int getDurationInFrames();
-    float getDurationInSeconds();
-    
-    ofxRGBDScene& getScene();
+	int getDurationInFrames();
+	float getDurationInSeconds();
+	
+	ofxRGBDScene& getScene();
 	ofShortPixels& getDepthPixels();
-    ofPtr<ofVideoPlayer> getVideoPlayer();
-    ofPtr<ofxDepthImageSequence> getDepthSequence();
-    ofPtr<ofxRGBDVideoDepthSequence> getVideoDepthAligment();
-    
-    bool hasHighresVideo();
-    bool isUsingHighResVideo();
-    void useHiresVideo();
-    void useLowResVideo();
-    
+	ofPtr<ofVideoPlayer> getVideoPlayer();
+	ofPtr<ofxDepthImageSequence> getDepthSequence();
+	ofPtr<ofxRGBDVideoDepthSequence> getVideoDepthAligment();
+	
+	bool hasHighresVideo();
+	bool isUsingHighResVideo();
+	void useHiresVideo();
+	void useLowResVideo();
+	
 	bool updateVideoPlayer;
 	
 
   protected:
-    bool loaded;
-    bool frameIsNew;
-    bool currentlyHiRes;
-    ofVec2f shift;
-    ofVec2f scale;
-    int lastFrame;
+	bool loaded;
+	bool frameIsNew;
+	bool currentlyHiRes;
+	ofVec2f shift;
+	ofVec2f scale;
+	int lastFrame;
 	
 	ofxRGBDScene scene;
-    ofPtr<ofVideoPlayer> player;
-    ofPtr<ofxDepthImageSequence> depthSequence;
-    ofPtr<ofxRGBDVideoDepthSequence> videoDepthAligment;
-    
+	ofPtr<ofVideoPlayer> player;
+	ofPtr<ofxDepthImageSequence> depthSequence;
+	ofPtr<ofxRGBDVideoDepthSequence> videoDepthAligment;
+	
 };

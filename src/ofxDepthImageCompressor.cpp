@@ -26,7 +26,7 @@ bool ofxDepthImageCompressor::saveToRaw(string filename, unsigned short* buf){
 
 void ofxDepthImageCompressor::saveToCompressedPng(string filename, unsigned short* buf){
 	if(!compressedDepthImage.isAllocated()){
-        compressedDepthImage.setUseTexture(false);
+		compressedDepthImage.setUseTexture(false);
 		compressedDepthImage.allocate(640, 480, OF_IMAGE_COLOR);
 	}
 
@@ -52,9 +52,9 @@ unsigned short* ofxDepthImageCompressor::readDepthFrame(string filename, unsigne
 }
 
 unsigned short* ofxDepthImageCompressor::readDepthFrame(ofFile& infile,  unsigned short* outbuf) {
-    if(outbuf == NULL){
-        outbuf = new unsigned short[640*480];
-    }
+	if(outbuf == NULL){
+		outbuf = new unsigned short[640*480];
+	}
 	infile.read((char*)(&outbuf[0]), sizeof(unsigned short)*640*480);	
 	infile.close();
 	return outbuf;
@@ -73,15 +73,15 @@ ofImage ofxDepthImageCompressor::convertTo8BitImage(ofShortPixels& pix, bool cre
 }
 
 ofImage ofxDepthImageCompressor::convertTo8BitImage(unsigned short* buf, bool createTexture) {
-    ofImage outputImage;
-    outputImage.setUseTexture(createTexture);
+	ofImage outputImage;
+	outputImage.setUseTexture(createTexture);
 	outputImage.allocate(640, 480, OF_IMAGE_GRAYSCALE);
-    convertTo8BitImage(buf, outputImage);
+	convertTo8BitImage(buf, outputImage);
 	return outputImage;	
 }
 
 void ofxDepthImageCompressor::convertTo8BitImage(ofShortPixels& pix, ofImage& image){
-    convertTo8BitImage(pix.getPixels(), image);
+	convertTo8BitImage(pix.getPixels(), image);
 }
 
 void ofxDepthImageCompressor::convertTo8BitImage(unsigned short* buf, ofImage& image){
@@ -91,13 +91,13 @@ void ofxDepthImageCompressor::convertTo8BitImage(unsigned short* buf, ofImage& i
 		image.allocate(640,480,OF_IMAGE_GRAYSCALE);
 	}
 	unsigned char* pix = image.getPixels();
-    int stride = image.getPixelsRef().getNumChannels();
+	int stride = image.getPixelsRef().getNumChannels();
 	for(int i = 0; i < 640*480; i++){
-        //ofMap(buf[i], nearPlane, farPlane, 255, 0, true);
-        unsigned char value = buf[i] == 0 ? 0 : 255 - (255 * (buf[i] - nearPlane) ) / farPlane;// + ofMap(buf[i], nearPlane, farPlane, 255, 0, true);
-        for(int c = 0; c < stride; c++){
-            pix[i*stride+c] = value;
-        }
+		//ofMap(buf[i], nearPlane, farPlane, 255, 0, true);
+		unsigned char value = buf[i] == 0 ? 0 : 255 - (255 * (buf[i] - nearPlane) ) / farPlane;// + ofMap(buf[i], nearPlane, farPlane, 255, 0, true);
+		for(int c = 0; c < stride; c++){
+			pix[i*stride+c] = value;
+		}
 	}
 	
 	image.update();
@@ -105,9 +105,9 @@ void ofxDepthImageCompressor::convertTo8BitImage(unsigned short* buf, ofImage& i
 
 void ofxDepthImageCompressor::readCompressedPng(string filename, ofShortPixels& pix){
 	if(!pix.isAllocated()){
-        pix.allocate(640, 480, 1);
-    }
-    readCompressedPng(filename, pix.getPixels());
+		pix.allocate(640, 480, 1);
+	}
+	readCompressedPng(filename, pix.getPixels());
 }
 
 unsigned short* ofxDepthImageCompressor::readCompressedPng(string filename, unsigned short* outbuf){

@@ -7,8 +7,6 @@
  *
  */
 
-//TODO somehow account for timestamping
-
 #pragma once
 
 #include "ofMain.h"
@@ -31,20 +29,20 @@ class ofxRGBDVideoDepthSequence {
 	
 	bool ready();
 	void reset();
-    
-    void addAlignedFrames(int videoMillis, int depthMillis);
+	
+	void addAlignedFrames(int videoMillis, int depthMillis);
 	void addAlignedTime(int videoMillis, int depthMillis);
 	void addAlignedPair(VideoDepthPair pair);
 	
 	void removeAlignedPair(int index);
 
-    //This will return a time in milliseconds if the frames are time based
+	//This will return a time in milliseconds if the frames are time based
 	long getDepthMillisForVideoMillis(long videoMillis);
-    long getVideoMillisForDepthMillis(long depthMillis);
+	long getVideoMillisForDepthMillis(long depthMillis);
 	bool isSequenceTimebased();
 	
-    //returns the start and stop points for the video player IN SECONDS for the given sequence and this pairing
-    ofRange getStartAndEndTimes(ofVideoPlayer& player, ofxDepthImageSequence& sequence);
+	//returns the start and stop points for the video player IN SECONDS for the given sequence and this pairing
+	ofRange getStartAndEndTimes(ofVideoPlayer& player, ofxDepthImageSequence& sequence);
 	vector<VideoDepthPair> & getPairs();
 
   protected:

@@ -41,7 +41,4 @@ class ofxDepthImageProvider {
 	ofImage rawIRImage;
 	ofImage depthImage;
 	ofImage colorImage;
-
-	
-	
 };
