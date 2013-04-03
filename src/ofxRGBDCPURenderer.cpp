@@ -90,12 +90,16 @@ void ofxRGBDCPURenderer::setSimplification(ofVec2f simplification){
         y++;
         x = 0;
 	}
-    
+	
+	vertsPerRow = 0;
+	vertsPerCol = 0;
 	mesh.clearVertices();
 	for (float y = 0; y < depthImageSize.height; y += simplify.y){
+		vertsPerCol++;
 		for (float x = 0; x < depthImageSize.width; x += simplify.x){
-            indexToPixelCoord[ mesh.getVertices().size() ] = make_pair(x,y);
+            indexToPixelCoord[ mesh.getVertices().size() ] = ofVec2f(x,y);
 			mesh.addVertex(ofVec3f(x,y,0));
+			if(y == 0) vertsPerRow++;
 		}
 	}
     
@@ -162,15 +166,18 @@ void ofxRGBDCPURenderer::update(){
 				point = getWorldPoint(x,y,z);
 				if(cacheValidVertices){
 					validVertIndices.push_back(vertexIndex);
+					validIndeces[ vertexIndex ] = true;
 				}
 			}
 			else {
+				if(cacheValidVertices){
+					validIndeces[ vertexIndex ] = false;
+				}
 				point = ofVec3f(0,0,0);
 			}
 			mesh.setVertex(vertexIndex++, point);
         }
     }
-
     mesh.clearIndices();
     for(int i = 0; i < baseIndeces.size(); i+=3){
 
@@ -184,7 +191,6 @@ void ofxRGBDCPURenderer::update(){
         if(fabs(a.z - b.z) > edgeClip || fabs(a.z - c.z) > edgeClip){
             continue;
         }
-
         mesh.addTriangle(baseIndeces[i], baseIndeces[i+1], baseIndeces[i+2]);
         hasTriangles = true;
     }
@@ -197,15 +203,39 @@ void ofxRGBDCPURenderer::update(){
     //cout << "updated mesh has " << mesh.getNumIndices()/3 << " triangles " << endl;
 }
 
-ofMesh ofxRGBDCPURenderer::getReducedMesh(bool normalizeTextureCoords, ofVec3f vertexScale, bool flipTextureX, bool flipTextureY, float texCoordScale){
+bool ofxRGBDCPURenderer::isIndexValid(ofIndexType index){
+	return cacheValidVertices && validIndeces[ index ];
+}
+
+ofMesh ofxRGBDCPURenderer::getReducedMesh(bool normalizeTextureCoords,
+										  bool flipTextureX,
+										  bool flipTextureY,
+										  ofMatrix4x4 vertexAdjust)
+{
+	ofMesh m;
+	getReducedMesh(m, normalizeTextureCoords, flipTextureX, flipTextureY,vertexAdjust);
+	return m;
+	
+}
+
+void ofxRGBDCPURenderer::getReducedMesh(ofMesh& reducedMesh,
+										bool normalizeTextureCoords,
+										bool flipTextureX,
+										bool flipTextureY,
+										ofMatrix4x4 vertexAdjust)
+{
+	
     if(!cacheValidVertices){
         ofLogError("ofxRGBDCPURenderer::getReducedMesh -- Must cache valid verts to get the reduced mesh");
     }
-    ofMesh reducedMesh;
+
+	ofIndexType startIndex = reducedMesh.getNumVertices();
     map<ofIndexType, ofIndexType> vertMapping;
     for(int i = 0; i < validVertIndices.size(); i++){
-        vertMapping[ validVertIndices[i] ] = i;
-        reducedMesh.addVertex( mesh.getVertices()[ validVertIndices[i] ] * vertexScale);
+
+		vertMapping[ validVertIndices[i] ] = i;
+        reducedMesh.addVertex( vertexAdjust.preMult( mesh.getVertices()[ validVertIndices[i] ]) );
+		
 		if(mesh.hasTexCoords() && calculateTextureCoordinates && currentRGBImage != NULL){
             ofVec2f& coord = mesh.getTexCoords()[ validVertIndices[i] ] ;
             if(flipTextureX){
@@ -221,17 +251,16 @@ ofMesh ofxRGBDCPURenderer::getReducedMesh(bool normalizeTextureCoords, ofVec3f v
             }
             
             reducedMesh.addTexCoord(coord);
-            
         }
+				
         if(mesh.hasColors()){
             reducedMesh.addColor( mesh.getColors()[ validVertIndices[i] ] );
         }
     }
     
     for(int i = 0; i < mesh.getNumIndices(); i++){
-        reducedMesh.addIndex( vertMapping[ mesh.getIndex(i) ] );
-    }
-    return reducedMesh;
+        reducedMesh.addIndex( startIndex + vertMapping[ mesh.getIndex(i) ] );
+    }	
 }
 
 void ofxRGBDCPURenderer::generateTextureCoordinates(){
@@ -297,7 +326,7 @@ ofVec3f ofxRGBDCPURenderer::getWorldPoint(float x, float y, unsigned short z){
 				    (y - depthPrincipalPoint.y) * z / depthFOV.y, z);
 }
 
-pair<int,int> ofxRGBDCPURenderer::getPixelLocationForIndex(ofIndexType index){
+ofVec2f ofxRGBDCPURenderer::getPixelLocationForIndex(ofIndexType index){
     return indexToPixelCoord[index];
 }
 

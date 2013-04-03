@@ -30,11 +30,17 @@ class ofxRGBDCPURenderer : public ofxRGBDRenderer{
 	void setPivotToMeshCenter();
     void setSimplification(ofVec2f simplify);
     
-    //mesh with only valid vertices
-    ofMesh getReducedMesh(bool normalizeTextureCoords,
-                          ofVec3f vertexScale = ofVec3f(1,1,1),
-                          bool flipTextureX = false, bool flipTextureY = false, float texCoordScale = 1.0);
-    
+	ofMesh getReducedMesh(bool normalizeTextureCoords = false,
+                          bool flipTextureX = false,
+						  bool flipTextureY = false,
+						  ofMatrix4x4 vertexAdjust = ofMatrix4x4());
+
+	void getReducedMesh(ofMesh& mesh,
+						bool normalizeTextureCoords = false,
+						bool flipTextureX = false,
+						bool flipTextureY = false,
+						ofMatrix4x4 vertexAdjust = ofMatrix4x4());
+	
     //TODO: bring to super class
 	float bottomClip;
 	float topClip;
@@ -52,19 +58,25 @@ class ofxRGBDCPURenderer : public ofxRGBDRenderer{
     ofVec3f getWorldPoint(float x, float y, ofShortPixels& pixels);
     
 	bool cacheValidVertices;
+	bool isIndexValid(ofIndexType index);
+	
+	map<ofIndexType, ofIndexType> reducedMeshIndex;
 	vector<ofIndexType> validVertIndices;
+	
     //returns the x,y coord in the image for the given
-    pair<int,int> getPixelLocationForIndex(ofIndexType index);
+    ofVec2f getPixelLocationForIndex(ofIndexType index);
 
 	//after this call, texCoords will be the same size as points, full of texture coords;
 	void generateTextureCoordinates(vector<ofVec3f>& points, vector<ofVec2f>& texCoords);
 	ofVec2f getTextureCoordinateForPoint(ofVec3f point);
+	int vertsPerRow;
+	int vertsPerCol;
 	
   private:
     
 	void setupDrawMatrices();
-	map< ofIndexType, pair<int, int> > indexToPixelCoord;
-    
+	map< ofIndexType, ofVec2f > indexToPixelCoord;
+    map< ofIndexType, bool > validIndeces;
 	
     void generateTextureCoordinates();  
     vector<ofIndexType> baseIndeces;    
