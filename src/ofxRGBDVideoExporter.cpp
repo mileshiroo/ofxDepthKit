@@ -8,7 +8,6 @@ ofxRGBDVideoExporter::ofxRGBDVideoExporter(){
 	player = NULL;
 
 	videoRectangle = ofRectangle(0,0,1280,720);
-	
 }
 
 ofxRGBDVideoExporter::~ofxRGBDVideoExporter(){
@@ -17,6 +16,7 @@ ofxRGBDVideoExporter::~ofxRGBDVideoExporter(){
 
 void ofxRGBDVideoExporter::setRenderer(ofxRGBDCPURenderer* renderer){
 	this->renderer = renderer;
+    this->renderer->setSimplification(ofVec2f(1,1));
 }
 
 void ofxRGBDVideoExporter::setPlayer(ofxRGBDPlayer* player){
@@ -39,6 +39,7 @@ void ofxRGBDVideoExporter::render(string outputPath, string clipName){
 	
 	outputImage.allocate(videoRectangle.getWidth(), videoRectangle.getHeight() + 480, OF_IMAGE_COLOR);
 	
+    int counter = 1;
 	for(int i = inoutPoint.min; i < inoutPoint.max; i++){
 		
 		//COPY video pixels into buffer
@@ -53,19 +54,23 @@ void ofxRGBDVideoExporter::render(string outputPath, string clipName){
 			}
 		}
 		
+        //  Update the mesh
+        //
+        renderer->update();
+        
         //  Process Normals on PCL
         //
         ofxPCL::PointCloud pc;
-        //ofxPCL::convert(meshBuilder.getMesh(), pc);
         ofxPCL::convert( renderer->getReducedMesh(false), pc);
         
         ofxPCL::PointNormalPointCloud pc_n;
-        ofxPCL::normalEstimation(pc, pc_n );
+        ofxPCL::normalEstimation(pc, pc_n, counter );
+
         
         //  Make a new mesh with that information
         //
         ofMesh mesh = ofxPCL::toOF(pc_n);
-        memset(outputImage.getPixels(), 0, outputImage.getWidth()*outputImage.getHeight()*3);
+        //memset(outputImage.getPixels(), 0, outputImage.getWidth()*outputImage.getHeight()*3);
         cout << "normals generated, building image for " << renderer->validVertIndices.size() << " verts " << endl;
         
         //  Use the new mesh and the valid verteces ( from the original ) to make an image
@@ -73,7 +78,7 @@ void ofxRGBDVideoExporter::render(string outputPath, string clipName){
         for(int i = 0; i < renderer->validVertIndices.size(); i++){
             ofVec3f norm = ( mesh.getNormals()[ i ] + ofVec3f(1.0, 1.0, 1.0) ) / 2.0;
             pair<int,int> pixelCoord = renderer->getPixelLocationForIndex( renderer->validVertIndices[i]  );
-            outputImage.setColor(videoRectangle.getWidth() + pixelCoord.first,
+            outputImage.setColor(640 + pixelCoord.first,
                                  videoRectangle.getHeight() + pixelCoord.second, ofColor(norm.x*255,norm.y*255,norm.z*255) );
         }
         
@@ -84,7 +89,11 @@ void ofxRGBDVideoExporter::render(string outputPath, string clipName){
 		player->getVideoPlayer()->nextFrame();
 		player->getVideoPlayer()->update();
 		player->update();
+        
+        counter++;
 	}
+    
+    
 }
 
 void ofxRGBDVideoExporter::writeMetaFile(string outputDirectory){
