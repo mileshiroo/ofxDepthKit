@@ -12,6 +12,7 @@ class ofxRGBDCombinedVideoRenderer {
 
 	void setShaderPath(string shaderPath);
 	void reloadShader();
+	ofVideoPlayer& getPlayer();
 	
   protected:
 	ofVideoPlayer player;

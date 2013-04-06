@@ -9,6 +9,10 @@ ofxRGBDCombinedVideoRenderer::~ofxRGBDCombinedVideoRenderer(){
 	
 }
 
+ofVideoPlayer& ofxRGBDCombinedVideoRenderer::getPlayer(){
+	return player;
+}
+
 void ofxRGBDCombinedVideoRenderer::setup(string videoPath){
 	
 }
