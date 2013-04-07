@@ -1,5 +1,5 @@
 
-#version 110
+#version 120
 #extension GL_ARB_texture_rectangle : enable
 
 //This shader takes a combined video / depth / normal texture and projects it onto the given geometry
@@ -92,19 +92,23 @@ void main(void){
     
     //align to texture
     vec2  halfvec = vec2(.5,.5);
-    
+
+    vec2  normalPos = gl_Vertex.xy + normalRect.xy;
     vec2  depthPos = gl_Vertex.xy + depthRect.xy;
-    float depth = rgb2hsl( texture2DRect(texture, floor(depthPos) ).xyz ).r;
+
+    vec3  normal = texture2DRect(texture, floor(depthPos) + halfvec).xyz;
+    float depth = rgb2hsl( texture2DRect(texture, floor(depthPos) + halfvec).xyz ).r;
+    
     vec4  pos = vec4( xyz(depthPos.x, depthPos.y, depth) ,1.0);
 
     /*
-    float depth = texture2DRect(texture, floor(depthST) + halfvec).r * 65535.;
-    float right = texture2DRect(texture, floor(depthST + vec2(simplify.x,0.0) ) + halfvec ).r * 65535.;
-    float down  = texture2DRect(texture, floor(depthST + vec2(0.0,simplify.y) ) + halfvec ).r * 65535.;
-    float left  = texture2DRect(texture, floor(depthST + vec2(-simplify.x,0.0) ) + halfvec ).r * 65535.;
-    float up    = texture2DRect(texture, floor(depthST + vec2(0.0,-simplify.y) ) + halfvec ).r * 65535.;
-    float bl    = texture2DRect(texture, vec2(floor(depthST.x - simplify.x),floor( depthST.y + simplify.y)) + halfvec ).r * 65535.;
-    float ur    = texture2DRect(texture, vec2(floor(depthST.x  + simplify.x),floor(depthST.y - simplify.y)) + halfvec ).r * 65535.;
+    float depth = texture2DRect(texture, floor(depthPos) + halfvec).r * 65535.;
+    float right = texture2DRect(texture, floor(depthPos + vec2(simplify.x,0.0) ) + halfvec ).r * 65535.;
+    float down  = texture2DRect(texture, floor(depthPos + vec2(0.0,simplify.y) ) + halfvec ).r * 65535.;
+    float left  = texture2DRect(texture, floor(depthPos + vec2(-simplify.x,0.0) ) + halfvec ).r * 65535.;
+    float up    = texture2DRect(texture, floor(depthPos + vec2(0.0,-simplify.y) ) + halfvec ).r * 65535.;
+    float bl    = texture2DRect(texture, vec2(floor(depthPos.x - simplify.x),floor( depthPos.y + simplify.y)) + halfvec ).r * 65535.;
+    float ur    = texture2DRect(texture, vec2(floor(depthPos.x  + simplify.x),floor(depthPos.y - simplify.y)) + halfvec ).r * 65535.;
      */
     //cull invalid verts
     
@@ -135,7 +139,7 @@ void main(void){
 						) ? 1.0 : 0.0;*/
 
     
-    vec4 texCd;
+    //vec4 texCd;
     // http://opencv.willowgarage.com/documentation/camera_calibration_and_3d_reconstruction.html
     //
     vec3 projection = colorRotate * pos.xyz + colorTranslate + vec3(shift * colorRect.zw / colorScale,0);
@@ -151,13 +155,11 @@ void main(void){
         xypp.y = xyp.y * (1.0 + dK.x*r2 + dK.y*r4 + dK.z*r6) + dP.x * (r2 + 2.0*pow(xyp.y, 2.0) ) + 2.0*dP.y*xyp.x*xyp.y;
         vec2 uv = (colorFOV * xypp + colorPP) * colorScale;
         
-        texCd.xy = ((uv-textureSize/2.0) * scale) + textureSize/2.0;
+        gl_TexCoord[0].xy = ((uv-textureSize/2.0) * scale) + textureSize/2.0;
         
     }
     
-    gl_TexCoord[0] = texCd;
-
-    
+//    gl_Normal = normal;
     gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * pos;
     gl_FrontColor = gl_Color;
 }
