@@ -834,8 +834,8 @@
 				E7BC1F3615A2319400FFBD6A /* ofxRGBDScene.cpp */,
 				E7BC1F3915A2319400FFBD6A /* ofxRGBDVideoDepthSequence.h */,
 				E7BC1F3815A2319400FFBD6A /* ofxRGBDVideoDepthSequence.cpp */,
-				E759FCCF1710E15000377416 /* ofxRGBDCombinedVideoRenderer.cpp */,
 				E759FCD01710E15000377416 /* ofxRGBDCombinedVideoRenderer.h */,
+				E759FCCF1710E15000377416 /* ofxRGBDCombinedVideoRenderer.cpp */,
 			);
 			path = src;
 			sourceTree = "<group>";

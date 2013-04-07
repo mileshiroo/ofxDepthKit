@@ -6,11 +6,12 @@
 //The video files are generated using the RGBDCombinedVideoExporter
 
 //TEXTURE INFORMATION
+//
 uniform sampler2DRect texture;
-uniform int useTexture;
+uniform int  useTexture;
 uniform vec2 depthSubrectOffset;
-uniform vec2 depthDimensions; //size of the depth image in the video frame
-uniform vec2 depthRange; //min and max depth values for this video
+uniform vec2 depthDimensions;       //size of the depth image in the video frame
+uniform vec2 depthRange;            //min and max depth values for this video
 
 //GEOMETRY INFORMATION
 uniform float farClip;

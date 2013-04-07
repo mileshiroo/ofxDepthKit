@@ -50,82 +50,38 @@ void testApp::setup(){
         ysimplify = 1;
     }
     
-    //attemping to load the last scene
-    loadDefaultScene();
-}
-
-//--------------------------------------------------------------
-bool testApp::loadNewScene(){
-    ofFileDialogResult r = ofSystemLoadDialog("Select a Scene", true);
-    if(r.bSuccess){
-        return loadScene(r.getPath());
-    }
-    return false;
-}
-
-//--------------------------------------------------------------
-bool testApp::loadDefaultScene(){
-    ofxXmlSettings settings;
-    if(settings.loadFile("RGBDSimpleSceneDefaults.xml")){
-        if(!loadScene(settings.getValue("defaultScene", ""))){
-            return loadNewScene();
-        }
-        return true;
-    }
-    return loadNewScene();
-}
-
-//--------------------------------------------------------------
-bool testApp::loadScene(string takeDirectory){
-    if(player.setup(takeDirectory)){
-        ofxXmlSettings settings;
-        settings.loadFile("RGBDSimpleSceneDefaults.xml");
-        settings.setValue("defaultScene", player.getScene().mediaFolder);
-        settings.saveFile();
-        renderer.setup(player.getScene().calibrationFolder);
-        
-        //populate
-        player.getVideoPlayer()->setPosition(.5);
-        player.update();
-        
-        renderer.setXYShift(player.getXYShift());
-		renderer.setRGBTexture(*player.getVideoPlayer());
-		renderer.setDepthImage(player.getDepthPixels());
-        
-        return true;
-    }
-    return false;
+    image.loadImage("Higa/test.png");
+    player.setup("Higa");
+    player.setTexture(image);
+    
 }
 
 //--------------------------------------------------------------
 void testApp::update(){
-    if(loadNew){
-        loadNewScene();
-    }
+    
     
     //copy any GUI changes into the mesh
-    renderer.setXYShift(ofVec2f(xshift,yshift));
-    renderer.setSimplification(ofVec2f(xsimplify,ysimplify));
-    renderer.flipTexture = flipTexture;
+    player.shift = ofVec2f(xshift,yshift);
+    player.simplify = ofVec2f(xsimplify,ysimplify);
+    player.bFlipTexture = flipTexture;
 
     //update the mesh if there is a new depth frame in the player
     player.update();
-    if(player.isFrameNew()){
-        renderer.update();
-    }
+    
+    //if(player.isFrameNew()){
+    //    renderer.update();
+    //}
 }
 
 //--------------------------------------------------------------
 void testApp::draw(){
-    if(player.isLoaded()){
-        cam.begin();
-		ofSetColor(255);
-        glEnable(GL_DEPTH_TEST);
-		ofEnableBlendMode(OF_BLENDMODE_SCREEN);
-        renderer.drawWireFrame();        
-		glDisable(GL_DEPTH_TEST);
-        cam.end();
-    }
+    cam.begin();
+    ofSetColor(255);
+    glEnable(GL_DEPTH_TEST);
+    ofEnableBlendMode(OF_BLENDMODE_SCREEN);
+    player.drawWireFrame();
+    glDisable(GL_DEPTH_TEST);
+    cam.end();
 
     gui.draw();
 }
@@ -133,7 +89,7 @@ void testApp::draw(){
 //--------------------------------------------------------------
 void testApp::keyPressed(int key){
     if(key == ' '){
-        player.togglePlay();
+        //player.togglePlay();
     }
 }
 
@@ -179,8 +135,5 @@ void testApp::gotMessage(ofMessage msg){
 
 //--------------------------------------------------------------
 void testApp::dragEvent(ofDragInfo dragInfo){
-	ofDirectory dir(dragInfo.files[0]);
-	if( dir.isDirectory() && ofxRGBDScene::isFolderValid(dragInfo.files[0]) ){
-		loadScene(dragInfo.files[0]);
-	}
+	
 }

@@ -64,7 +64,7 @@ void ofxRGBDVideoExporter::render(string outputPath, string clipName){
         ofxPCL::convert( renderer->getReducedMesh(false), pc);
         
         ofxPCL::PointNormalPointCloud pc_n;
-        ofxPCL::normalEstimation(pc, pc_n, counter );
+        ofxPCL::normalEstimation(pc, pc_n );
 
         
         //  Make a new mesh with that information

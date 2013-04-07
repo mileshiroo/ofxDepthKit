@@ -17,9 +17,7 @@
 #include "ofMain.h"
 #include "ofxXmlSettings.h"
 #include "ofxGameCamera.h"
-#include "ofxRGBDPlayer.h"
-#include "ofxRGBDGPURenderer.h"
-#include "ofxRGBDCPURenderer.h"
+#include "ofxRGBDCombinedVideoRenderer.h"
 
 #include "ofxGui.h"
 
@@ -41,23 +39,16 @@ class testApp : public ofBaseApp{
     
     void exit();
     
-    ofxRGBDPlayer player;
-    //either one of these will work,
-    //you can see the performance difference
-    ofxRGBDGPURenderer renderer;
-    //ofxRGBDCPURenderer renderer;
-    ofxGameCamera cam;
+    ofImage                         image;
+    ofxRGBDCombinedVideoRenderer    player;
+    ofxGameCamera                   cam;
 
-    ofxPanel gui;
-    ofxFloatSlider xshift;
-    ofxFloatSlider yshift;
-    ofxFloatSlider xsimplify;
-    ofxFloatSlider ysimplify;
-    ofxToggle flipTexture;
-    ofxButton loadNew;
-    
-    bool loadNewScene();
-    bool loadDefaultScene();
-    bool loadScene(string takeDirectory);
-    
+    ofxPanel        gui;
+    ofxFloatSlider  xshift;
+    ofxFloatSlider  yshift;
+    ofxFloatSlider  xsimplify;
+    ofxFloatSlider  ysimplify;
+    ofxToggle       flipTexture;
+    ofxButton       loadNew;
+
 };
