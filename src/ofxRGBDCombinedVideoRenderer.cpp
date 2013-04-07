@@ -9,7 +9,6 @@ ofxRGBDCombinedVideoRenderer::ofxRGBDCombinedVideoRenderer(){
     shift.set(1.0f,1.0f);
 	scale.set(1.0f,1.0f);
     simplify.set(0.0f,0.0f);
-	textureScale.set(1.0f, 1.0f);
     
 	nearClip    = 1.0f;
 	edgeClip    = 50.0f;
@@ -34,10 +33,10 @@ bool ofxRGBDCombinedVideoRenderer::setup(string videoPath){
         colorPrincipalPoint.y = XML.getValue("colorIntrinsics/ppy", 546.945983887);
         colorFOV.x = XML.getValue("colorIntrinsics/fovx", 923.500793457);
         colorFOV.y = XML.getValue("colorIntrinsics/fovy", 921.060791016);
-        colorImageSize.x = 0.0f;
-        colorImageSize.y = 0.0f;
-        colorImageSize.width = XML.getValue("colorIntrinsics/width", 1920.000000000);
-        colorImageSize.height = XML.getValue("colorIntrinsics/width", 1080.000000000);
+        colorRect.x = 0.0f;
+        colorRect.y = 0.0f;
+        colorRect.width = XML.getValue("colorIntrinsics/width", 1920.000000000);
+        colorRect.height = XML.getValue("colorIntrinsics/height", 1080.000000000);
         
         for (int i = 0; i < 9; i++) {
             depthToRGBRotation[i] = XML.getValue("extrinsics/rotation/r"+ofToString(i), 1.0f);
@@ -60,17 +59,13 @@ bool ofxRGBDCombinedVideoRenderer::setup(string videoPath){
         depthFOV.x = XML.getValue("depthIntrinsics/fovx", 570.34);
         depthFOV.y = XML.getValue("depthIntrinsics/fovy", 570.34);
         
-        depthImageSize.x = 0.0;     //  TODO: do this atomatically
-        depthImageSize.y = 720.0;   //  
-        depthImageSize.width = XML.getValue("depthIntrinsics/width", 640.0);
-        depthImageSize.height = XML.getValue("depthIntrinsics/height", 480.0);
+        depthRect.x = 0.0;     //  TODO: do this atomatically
+        depthRect.y = 720.0;   //  
+        depthRect.width = XML.getValue("depthIntrinsics/width", 640.0);
+        depthRect.height = XML.getValue("depthIntrinsics/height", 480.0);
         
         nearClip    = XML.getValue("minDepth", 1.0f);
         farClip     = XML.getValue("maxDepth",6000.0f);
-        
-        //  TODO
-        //simplify
-        //textureScale
         
         return true;
     }
@@ -81,11 +76,6 @@ bool ofxRGBDCombinedVideoRenderer::setup(string videoPath){
 void ofxRGBDCombinedVideoRenderer::setShaderPath(string _shaderPath){
     shaderPath = _shaderPath;
 	reloadShader();
-}
-
-void ofxRGBDCombinedVideoRenderer::setTextureScaleForImage(ofBaseHasTexture& _texture){
-    textureScale.x = float(_texture.getTextureReference().getWidth()) / float(colorImageSize.width);
-    textureScale.y = float(_texture.getTextureReference().getHeight()-depthImageSize.height) / float(colorImageSize.height);
 }
 
 void ofxRGBDCombinedVideoRenderer::setSimplification(ofVec2f _simplification){
@@ -104,9 +94,9 @@ void ofxRGBDCombinedVideoRenderer::setSimplification(ofVec2f _simplification){
 	int x = 0;
 	int y = 0;
 	
-	int gw = ceil(depthImageSize.width / simplify.x);
+	int gw = ceil(depthRect.width / simplify.x);
 	int w = gw*simplify.x;
-	int h = depthImageSize.height;
+	int h = depthRect.height;
 	
 	for (float ystep = 0; ystep < h-simplify.y; ystep += simplify.y){
 		for (float xstep = 0; xstep < w-simplify.x; xstep += simplify.x){
@@ -134,8 +124,8 @@ void ofxRGBDCombinedVideoRenderer::setSimplification(ofVec2f _simplification){
 	}
 	
 	mesh.clearVertices();
-	for (float y = 0; y < depthImageSize.height; y += simplify.y){
-		for (float x = 0; x < depthImageSize.width; x += simplify.x){
+	for (float y = 0; y < depthRect.height; y += simplify.y){
+		for (float x = 0; x < depthRect.width; x += simplify.x){
 			mesh.addVertex(ofVec3f(x,y,0));
 		}
 	}
@@ -145,7 +135,9 @@ void ofxRGBDCombinedVideoRenderer::setSimplification(ofVec2f _simplification){
 
 void ofxRGBDCombinedVideoRenderer::setTexture(ofBaseHasTexture& _tex){
     tex = &_tex;
-    setTextureScaleForImage(_tex);
+    
+    colorScale.x = float(_tex.getTextureReference().getWidth()) / float(colorRect.width);
+    colorScale.y = float(_tex.getTextureReference().getHeight()-depthRect.height) / float(colorRect.height);
 }
 
 void ofxRGBDCombinedVideoRenderer::reloadShader(){
@@ -181,32 +173,41 @@ bool ofxRGBDCombinedVideoRenderer::bindRenderer(){
 
 void ofxRGBDCombinedVideoRenderer::setupProjectionUniforms(){
     
-    ofVec2f dims = ofVec2f(tex->getTextureReference().getWidth(),
-                           tex->getTextureReference().getHeight());
+    //  Texture
+    //
+    shader.setUniformTexture("texture", tex->getTextureReference(), 0);
+    shader.setUniform2f("textureSize",  tex->getTextureReference().getWidth(),
+                                        tex->getTextureReference().getHeight());
+
+    //  RGB
+    //
+    shader.setUniform4f("colorRect", colorRect.x, colorRect.y, colorRect.width, colorRect.height);
+    shader.setUniform2f("colorScale", colorScale.x, colorScale.y);
     
-    shader.setUniformTexture("colorTex", tex->getTextureReference(), 0);
-    shader.setUniform1i("useTexture", 1);
-    shader.setUniform2f("dim", dims.x, dims.y);
-    shader.setUniform2f("textureScale", textureScale.x, textureScale.y);
-    shader.setUniform2f("shift", shift.x, shift.y);
-    shader.setUniform2f("scale", scale.x, scale.y);
+    shader.setUniform2f("colorFOV", colorFOV.x, colorFOV.y );
+    shader.setUniform2f("colorPP", colorPrincipalPoint.x, colorPrincipalPoint.y);
     shader.setUniform3f("dK", distortionK.x, distortionK.y, distortionK.z);
     shader.setUniform2f("dP", distortionP.x, distortionP.y);
     
     glUniformMatrix3fv( glGetUniformLocation(shader.getProgram(), "colorRotate"), 1, GL_FALSE,depthToRGBRotation);
-    
     shader.setUniform3f("colorTranslate", depthToRGBTranslation.x,depthToRGBTranslation.y,depthToRGBTranslation.z);
-    shader.setUniform2f("colorFOV", colorFOV.x, colorFOV.y );
-    shader.setUniform2f("colorPP", colorPrincipalPoint.x, colorPrincipalPoint.y);
 
-	shader.setUniform2f("principalPoint", depthPrincipalPoint.x, depthPrincipalPoint.y);
-	shader.setUniform2f("fov", depthFOV.x, depthFOV.y);
+    
+    //  Depth
+    //
+    shader.setUniform4f("depthRect", depthRect.x, depthRect.y, depthRect.width, depthRect.height);
+	shader.setUniform2f("depthPP", depthPrincipalPoint.x, depthPrincipalPoint.y);
+	shader.setUniform2f("depthFOV", depthFOV.x, depthFOV.y);
+    
+    shader.setUniform4f("normalRect", normalRect.x, normalRect.y, normalRect.width, normalRect.height);
+    
+    shader.setUniform2f("simplify", simplify.x,simplify.y);
 	shader.setUniform1f("farClip", farClip);
+    shader.setUniform1f("nearClip", nearClip);
 	shader.setUniform1f("edgeClip", edgeClip);
-	
-	//TODO: vectorize in shader
-	shader.setUniform1f("xsimplify", simplify.x);
-	shader.setUniform1f("ysimplify", simplify.y);
+    
+    shader.setUniform2f("shift", shift.x, shift.y);
+    shader.setUniform2f("scale", scale.x, scale.y);
 }
 
 void ofxRGBDCombinedVideoRenderer::unbindRenderer(){

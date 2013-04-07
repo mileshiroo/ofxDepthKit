@@ -38,7 +38,6 @@ void testApp::setup(){
     gui.add(yshift.setup("yshift", ofxParameter<float>(), -.15, .15));
     gui.add(xsimplify.setup("xsimplify", ofxParameter<float>(), 1, 8));
     gui.add(ysimplify.setup("ysimplify", ofxParameter<float>(), 1, 8));
-    gui.add(loadNew.setup("load new"));
     gui.add(flipTexture.setup("flip texture", ofxParameter<bool>()));
         
     gui.loadFromFile("defaultSettings.xml");
@@ -75,11 +74,12 @@ void testApp::update(){
 
 //--------------------------------------------------------------
 void testApp::draw(){
+    
     cam.begin();
     ofSetColor(255);
     glEnable(GL_DEPTH_TEST);
     ofEnableBlendMode(OF_BLENDMODE_SCREEN);
-    player.drawWireFrame();
+    player.drawMesh();
     glDisable(GL_DEPTH_TEST);
     cam.end();
 

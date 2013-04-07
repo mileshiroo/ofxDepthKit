@@ -34,9 +34,12 @@ public:
     ofVec3f worldPosition;
 	ofVec3f worldRotation;
     
-    ofVec2f simplify;
     ofVec2f shift;
 	ofVec2f scale;
+    
+    //  Geometry
+    //
+    ofVec2f simplify;
     
     float edgeClip;
 	float farClip;
@@ -57,24 +60,27 @@ protected:
     
     ofMesh mesh;
     
-    //broken out intrinsics/extrinics for easy access
+    //  RGB
     //
-	ofVec2f     depthPrincipalPoint;
-	ofVec2f     depthFOV;
-	ofRectangle depthImageSize;
-	
+	ofRectangle colorRect;
+    ofVec2f     colorScale;
 	ofVec2f     colorPrincipalPoint;
 	ofVec2f     colorFOV;
-	ofRectangle colorImageSize;
     
-    ofVec2f     textureScale;
-	
-	//broken out extrinsics
-	//
     float       depthToRGBRotation[9];
 	ofVec3f     depthToRGBTranslation;
 	ofVec3f     distortionK;
 	ofVec2f     distortionP;
+    
+    //  Depth
+    //
+    ofRectangle depthRect;
+    ofVec2f     depthPrincipalPoint;
+	ofVec2f     depthFOV;
+
+    //  Normals
+    //
+    ofRectangle normalRect;
     
     bool bRendererBound;
     bool bMeshGenerated;
