@@ -38,6 +38,9 @@ public:
 	//compensates for textures scaled from the original calibration
 	void setTextureScaleForImage(ofBaseHasTexture& texture);
 	
+	//fun way of visualizing the calibration
+	void drawProjectionDebug(bool showDepth, bool showRGB, float rgbTexturePosition);
+
 	virtual void update() = 0;
 	void drawMesh();
 	void drawPointCloud();
@@ -62,10 +65,7 @@ public:
 
 	ofVec3f worldPosition;
 	ofVec3f worldRotation;
-	
-	//fun way of visualizing the calibration
-	void drawProjectionDebug(bool showDepth, bool showRGB, float rgbTexturePosition);
-	
+		
 	//sets a level of simplification,
 	//should be either 1 for none
 	//2 for half, or 4 for quarter;

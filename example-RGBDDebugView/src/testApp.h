@@ -20,7 +20,7 @@
 #include "ofxTLVideoTrack.h"
 #include "ofxGameCamera.h"
 #include "ofxRGBDPlayer.h"
-#include "ofxRGBDRenderer.h"
+#include "ofxRGBDGPURenderer.h"
 #include "ofxTLDepthImageSequence.h"
 #include "ofxGui.h"
 
@@ -41,7 +41,7 @@ class testApp : public ofBaseApp{
     void gotMessage(ofMessage msg);
     
     ofxRGBDPlayer player;
-    ofxRGBDRenderer renderer;
+    ofxRGBDGPURenderer renderer;
     
     ofxGameCamera cam;
     ofxTimeline timeline;

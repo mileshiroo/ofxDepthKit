@@ -267,45 +267,6 @@ void ofxRGBDRenderer::setXYScale(ofVec2f newScale){
 	scale = newScale;	
 }
 
-//-----------------------------------------------
-void ofxRGBDRenderer::drawProjectionDebug(bool showDepth, bool showRGB, float rgbTexturePosition){
-	ofPushStyle();
-	
-	glEnable(GL_DEPTH_TEST);
-	if(showRGB){
-		ofPushMatrix();
-		ofSetColor(255);
-		rgbMatrix = (depthToRGBView * rgbProjection);
-		ofScale(1,-1,1);
-		glMultMatrixf(rgbMatrix.getInverse().getPtr());
-		
-		ofNoFill();
-		ofSetColor(255,200,10);
-		ofBox(1.99f);
-		
-		//draw texture
-		if(rgbTexturePosition > 0){
-			ofSetColor(255);
-			ofTranslate(0, 0, 1.0 - powf(1-rgbTexturePosition, 2.0));
-			currentRGBImage->getTextureReference().draw(1, 1, -2, -2);
-		}
-		ofPopMatrix();
-	}
-	
-	if(showDepth){
-		ofPushMatrix();
-		ofScale(-1,1,-1);
-		ofNoFill();
-		ofSetColor(10,200,255);
-		glMultMatrixf(depthProjection.getInverse().getPtr());
-		ofBox(1.99f);
-		ofPopMatrix();
-	}
-	
-	glDisable(GL_DEPTH_TEST);
-	ofPopStyle();
-}
-
 ofMesh& ofxRGBDRenderer::getMesh(){
 	return mesh;
 }
@@ -324,4 +285,41 @@ ofMatrix4x4& ofxRGBDRenderer::getRGBMatrix(){
 
 ofMatrix4x4& ofxRGBDRenderer::getDepthToRGBTransform(){
 	return depthToRGBView;
+}
+
+void ofxRGBDRenderer::drawProjectionDebug(bool showDepth, bool showRGB, float rgbTexturePosition){
+	ofPushStyle();
+	glEnable(GL_DEPTH_TEST);
+	if(showRGB){
+		ofPushMatrix();
+		ofSetColor(255);
+		rgbMatrix = (depthToRGBView * rgbProjection);
+		ofScale(1,-1,-1);
+		glMultMatrixf(rgbMatrix.getInverse().getPtr());
+		
+		ofNoFill();
+		ofSetColor(255,200,10);
+		ofBox(1.99f);
+		
+		//draw texture
+		if(rgbTexturePosition > 0){
+			ofSetColor(255);
+			ofTranslate(0, 0, 1.0 - powf(1-rgbTexturePosition, 2.0));
+			currentRGBImage->getTextureReference().draw(1, -1, -2, 2);
+		}
+		ofPopMatrix();
+	}
+	
+	if(showDepth){
+		ofPushMatrix();
+		ofScale(1,1,-1);
+		ofNoFill();
+		ofSetColor(10,200,255);
+		glMultMatrixf(depthProjection.getInverse().getPtr());
+		ofBox(1.99f);
+		ofPopMatrix();
+	}
+	
+	glDisable(GL_DEPTH_TEST);
+	ofPopStyle();
 }
