@@ -13,6 +13,8 @@ void testApp::setup(){
 	renderer.setDepthImage(kinect.getRawDepthPixelsRef());
 
 	renderer.setDepthOnly();
+	
+	renderer.setSimplification(ofVec2f(10,10));
 }
 
 //--------------------------------------------------------------
@@ -20,14 +22,17 @@ void testApp::update(){
 	kinect.update();
 	
 	if(kinect.isFrameNew()) {
-		renderer.setDepthImage(kinect.getRawDepthPixelsRef());
 
+		renderer.edgeClip = mouseX*5;
+		renderer.farClip = mouseY*2;
+		
 		renderer.update();
 	}
 }
 
 //--------------------------------------------------------------
 void testApp::draw(){
+	
 	easyCam.begin();
 	
 	ofPushMatrix();
@@ -36,6 +41,7 @@ void testApp::draw(){
 	ofPopMatrix();
 	
 	easyCam.end();
+	
 	kinect.drawDepth(0, 0, 320,240);
 }
 

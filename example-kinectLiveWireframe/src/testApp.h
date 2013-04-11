@@ -22,10 +22,6 @@ class testApp : public ofBaseApp{
 	void gotMessage(ofMessage msg);
 
 	ofxKinect kinect;
-	
 	ofxRGBDCPURenderer renderer;
-	
-	bool calibrationSetup;
-	
 	ofEasyCam easyCam;
 };

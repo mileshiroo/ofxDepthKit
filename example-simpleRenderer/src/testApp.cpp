@@ -122,7 +122,28 @@ void testApp::draw(){
 		ofSetColor(255);
         glEnable(GL_DEPTH_TEST);
 		ofEnableBlendMode(OF_BLENDMODE_SCREEN);
-        renderer.drawWireFrame();        
+		
+		renderer.bindRenderer();
+		
+		glPointSize(5);
+		ofMesh m;
+//		for(int i = 0; i < 2000; i++){
+//			m.addVertex(ofVec3f(ofRandom(640), ofRandom(480), 0) );
+//		}
+		for(int y = 0; y < 480; y += 10){
+			for(int x = 0; x < 640; x += 10){
+				m.addVertex(ofVec3f(x-10,y + (ofGetFrameNum() % 10),0));
+				m.addVertex(ofVec3f(x,y + (ofGetFrameNum() % 10),0));
+			}
+		}
+		
+		m.setMode(OF_PRIMITIVE_LINES);
+		
+		m.draw();
+		
+		renderer.unbindRenderer();
+		
+        //renderer.drawWireFrame();
 		glDisable(GL_DEPTH_TEST);
         cam.end();
     }
