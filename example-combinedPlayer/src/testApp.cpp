@@ -53,19 +53,20 @@ void testApp::setup(){
     player.setup("Higa");
     player.setTexture(image);
     
+    
 }
 
 //--------------------------------------------------------------
 void testApp::update(){
     
-    
     //copy any GUI changes into the mesh
     player.shift = ofVec2f(xshift,yshift);
     player.simplify = ofVec2f(xsimplify,ysimplify);
     player.bFlipTexture = flipTexture;
-
+    
     //update the mesh if there is a new depth frame in the player
     player.update();
+    
     
     //if(player.isFrameNew()){
     //    renderer.update();
@@ -78,7 +79,7 @@ void testApp::draw(){
     cam.begin();
     ofSetColor(255);
     glEnable(GL_DEPTH_TEST);
-    ofEnableBlendMode(OF_BLENDMODE_SCREEN);
+//    ofEnableBlendMode(OF_BLENDMODE_SCREEN);
     player.drawMesh();
     glDisable(GL_DEPTH_TEST);
     cam.end();
@@ -90,6 +91,9 @@ void testApp::draw(){
 void testApp::keyPressed(int key){
     if(key == ' '){
         //player.togglePlay();
+    }
+    if(key == 'r'){
+        player.reloadShader();
     }
 }
 

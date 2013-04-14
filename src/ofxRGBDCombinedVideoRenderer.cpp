@@ -6,7 +6,7 @@ ofxRGBDCombinedVideoRenderer::ofxRGBDCombinedVideoRenderer(){
     
     setShaderPath("shaders/rgbdcombined");
     
-    shift.set(1.0f,1.0f);
+    shift.set(0.0f,0.0f);
 	scale.set(1.0f,1.0f);
     simplify.set(0.0f,0.0f);
     
@@ -29,40 +29,45 @@ bool ofxRGBDCombinedVideoRenderer::setup(string videoPath){
     
     if ( XML.loadFile(videoPath +"/_calibration.xml" ) ){
 
-        colorPrincipalPoint.x = XML.getValue("colorIntrinsics/ppx", 971.743835449);
-        colorPrincipalPoint.y = XML.getValue("colorIntrinsics/ppy", 546.945983887);
-        colorFOV.x = XML.getValue("colorIntrinsics/fovx", 923.500793457);
-        colorFOV.y = XML.getValue("colorIntrinsics/fovy", 921.060791016);
+        colorPrincipalPoint.x = XML.getValue("colorIntrinsics:ppx", 971.743835449);
+        colorPrincipalPoint.y = XML.getValue("colorIntrinsics:ppy", 546.945983887);
+        colorFOV.x = XML.getValue("colorIntrinsics:fovx", 923.500793457);
+        colorFOV.y = XML.getValue("colorIntrinsics:fovy", 921.060791016);
         colorRect.x = 0.0f;
         colorRect.y = 0.0f;
-        colorRect.width = XML.getValue("colorIntrinsics/width", 1920.000000000);
-        colorRect.height = XML.getValue("colorIntrinsics/height", 1080.000000000);
+        colorRect.width = XML.getValue("colorIntrinsics:width", 1920.000000000);
+        colorRect.height = XML.getValue("colorIntrinsics:height", 1080.000000000);
         
         for (int i = 0; i < 9; i++) {
-            depthToRGBRotation[i] = XML.getValue("extrinsics/rotation/r"+ofToString(i), 1.0f);
+            depthToRGBRotation[i] = XML.getValue("extrinsics:rotation:r"+ofToString(i), 1.0f);
         }
         
         for (int i = 0; i < 3; i++) {
-            depthToRGBTranslation[i] = XML.getValue("extrinsics/translation/t"+ofToString(i), 1.0f);
+            depthToRGBTranslation[i] = XML.getValue("extrinsics:translation:t"+ofToString(i), 1.0f);
         }
         
         for (int i = 0; i < 3; i++) {
-            distortionK[i] = XML.getValue("colorIntrinsics/dK/k"+ofToString(i), 1.0f);
+            distortionK[i] = XML.getValue("colorIntrinsics:dK:k"+ofToString(i), 1.0f);
         }
         
         for (int i = 0; i < 2; i++) {
-            distortionP[i] = XML.getValue("colorIntrinsics/dP/p"+ofToString(i), 1.0f);
+            distortionP[i] = XML.getValue("colorIntrinsics:dP:p"+ofToString(i), 1.0f);
         }
         
-        depthPrincipalPoint.x = XML.getValue("depthIntrinsics/ppx", 320.0);
-        depthPrincipalPoint.y = XML.getValue("depthIntrinsics/ppy", 240.0);
-        depthFOV.x = XML.getValue("depthIntrinsics/fovx", 570.34);
-        depthFOV.y = XML.getValue("depthIntrinsics/fovy", 570.34);
+        depthPrincipalPoint.x = XML.getValue("depthIntrinsics:ppx", 320.0);
+        depthPrincipalPoint.y = XML.getValue("depthIntrinsics:ppy", 240.0);
+        depthFOV.x = XML.getValue("depthIntrinsics:fovx", 570.34);
+        depthFOV.y = XML.getValue("depthIntrinsics:fovy", 570.34);
         
-        depthRect.x = 0.0;     //  TODO: do this atomatically
-        depthRect.y = 720.0;   //  
-        depthRect.width = XML.getValue("depthIntrinsics/width", 640.0);
-        depthRect.height = XML.getValue("depthIntrinsics/height", 480.0);
+        depthRect.x = 0.0;      //  TODO: do this atomatically
+        depthRect.y = 720.0;    //  
+        depthRect.width = XML.getValue("depthIntrinsics:width", 640.0);
+        depthRect.height = XML.getValue("depthIntrinsics:height", 480.0);
+        
+        normalRect.x = 640.0;       //  TODO: do this atomatically
+        normalRect.y = 720.0;       //
+        normalRect.width = 640.0;
+        normalRect.height = 480.0;
         
         nearClip    = XML.getValue("minDepth", 1.0f);
         farClip     = XML.getValue("maxDepth",6000.0f);
@@ -123,10 +128,16 @@ void ofxRGBDCombinedVideoRenderer::setSimplification(ofVec2f _simplification){
 		x = 0;
 	}
 	
-	mesh.clearVertices();
+    mesh.clearColors();
+    mesh.clearNormals();
+    mesh.clearVertices();
+    mesh.clearTexCoords();
 	for (float y = 0; y < depthRect.height; y += simplify.y){
 		for (float x = 0; x < depthRect.width; x += simplify.x){
-			mesh.addVertex(ofVec3f(x,y,0));
+            mesh.addColor(ofFloatColor(1.0,1.0,1.0,1.0));
+//            mesh.addNormal( ofVec3f(1.0,1.0,1.0) );
+            mesh.addVertex( ofVec3f(x, y,0));
+            mesh.addTexCoord(ofVec2f(x,y));
 		}
 	}
     
@@ -136,8 +147,13 @@ void ofxRGBDCombinedVideoRenderer::setSimplification(ofVec2f _simplification){
 void ofxRGBDCombinedVideoRenderer::setTexture(ofBaseHasTexture& _tex){
     tex = &_tex;
     
-    colorScale.x = float(_tex.getTextureReference().getWidth()) / float(colorRect.width);
-    colorScale.y = float(_tex.getTextureReference().getHeight()-depthRect.height) / float(colorRect.height);
+    //colorScale.x = float(_tex.getTextureReference().getWidth()) / float(colorRect.width);
+    //colorScale.y = float(_tex.getTextureReference().getHeight()-depthRect.height) / float(colorRect.height);
+    colorScale.x = 1280.0 / 1920.0;
+    colorScale.y = 720.0 / 1080.0;
+    
+    //cout << "ColorScale: " << colorScale << endl;
+    //cout << "ColorRect: " << colorRect.width << "x"<< colorRect.height << endl;
 }
 
 void ofxRGBDCombinedVideoRenderer::reloadShader(){
@@ -171,6 +187,18 @@ bool ofxRGBDCombinedVideoRenderer::bindRenderer(){
 	return true;
 }
 
+void ofxRGBDCombinedVideoRenderer::unbindRenderer(){
+    if(!bRendererBound){
+		ofLogError("ofxRGBDGPURenderer::unbindRenderer -- called without renderer bound");
+	 	return;
+	}
+	
+	shader.end();
+	bRendererBound = false;
+    
+	ofPopMatrix();
+}
+
 void ofxRGBDCombinedVideoRenderer::setupProjectionUniforms(){
     
     //  Texture
@@ -179,8 +207,6 @@ void ofxRGBDCombinedVideoRenderer::setupProjectionUniforms(){
     shader.setUniform2f("textureSize",  tex->getTextureReference().getWidth(),
                                         tex->getTextureReference().getHeight());
 
-    //  RGB
-    //
     shader.setUniform4f("colorRect", colorRect.x, colorRect.y, colorRect.width, colorRect.height);
     shader.setUniform2f("colorScale", colorScale.x, colorScale.y);
     
@@ -193,8 +219,6 @@ void ofxRGBDCombinedVideoRenderer::setupProjectionUniforms(){
     shader.setUniform3f("colorTranslate", depthToRGBTranslation.x,depthToRGBTranslation.y,depthToRGBTranslation.z);
 
     
-    //  Depth
-    //
     shader.setUniform4f("depthRect", depthRect.x, depthRect.y, depthRect.width, depthRect.height);
 	shader.setUniform2f("depthPP", depthPrincipalPoint.x, depthPrincipalPoint.y);
 	shader.setUniform2f("depthFOV", depthFOV.x, depthFOV.y);
@@ -206,21 +230,16 @@ void ofxRGBDCombinedVideoRenderer::setupProjectionUniforms(){
     shader.setUniform1f("nearClip", nearClip);
 	shader.setUniform1f("edgeClip", edgeClip);
     
+//    cout << ( farClip - nearClip ) + nearClip << endl;
+//    cout << "FarClip: " << farClip << endl;
+//    cout << "nearClip: " << nearClip << endl;
+//    cout << "edgeClip: " << edgeClip << endl;
+    
     shader.setUniform2f("shift", shift.x, shift.y);
     shader.setUniform2f("scale", scale.x, scale.y);
 }
 
-void ofxRGBDCombinedVideoRenderer::unbindRenderer(){
-    if(!bRendererBound){
-		ofLogError("ofxRGBDGPURenderer::unbindRenderer -- called without renderer bound");
-	 	return;
-	}
-	
-	shader.end();
-	bRendererBound = false;
-    
-	ofPopMatrix();
-}
+
 
 
 //--------------------------------------------------------------- ACTIONS

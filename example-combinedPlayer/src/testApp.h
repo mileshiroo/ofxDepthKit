@@ -42,6 +42,7 @@ class testApp : public ofBaseApp{
     ofImage                         image;
     ofxRGBDCombinedVideoRenderer    player;
     ofxGameCamera                   cam;
+//    ofEasyCam                       cam;
 
     ofxPanel        gui;
     ofxFloatSlider  xshift;

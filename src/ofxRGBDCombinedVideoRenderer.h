@@ -31,6 +31,8 @@ public:
 	void drawWireFrame();
 	void draw(ofPolyRenderMode drawMode);
     
+    void reloadShader();
+    
     ofVec3f worldPosition;
 	ofVec3f worldRotation;
     
@@ -49,7 +51,7 @@ public:
     bool bMirror;
     
 protected:
-    void reloadShader();
+
     void setupProjectionUniforms();
     void setSimplification(ofVec2f _simplification);
     void setTextureScaleForImage(ofBaseHasTexture& _texture);

@@ -23,13 +23,12 @@ uniform mat3 colorRotate;
 uniform vec3 colorTranslate;
 
 //DEPTH 
-uniform vec2 depthRect;
-
+uniform vec4 depthRect;
 uniform vec2 depthPP;
 uniform vec2 depthFOV;
 
 //NORMAL
-uniform vec2 normalRect;
+uniform vec4 normalRect;
 
 //GEOMETRY
 uniform vec2  simplify;
@@ -42,6 +41,7 @@ uniform vec2 shift;
 uniform vec2 scale;
 
 varying float VZPositionValid0;
+varying vec3 normal;
 
 const float epsilon = 1e-6;
 
@@ -83,38 +83,36 @@ vec3 rgb2hsl( vec3 _input ){
 	return vec3( h, s, l );
 }
 
-vec3 xyz( float _x, float _y, float _depth ) {
-    float z = _depth * ( farClip - nearClip ) + nearClip;
-    return vec3((_x - depthPP.x) * z / depthFOV.x, (_y - depthPP.y) * z / depthFOV.y, z);
+float depthValueFromSample( vec2 depthPos){
+    vec2  halfvec = vec2(.5,.5);
+    float depth = rgb2hsl( texture2DRect(texture, floor(depthPos) + halfvec ).xyz ).r;
+    return depth * ( farClip - nearClip ) + nearClip;
 }
 
 void main(void){
-    
-    //align to texture
-    vec2  halfvec = vec2(.5,.5);
-
-    vec2  normalPos = gl_Vertex.xy + normalRect.xy;
     vec2  depthPos = gl_Vertex.xy + depthRect.xy;
-
-    vec3  normal = texture2DRect(texture, floor(depthPos) + halfvec).xyz;
-    float depth = rgb2hsl( texture2DRect(texture, floor(depthPos) + halfvec).xyz ).r;
+    float depth = depthValueFromSample( depthPos );
     
-    vec4  pos = vec4( xyz(depthPos.x, depthPos.y, depth) ,1.0);
-
-    /*
-    float depth = texture2DRect(texture, floor(depthPos) + halfvec).r * 65535.;
-    float right = texture2DRect(texture, floor(depthPos + vec2(simplify.x,0.0) ) + halfvec ).r * 65535.;
-    float down  = texture2DRect(texture, floor(depthPos + vec2(0.0,simplify.y) ) + halfvec ).r * 65535.;
-    float left  = texture2DRect(texture, floor(depthPos + vec2(-simplify.x,0.0) ) + halfvec ).r * 65535.;
-    float up    = texture2DRect(texture, floor(depthPos + vec2(0.0,-simplify.y) ) + halfvec ).r * 65535.;
-    float bl    = texture2DRect(texture, vec2(floor(depthPos.x - simplify.x),floor( depthPos.y + simplify.y)) + halfvec ).r * 65535.;
-    float ur    = texture2DRect(texture, vec2(floor(depthPos.x  + simplify.x),floor(depthPos.y - simplify.y)) + halfvec ).r * 65535.;
-     */
-    //cull invalid verts
+    vec4 pos = vec4((gl_Vertex.x - depthPP.x) * depth / depthFOV.x,
+                    (gl_Vertex.y - depthPP.y) * depth / depthFOV.y,
+                    depth,
+                    1.0);
     
-    VZPositionValid0 = 1.0;
-    /*
-                        (depth < farClip &&
+    vec2  normalPos = gl_Vertex.xy + normalRect.xy;
+    normal = texture2DRect(texture, floor(normalPos) + vec2(.5,.5)).xyz * 2.0 - 1.0;
+    
+    //gl_Normal = normal;
+    gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * pos;
+    gl_FrontColor = gl_Color;
+    
+    float right = depthValueFromSample( depthPos + vec2(simplify.x,0.0) );
+    float down  = depthValueFromSample( depthPos + vec2(0.0,simplify.y) );
+    float left  = depthValueFromSample( depthPos + vec2(-simplify.x,0.0) );
+    float up    = depthValueFromSample( depthPos + vec2(0.0,-simplify.y) );
+    float bl    = depthValueFromSample( vec2(floor(depthPos.x - simplify.x),floor( depthPos.y + simplify.y)) );
+    float ur    = depthValueFromSample( vec2(floor(depthPos.x  + simplify.x),floor(depthPos.y - simplify.y)) );
+    
+   VZPositionValid0 =  (depth < farClip &&
                         right < farClip &&
                         down < farClip &&
                         left < farClip &&
@@ -136,16 +134,14 @@ void main(void){
                         abs(left - depth) < edgeClip &&
                         abs(ur - depth) < edgeClip &&
                         abs(bl - depth) < edgeClip
-						) ? 1.0 : 0.0;*/
-
+						) ? 1.0 : 0.0;
     
-    //vec4 texCd;
+
     // http://opencv.willowgarage.com/documentation/camera_calibration_and_3d_reconstruction.html
     //
     vec3 projection = colorRotate * pos.xyz + colorTranslate + vec3(shift * colorRect.zw / colorScale,0);
 
     if(projection.z != 0.0) {
-        
         vec2 xyp = projection.xy / projection.z;
         float r2 = pow(xyp.x, 2.0) + pow(xyp.y, 2.0);
         float r4 = r2*r2;
@@ -154,12 +150,7 @@ void main(void){
         xypp.x = xyp.x * (1.0 + dK.x*r2 + dK.y*r4 + dK.z*r6) + 2.0*dP.x * xyp.x * xyp.y + dP.y*(r2 + 2.0 * pow(xyp.x,2.0) );
         xypp.y = xyp.y * (1.0 + dK.x*r2 + dK.y*r4 + dK.z*r6) + dP.x * (r2 + 2.0*pow(xyp.y, 2.0) ) + 2.0*dP.y*xyp.x*xyp.y;
         vec2 uv = (colorFOV * xypp + colorPP) * colorScale;
-        
+
         gl_TexCoord[0].xy = ((uv-textureSize/2.0) * scale) + textureSize/2.0;
-        
-    }
-    
-//    gl_Normal = normal;
-    gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * pos;
-    gl_FrontColor = gl_Color;
+	}
 }
