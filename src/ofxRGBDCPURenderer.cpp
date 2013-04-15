@@ -257,7 +257,7 @@ void ofxRGBDCPURenderer::generateTextureCoordinates(vector<ofVec3f>& points, vec
 	texCoords.clear();
 	Mat pcMat = Mat(toCv(points));
 	vector<cv::Point2f> imagePoints;
-
+	imagePoints.resize(points.size());
 	projectPoints(pcMat,
 				  rotationDepthToRGB, translationDepthToRGB,
 				  rgbCalibration.getDistortedIntrinsics().getCameraMatrix(),
@@ -283,6 +283,8 @@ void ofxRGBDCPURenderer::generateTextureCoordinates(vector<ofVec3f>& points, vec
 		texCd += shift;
 		texCd = ( (texCd - .5)*scale) + .5;
 		texCd *= dims * textureScale;
+		texCd.x = ofClamp(texCd.x, 0, currentRGBImage->getTextureReference().getWidth()-1);
+		texCd.y = ofClamp(texCd.y, 0, currentRGBImage->getTextureReference().getHeight()-1);
 		texCoords.push_back(texCd);
 	}
 }
