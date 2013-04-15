@@ -1166,12 +1166,12 @@ void ofxRGBDCaptureGui::keyReleased(ofKeyEventArgs& args){
 			timeline.togglePlay();
 		}
 	}
-	if(args.key == OF_KEY_UP){
-		renderer = &gpuRenderer;
-	}
-	else if(args.key == OF_KEY_DOWN){
-		renderer = &cpuRenderer;
-	}
+//	if(args.key == OF_KEY_UP){
+//		renderer = &gpuRenderer;
+//	}
+//	else if(args.key == OF_KEY_DOWN){
+//		renderer = &cpuRenderer;
+//	}
 }
 
 void ofxRGBDCaptureGui::previewNextAlignmentPair(){
@@ -1469,15 +1469,14 @@ void ofxRGBDCaptureGui::dragEvent(ofDragInfo& dragInfo){
 	if(currentTab == TabExtrinsics){
 		if(extension == "png" || extension == "jpg" || extension == "jpeg"){ //TODO: make accept all valid files
 			for(int i = 0; i < alignmentPairs.size()-1; i++){
-//				if(alignmentPairs[i]->depthImageRect.inside(dragInfo.position)){
-//					recorder.getCompressor().readCompressedPng(filename, alignmentPairs[i]->depthPixelsRaw);
-//					alignmentPairs[i]->depthImage = recorder.getCompressor().convertTo8BitImage(alignmentPairs[i]->depthPixelsRaw);
-//				}
-//				if(alignmentPairs[i]->depthCheckersRect.inside(dragInfo.position)){
-//					alignmentPairs[i]->depthCheckers.loadImage(filename);
-//					alignmentPairs[i]->depthCheckers.setImageType(OF_IMAGE_GRAYSCALE);
-//				}
-			
+				if(alignmentPairs[i]->depthImageRect.inside(dragInfo.position)){
+					recorder.getCompressor().readCompressedPng(filename, alignmentPairs[i]->depthPixelsRaw);
+					alignmentPairs[i]->depthImage = recorder.getCompressor().convertTo8BitImage(alignmentPairs[i]->depthPixelsRaw);
+				}
+				if(alignmentPairs[i]->depthCheckersRect.inside(dragInfo.position)){
+					alignmentPairs[i]->depthCheckers.loadImage(filename);
+					alignmentPairs[i]->depthCheckers.setImageType(OF_IMAGE_GRAYSCALE);
+				}
 				if(alignmentPairs[i]->colorCheckersRect.inside(dragInfo.position)){
 					alignmentPairs[i]->colorCheckers.loadImage(filename);
 				}
@@ -1493,7 +1492,7 @@ void ofxRGBDCaptureGui::dragEvent(ofDragInfo& dragInfo){
 //			}
 		}
 		
-		//if(extension == "mov" || extension == "mp4"){
+
 		if(ofContains(ofxRGBDScene::getValidVideoExtensions(), extension)){
 			for(int i = 0; i < alignmentPairs.size(); i++){
 				if(alignmentPairs[i]->colorCheckersRect.inside(dragInfo.position)){
@@ -1503,6 +1502,7 @@ void ofxRGBDCaptureGui::dragEvent(ofDragInfo& dragInfo){
 					p.setPosition(.5);
 					alignmentPairs[i]->colorCheckers.setFromPixels(p.getPixelsRef());
 					alignmentPairs[i]->colorCheckers.setImageType(OF_IMAGE_GRAYSCALE);
+					hasIncludedBoards = true;					
 				}
 			}
 		}
@@ -1526,6 +1526,12 @@ void ofxRGBDCaptureGui::refineDepthCalibration(){
 			}
 		}
 	}
+	
+	if(depthObjectCollection.size() == 0){
+		ofSystemAlertDialog("No depth points to self calibrate against. Make sure the sensor is connected and looking out into the world.");
+		return;
+	}
+	   
 	cout << "depth object points for refinment " << depthObjectCollection.size() << endl;
 	
 	vector< vector<Point3f> > depthObjectPoints;
