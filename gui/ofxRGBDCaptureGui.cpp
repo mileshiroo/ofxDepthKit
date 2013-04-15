@@ -203,8 +203,8 @@ void ofxRGBDCaptureGui::setup(){
 	ofAddListener(checkerboardDimensions.textChanged, this, &ofxRGBDCaptureGui::squareSizeChanged);
 	
 	ofxXmlSettings defaults;
-	if(defaults.loadFile("defaults.xml")){
-		loadDirectory(defaults.getValue("currentDir", ""));
+	if(defaults.loadFile("defaultBin.xml")){
+		loadDirectory(defaults.getValue("bin", ""));
 	}
 	else{
 		loadDirectory("depthframes");
@@ -261,13 +261,13 @@ void ofxRGBDCaptureGui::setupRenderer(){
 	
 	cpuRenderer.setup(matrixDirectory);
 	gpuRenderer.setup(matrixDirectory);
-	cpuRenderer.flipTexture = true;
-	gpuRenderer.flipTexture = true;
 	
+//	gpuRenderer.scale = ofVec2f(2.0, 2.0);
 	gpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
 	gpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
 	gpuRenderer.update();
-
+	
+//	cpuRenderer.scale = ofVec2f(2.0, 2.0);
 	cpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
 	cpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
 	cpuRenderer.update();
@@ -1166,12 +1166,12 @@ void ofxRGBDCaptureGui::keyReleased(ofKeyEventArgs& args){
 			timeline.togglePlay();
 		}
 	}
-//	if(args.key == OF_KEY_UP){
-//		renderer = &gpuRenderer;
-//	}
-//	else if(args.key == OF_KEY_DOWN){
-//		renderer = &cpuRenderer;
-//	}
+	if(args.key == OF_KEY_UP){
+		renderer = &gpuRenderer;
+	}
+	else if(args.key == OF_KEY_DOWN){
+		renderer = &cpuRenderer;
+	}
 }
 
 void ofxRGBDCaptureGui::previewNextAlignmentPair(){
@@ -1180,12 +1180,13 @@ void ofxRGBDCaptureGui::previewNextAlignmentPair(){
 		return;
 	}
 	currentRendererPreviewIndex = (currentRendererPreviewIndex + 1) % (alignmentPairs.size()-1);
+	
 	cpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
 	gpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
 	
 	cpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
 	gpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
-	
+
 	cpuRenderer.update();
 	gpuRenderer.update();
 
@@ -1202,11 +1203,12 @@ void ofxRGBDCaptureGui::previewPreviousAlignmentPair(){
 	}
 	gpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
 	gpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
-	gpuRenderer.update();
 
 	cpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
 	cpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
-	cpuRenderer.update();
+
+	cpuRenderer.update();	
+	gpuRenderer.update();
 
 }
 
@@ -1355,9 +1357,9 @@ void ofxRGBDCaptureGui::loadDirectory(string path){
 	btnSetDirectory->setLabel("Working Dir: " + path );
 	updateSceneButtons();
 	ofxXmlSettings defaults;
-	defaults.loadFile("defaults.xml");
-	defaults.setValue("currentDir", path);
-	defaults.saveFile("defaults.xml");
+	defaults.loadFile("defaultBin.xml");
+	defaults.setValue("bin", path);
+	defaults.saveFile("defaultBin.xml");
 }
 
 void ofxRGBDCaptureGui::clearCorrespondenceImages(){

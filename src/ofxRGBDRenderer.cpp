@@ -18,7 +18,7 @@ using namespace ofxCv;
 using namespace cv;
 
 ofxRGBDRenderer::ofxRGBDRenderer(){
-	
+
 	shift.x = 0;
 	shift.y = 0;
 	scale.x = 1.0;
@@ -44,6 +44,9 @@ ofxRGBDRenderer::ofxRGBDRenderer(){
 	currentDepthImage = NULL;
 	useTexture = true;
 	meshGenerated = false;
+	
+	worldPosition = ofVec3f(0,0,0);
+	worldRotation = ofVec3f(0,0,0);
 }
 
 ofxRGBDRenderer::~ofxRGBDRenderer(){
