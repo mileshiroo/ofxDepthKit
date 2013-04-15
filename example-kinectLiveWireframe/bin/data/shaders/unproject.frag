@@ -21,7 +21,7 @@ void main()
         gl_FragColor = col * gl_Color;
     }
     else{
-        gl_FragColor = gl_Color;
+        gl_FragColor = vec4(1.0);
     }
 	
 	//enable visualize clipping values

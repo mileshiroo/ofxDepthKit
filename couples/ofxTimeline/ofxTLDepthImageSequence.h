@@ -33,10 +33,10 @@ class ofxTLDepthImageSequence : public ofxTLImageTrack, public ofThread {
 
 	bool loadSequence();
 	bool loadSequence(string sequenceDirectory);
-    
-    void setSequence(ofPtr<ofxDepthImageSequence> newSequence);
-    void setSequence(ofxDepthImageSequence& newSequence);
-    ofPtr<ofxDepthImageSequence> getDepthImageSequence();
+	
+	void setSequence(ofPtr<ofxDepthImageSequence> newSequence);
+	void setSequence(ofxDepthImageSequence& newSequence);
+	ofPtr<ofxDepthImageSequence> getDepthImageSequence();
 	ofImage& getCurrentDepthImage();
 	
 
@@ -75,28 +75,28 @@ class ofxTLDepthImageSequence : public ofxTLImageTrack, public ofThread {
 	unsigned long getTimeOffsetInMillis();
 	
   protected:
-    ofPtr<ofxDepthImageSequence> depthImageSequence;
+	ofPtr<ofxDepthImageSequence> depthImageSequence;
 
-    //width and height of image elements
-    float getContentWidth();
-    float getContentHeight();
+	//width and height of image elements
+	float getContentWidth();
+	float getContentHeight();
 	void framePositionsUpdated(vector<ofxTLVideoThumb>& newThumbs);
-    
+	
 	bool autoUpdate;
 	unsigned long timeOffsetInMillis;
-    ofShortPixels thumbnailDepthRaw;
+	ofShortPixels thumbnailDepthRaw;
 
 	//only called during playback
 	void update(ofEventArgs& args);
 
 	ofMutex backLock; // to protect backThumbs
-    vector<ofxTLVideoThumb> backThumbs; //used to generate thumbs on the back thread, then copies them onto the main thread
+	vector<ofxTLVideoThumb> backThumbs; //used to generate thumbs on the back thread, then copies them onto the main thread
 
 	void threadedFunction();
-    void exit(ofEventArgs& args);
+	void exit(ofEventArgs& args);
 	ofImage currentDepthImage;
 	bool frameIsNew;
 	bool depthImageIsDirty;
 	string sequenceDirectory;
-    
+	
 };

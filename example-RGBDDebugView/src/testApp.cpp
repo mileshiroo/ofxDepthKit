@@ -44,8 +44,8 @@ void testApp::setup(){
 //	panel.add(xShift.setup("x shift",ofxParameter<float>(), -.15, .15));
 //	panel.add(yShift.setup("y shift",ofxParameter<float>(), -.15, .15));
 
-	xShift = 0.0045;
-	yShift = 0.03;
+//	xShift = 0.0045;
+//	yShift = 0.03;
 	rgbTextureSlider = 0;
 	
 	
@@ -63,6 +63,8 @@ void testApp::setup(){
 	player.updateVideoPlayer = false;
     //load 
     loadDefaultScene();
+	
+	cam.setFarClip(cam.getFarClip()*5);
 	
  	ofToggleFullscreen();
 }
@@ -94,11 +96,11 @@ bool testApp::loadScene(string takeDirectory){
         settings.saveFile();
 
 		
-		renderer.farClip = 1250;
+		renderer.farClip = 1500;
         renderer.setup(player.getScene().calibrationFolder);
-        renderer.setRGBTexture(player.getVideoPlayer());
+        renderer.setRGBTexture(*player.getVideoPlayer());
         renderer.setDepthImage(player.getDepthPixels());
-		renderer.setSimplification(2);
+		renderer.setSimplification(ofVec2f(2,2));
 
         videoTrack.setPlayer(player.getVideoPlayer());
         depthTrack.setSequence(player.getDepthSequence());
@@ -120,11 +122,11 @@ void testApp::update(){
 	
     player.update();
     if(player.isFrameNew() ||
-	   renderer.xshift != xShift ||
-	   renderer.yshift != yShift)
+	   renderer.shift.x != xShift ||
+	   renderer.shift.y != yShift)
 	{
-		renderer.xshift = xShift;
-		renderer.yshift = yShift;
+		renderer.shift.x = xShift;
+		renderer.shift.y = yShift;
         renderer.update();
 
     }
@@ -151,25 +153,25 @@ void testApp::draw(){
         glDisable(GL_DEPTH_TEST);
 		renderer.drawProjectionDebug(showDepthProjection, showRGBProjection,rgbTextureSlider);
         cam.end();
-    }
+	
+		timeline.draw();
 
-	
-	timeline.draw();
-
-	ofRectangle sideViewDraw(0, panel.getShape().getBottom(),panel.getShape().width, ofGetHeight() - panel.getShape().getBottom());
-	ofRectangle colorDebug = ofRectangle(0,0,player.getVideoPlayer()->getWidth(),player.getVideoPlayer()->getHeight());
-	colorDebug.scaleTo(sideViewDraw);
-	colorDebug.y = panel.getShape().getBottom();
-	ofRectangle depthDebug = ofRectangle(0,0,640,480);
-	depthDebug.scaleTo(sideViewDraw);
-	depthDebug.y = colorDebug.getBottom();
-	
-//	player.getVideoPlayer()->draw(colorDebug);
-//	depthTrack.getCurrentDepthImage().draw(depthDebug);
-//	player.getDepthSequence()->getCompressor().convertTo8BitImage(player.getDepthPixels()).draw(depthDebug);
-	
-	panel.setPosition(timeline.getBottomLeft());
-	panel.draw();
+		ofRectangle sideViewDraw(0, panel.getShape().getBottom(),panel.getShape().width, ofGetHeight() - panel.getShape().getBottom());
+		ofRectangle colorDebug = ofRectangle(0,0,player.getVideoPlayer()->getWidth(),player.getVideoPlayer()->getHeight());
+		colorDebug.scaleTo(sideViewDraw);
+		colorDebug.y = panel.getShape().getBottom();
+		ofRectangle depthDebug = ofRectangle(0,0,640,480);
+		depthDebug.scaleTo(sideViewDraw);
+		depthDebug.y = colorDebug.getBottom();
+		
+	//	player.getVideoPlayer()->draw(colorDebug);
+	//	depthTrack.getCurrentDepthImage().draw(depthDebug);
+	//	player.getDepthSequence()->getCompressor().convertTo8BitImage(player.getDepthPixels()).draw(depthDebug);
+		
+		panel.setPosition(timeline.getBottomLeft());
+		panel.draw();
+		
+	}
     //ofDrawBitmapString("fps: " + ofToString(ofGetFrameRate()), 10, ofGetHeight()-30);
 }
 

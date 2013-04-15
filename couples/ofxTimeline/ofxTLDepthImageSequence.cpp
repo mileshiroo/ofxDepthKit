@@ -46,13 +46,13 @@ void ofxTLDepthImageSequence::update(ofEventArgs& args){
 }
 
 void ofxTLDepthImageSequence::draw(){
-    if(!isLoaded()){
+	if(!isLoaded()){
 		ofPushStyle();
-        ofSetColor(timeline->getColors().disabledColor);
-        ofRect(getDrawRect());
-        ofPopStyle();
-        return;
-    }
+		ofSetColor(timeline->getColors().disabledColor);
+		ofRect(getDrawRect());
+		ofPopStyle();
+		return;
+	}
 	
 	//clip hanging frames off the sides
 	glEnable(GL_SCISSOR_TEST);
@@ -108,32 +108,32 @@ void ofxTLDepthImageSequence::draw(){
 
 //width and height of image elements
 float ofxTLDepthImageSequence::getContentWidth(){
-    return 640;
+	return 640;
 }
 
 float ofxTLDepthImageSequence::getContentHeight(){
-    return 480;
+	return 480;
 }
 
 void ofxTLDepthImageSequence::framePositionsUpdated(vector<ofxTLVideoThumb>& newThumbs){
 
-    for(int i = 0; i < videoThumbs.size(); i++){
-        for(int j = 0; j < newThumbs.size(); j++){
-            if(videoThumbs[i].framenum == newThumbs[j].framenum && videoThumbs[i].loaded){
-                newThumbs[j].thumb = videoThumbs[i].thumb;
-                newThumbs[j].loaded = true;
-                break;
-            }
-        }
-    }
-    
+	for(int i = 0; i < videoThumbs.size(); i++){
+		for(int j = 0; j < newThumbs.size(); j++){
+			if(videoThumbs[i].framenum == newThumbs[j].framenum && videoThumbs[i].loaded){
+				newThumbs[j].thumb = videoThumbs[i].thumb;
+				newThumbs[j].loaded = true;
+				break;
+			}
+		}
+	}
+	
 	backLock.lock();
-    backThumbs = newThumbs;
+	backThumbs = newThumbs;
 	backLock.unlock();
-    
+	
 	lock();
-    videoThumbs = newThumbs;
-    unlock();
+	videoThumbs = newThumbs;
+	unlock();
 
 }
 
@@ -146,15 +146,15 @@ bool ofxTLDepthImageSequence::mousePressed(ofMouseEventArgs& args, long millis){
 }
 
 void ofxTLDepthImageSequence::mouseDragged(ofMouseEventArgs& args, long millis){
-    
-    if(!isLoaded()) return;
-    
+	
+	if(!isLoaded()) return;
+	
 	if( isActive() ){
 		selectTimeInMillis(millis);
 		if(timeline->getMovePlayheadOnDrag()){
 			timeline->setCurrentTimeMillis(millis);
 		}
-        timeline->flagUserChangedValue();
+		timeline->flagUserChangedValue();
 	}
 }
 
@@ -194,11 +194,11 @@ void ofxTLDepthImageSequence::playbackLooped(ofxTLPlaybackEventArgs& args){
 }
 
 void ofxTLDepthImageSequence::selectTimeInMillis(long timeStampInMillis){
-    if(!isLoaded()) return;
+	if(!isLoaded()) return;
 	
 	if(timeStampInMillis != depthImageSequence->getCurrentMilliseconds()){
 		int lastFrame = depthImageSequence->getCurrentFrame();
-	    depthImageSequence->setTimeInMilliseconds( ofClamp(timeStampInMillis+timeOffsetInMillis, 0, depthImageSequence->getDurationInMillis()) );
+		depthImageSequence->setTimeInMilliseconds( ofClamp(timeStampInMillis+timeOffsetInMillis, 0, depthImageSequence->getDurationInMillis()) );
 		frameIsNew |= (lastFrame != depthImageSequence->getCurrentFrame());
 		depthImageIsDirty |= frameIsNew;
 	}
@@ -219,13 +219,13 @@ void ofxTLDepthImageSequence::selectTimeInSeconds(float timeInSeconds){
 }
 
 unsigned long ofxTLDepthImageSequence::getSelectedTimeInMillis(){
-    if(!isLoaded()) return 0;
-    return depthImageSequence->getCurrentMilliseconds();
+	if(!isLoaded()) return 0;
+	return depthImageSequence->getCurrentMilliseconds();
 }
 
 int ofxTLDepthImageSequence::frameForTime(long timeInMillis){
-    if(!isLoaded()) return 0;
-    return depthImageSequence->frameForTime(timeInMillis);
+	if(!isLoaded()) return 0;
+	return depthImageSequence->frameForTime(timeInMillis);
 }
 
 ofImage& ofxTLDepthImageSequence::getCurrentDepthImage(){
@@ -256,7 +256,7 @@ bool ofxTLDepthImageSequence::isLoaded(){
 bool ofxTLDepthImageSequence::isFrameNew(){
 	bool isnew = frameIsNew;
 	frameIsNew = false;
-    return isnew;
+	return isnew;
 }
 
 ofPtr<ofxDepthImageSequence> ofxTLDepthImageSequence::getDepthImageSequence(){
@@ -266,21 +266,21 @@ ofPtr<ofxDepthImageSequence> ofxTLDepthImageSequence::getDepthImageSequence(){
 bool ofxTLDepthImageSequence::loadSequence(string seqdir){
 	waitForThread(true);
 	
-    if(depthImageSequence == NULL){
+	if(depthImageSequence == NULL){
 		depthImageSequence = ofPtr<ofxDepthImageSequence>( new ofxDepthImageSequence() );
-    }
+	}
 
-    bool loadSuccess = depthImageSequence->loadSequence(seqdir);
+	bool loadSuccess = depthImageSequence->loadSequence(seqdir);
 	if(loadSuccess){
 		frameIsNew = true;
 		depthImageIsDirty = true;
 		startThread();
 	}
-    return loadSuccess;
+	return loadSuccess;
 }
 
 void ofxTLDepthImageSequence::setSequence(ofxDepthImageSequence& newSequence){
-    setSequence(ofPtr<ofxDepthImageSequence>(&newSequence));
+	setSequence(ofPtr<ofxDepthImageSequence>(&newSequence));
 }
 
 void ofxTLDepthImageSequence::setSequence(ofPtr<ofxDepthImageSequence> newSequence){
@@ -292,36 +292,36 @@ void ofxTLDepthImageSequence::setSequence(ofPtr<ofxDepthImageSequence> newSequen
 void ofxTLDepthImageSequence::threadedFunction(){
 	while(isThreadRunning()){
 		
-        backLock.lock();
+		backLock.lock();
 		ofImage thumbImage;
-        if(!ofGetMousePressed() && isLoaded() && !currentlyZooming && thumbsEnabled){
-            for(int i = 0; i < backThumbs.size(); i++){
-                if(!backThumbs[i].loaded){
-                    
-					if(currentlyZooming || ofGetMousePressed()){
-                        break;
-                    }
+		if(!ofGetMousePressed() && isLoaded() && !currentlyZooming && thumbsEnabled){
+			for(int i = 0; i < backThumbs.size(); i++){
+				if(!backThumbs[i].loaded){
 					
-                    if(currentlyZooming || ofGetMousePressed()){
-                        break;
-                    }
+					if(currentlyZooming || ofGetMousePressed()){
+						break;
+					}
+					
+					if(currentlyZooming || ofGetMousePressed()){
+						break;
+					}
 					
 					backThumbs[i].useTexture = false;
 					depthImageSequence->getPixelsAtTime(ofClamp(videoThumbs[i].timestamp+timeOffsetInMillis,
 																0, depthImageSequence->getDurationInMillis()), thumbnailDepthRaw);
 					thumbImage = depthImageSequence->getCompressor().convertTo8BitImage(thumbnailDepthRaw, false);
 					backThumbs[i].create(thumbImage.getPixelsRef());
-                    lock();
-                    videoThumbs[i] = backThumbs[i];
-                    unlock();
+					lock();
+					videoThumbs[i] = backThumbs[i];
+					unlock();
 					
-                }
-            }
-        }
-        backLock.unlock();
+				}
+			}
+		}
+		backLock.unlock();
 		
-        ofSleepMillis(10);
-    }
+		ofSleepMillis(10);
+	}
 }
 
 void ofxTLDepthImageSequence::toggleThumbs(){
@@ -329,7 +329,7 @@ void ofxTLDepthImageSequence::toggleThumbs(){
 }
 
 int ofxTLDepthImageSequence::getSelectedFrame(){
-    if(!isLoaded()) return 0;
+	if(!isLoaded()) return 0;
 	return depthImageSequence->getCurrentFrame();
 }
 

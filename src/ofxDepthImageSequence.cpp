@@ -9,25 +9,25 @@
 #include "ofxDepthImageSequence.h"
 
 ofxDepthImageSequence::ofxDepthImageSequence(){
-    sequenceLoaded = false;
-    framesHaveTimestamps = false;
+	sequenceLoaded = false;
+	framesHaveTimestamps = false;
 	currentFrame = 0;
 	currentPixelsFrame = 0;
 }
 
 ofxDepthImageSequence::~ofxDepthImageSequence(){
-    
+	
 }
 
 bool ofxDepthImageSequence::loadSequence(string newSequenceDirectory){
-    
+	
 
 	ofDirectory sequenceList(newSequenceDirectory);
 	if(!sequenceList.exists()){
 		ofLogError("ofxDepthImageSequence -- sequence directory " + newSequenceDirectory + " does not exist!");
 		return false;
 	}
-    
+	
 	if(sequenceLoaded){
 		images.clear();
 		sequenceLoaded = false;
@@ -45,7 +45,7 @@ bool ofxDepthImageSequence::loadSequence(string newSequenceDirectory){
 	bool checkedForTimestamp = false;
 	unsigned long firstFrameTimeOffset = 0;
 	for(int i = 0; i < numFiles; i++){
-        //backwards compat...
+		//backwards compat...
 		if(sequenceList.getName(i).find("poster") != string::npos){
 			ofLogWarning("discarding poster frame " + sequenceList.getPath(i) );
 			continue;
@@ -76,29 +76,29 @@ bool ofxDepthImageSequence::loadSequence(string newSequenceDirectory){
 		}
 	}
 	
-    if(framesHaveTimestamps){
-	    durationInMillis = images[images.size()-1].timestamp;
-    }
+	if(framesHaveTimestamps){
+		durationInMillis = images[images.size()-1].timestamp;
+	}
 
 	ofLogVerbose("sequence is loaded " + ofToString( images.size() ));
-    sequenceDirectory = newSequenceDirectory;
-    sequenceLoaded = true;
+	sequenceDirectory = newSequenceDirectory;
+	sequenceLoaded = true;
 	setFrame(0);
-    updatePixels();
+	updatePixels();
 //	startThread();
 	return true;
 }
 
 string ofxDepthImageSequence::getSequenceDirectory(){
-    return sequenceDirectory;
+	return sequenceDirectory;
 }
 
 long ofxDepthImageSequence::getDurationInMillis(){
-    return durationInMillis;
+	return durationInMillis;
 }
 
 float ofxDepthImageSequence::getDurationInSeconds(){
-    return durationInMillis / 1000.0;
+	return durationInMillis / 1000.0;
 }
 
 int ofxDepthImageSequence::getTotalNumFrames(){
@@ -106,19 +106,19 @@ int ofxDepthImageSequence::getTotalNumFrames(){
 }
 
 int ofxDepthImageSequence::getCurrentFrame(){
-    if(!sequenceLoaded){
-        ofLogError("ofxDepthImageSequence::getCurrentFrame() -- sequence not loaded");
-        return 0;
-    }
-    return currentFrame;
+	if(!sequenceLoaded){
+		ofLogError("ofxDepthImageSequence::getCurrentFrame() -- sequence not loaded");
+		return 0;
+	}
+	return currentFrame;
 }
 
 long ofxDepthImageSequence::getCurrentMilliseconds(){
-    if(!sequenceLoaded){
-        ofLogError("ofxDepthImageSequence::getCurrentMilliseconds() -- sequence not loaded");
-        return 0;
-    }
-    return images[currentFrame].timestamp;
+	if(!sequenceLoaded){
+		ofLogError("ofxDepthImageSequence::getCurrentMilliseconds() -- sequence not loaded");
+		return 0;
+	}
+	return images[currentFrame].timestamp;
 }
 
 float ofxDepthImageSequence::getCurrentSeconds(){
@@ -126,11 +126,11 @@ float ofxDepthImageSequence::getCurrentSeconds(){
 }
 
 int ofxDepthImageSequence::frameForTime(long timeInMillis){
-    if(!sequenceLoaded){
-        ofLogError("ofxDepthImageSequence::frameForTime() -- sequence not loaded");
-        return 0;
-    }
-    
+	if(!sequenceLoaded){
+		ofLogError("ofxDepthImageSequence::frameForTime() -- sequence not loaded");
+		return 0;
+	}
+	
 	if(!framesHaveTimestamps){
 		ofLogError("ofxTLDepthImageSequence -- can't select frame for time if there are no timestamps");
 		return 0;
@@ -142,22 +142,22 @@ int ofxDepthImageSequence::frameForTime(long timeInMillis){
 			return i-1;
 		}
 	}
-    
+	
 	return images.size()-1;   
 }
 
 void ofxDepthImageSequence::setFrame(int frame){
-    if(!sequenceLoaded){
-        ofLogError("ofxDepthImageSequence::selectFrame() -- sequence not loaded");
-        return;
-    }
-    
-    if(frame < 0 || frame >= images.size()){
-        ofLogError("ofxDepthImageSequence::selectFrame() -- frame out of range");
-        return;
-    }
-    
-    currentFrame = frame;
+	if(!sequenceLoaded){
+		ofLogError("ofxDepthImageSequence::selectFrame() -- sequence not loaded");
+		return;
+	}
+	
+	if(frame < 0 || frame >= images.size()){
+		ofLogError("ofxDepthImageSequence::selectFrame() -- frame out of range");
+		return;
+	}
+	
+	currentFrame = frame;
 	updatePixels();
 }
 
@@ -166,49 +166,49 @@ void ofxDepthImageSequence::setTimeInSeconds(float timeInSeconds){
 }
 
 void ofxDepthImageSequence::setTimeInMilliseconds(long timeInMillis){
-    
-    if(!framesHaveTimestamps){
-        ofLogError("ofxDepthImageSequence::selectTime() -- no timestamps!");
-        return;        
-    }    
-    if(timeInMillis < 0 || timeInMillis > durationInMillis){
-        ofLogError("ofxDepthImageSequence::selectTime() -- time out of range!");
-        return;
-    }    
-    
-    setFrame(frameForTime(timeInMillis));
+	
+	if(!framesHaveTimestamps){
+		ofLogError("ofxDepthImageSequence::selectTime() -- no timestamps!");
+		return;		
+	}	
+	if(timeInMillis < 0 || timeInMillis > durationInMillis){
+		ofLogError("ofxDepthImageSequence::selectTime() -- time out of range!");
+		return;
+	}	
+	
+	setFrame(frameForTime(timeInMillis));
 }
 
 void ofxDepthImageSequence::updatePixels(){
-    if(!sequenceLoaded){
-        ofLogError("ofxDepthImageSequence::updatePixels() -- sequence not loaded");
-    }
+	if(!sequenceLoaded){
+		ofLogError("ofxDepthImageSequence::updatePixels() -- sequence not loaded");
+	}
 	
 	if(currentFrame != currentPixelsFrame || !pixels.isAllocated()){
 
-    	ofxDepthImageCompressor::readCompressedPng(images[currentFrame].path, pixels);
+		ofxDepthImageCompressor::readCompressedPng(images[currentFrame].path, pixels);
 		currentPixelsFrame = currentFrame;
 	}
 }
 
 ofShortPixels& ofxDepthImageSequence::getPixels(){
-    return pixels;
+	return pixels;
 }
 
 void ofxDepthImageSequence::getPixelsAtTime(long timeInMillis, ofShortPixels& outPixels){
-    ofxDepthImageCompressor::readCompressedPng(images[frameForTime(timeInMillis)].path, outPixels);
+	ofxDepthImageCompressor::readCompressedPng(images[frameForTime(timeInMillis)].path, outPixels);
 }
 
 vector<DepthImage>& ofxDepthImageSequence::getImageArray(){
-    return images;
+	return images;
 }
 
 ofxDepthImageCompressor& ofxDepthImageSequence::getCompressor(){
-	return compressor;    
+	return compressor;	
 }
 
 bool ofxDepthImageSequence::isLoaded(){
-    return sequenceLoaded;
+	return sequenceLoaded;
 }
 
 bool ofxDepthImageSequence::doFramesHaveTimestamps(){

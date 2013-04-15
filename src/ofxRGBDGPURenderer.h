@@ -9,9 +9,9 @@
  *  http://github.com/obviousjim
  *
  * Developed with support from:
- *      Frank-Ratchy STUDIO for Creative Inquiry http://studioforcreativeinquiry.org
- *      YCAM InterLab http://interlab.ycam.jp/en
- *      Eyebeam http://eyebeam.org
+ *	  Frank-Ratchy STUDIO for Creative Inquiry http://studioforcreativeinquiry.org
+ *	  YCAM InterLab http://interlab.ycam.jp/en
+ *	  Eyebeam http://eyebeam.org
  */
 
 #pragma once
@@ -22,23 +22,20 @@ class ofxRGBDGPURenderer : public ofxRGBDRenderer {
 	ofxRGBDGPURenderer();
 	virtual ~ofxRGBDGPURenderer();
 	
-    virtual void setDepthImage(ofShortPixels& pix);
-    virtual void update();
+	virtual void setDepthImage(ofShortPixels& pix);
+	virtual void update();
 
-    //use these to project and draw textured custom geometry
-    bool bindRenderer();
-    void unbindRenderer();
-    
-    //called inside of bind/unbind
-    void setupProjectionUniforms();
-
-    //fun way of visualizing the calibration
-    void drawProjectionDebug(bool showDepth, bool showRGB, float rgbTexturePosition);
-    
-    void setShaderPath(string path);
+	//use these to project and draw textured custom geometry
+	bool bindRenderer();
+	void unbindRenderer();
+	
+	//called inside of bind/unbind
+	void setupProjectionUniforms();
+	
+	void setShaderPath(string path);
 	void reloadShader();
 
-    ofShader& getShader();
+	ofShader& getShader();
 	ofTexture& getDepthTexture();
 	
 	//sets a level of simplification,
@@ -46,12 +43,12 @@ class ofxRGBDGPURenderer : public ofxRGBDRenderer {
 	//2 for half, or 4 for quarter;
 	virtual void setSimplification(ofVec2f simplification);
 	
-    void draw(ofPolyRenderMode drawMode);
-    
+	void draw(ofPolyRenderMode drawMode);
+	
   protected:
-    ofShader shader;
-    string shaderPath;
-    bool rendererBound;
+	ofShader shader;
+	string shaderPath;
+	bool rendererBound;
 	ofTexture depthTexture;
-    
+	
 };

@@ -13,102 +13,102 @@
 #include "ofxRGBDCaptureGui.h"
 
 ofxRGBDCaptureGui::ofxRGBDCaptureGui(){
-    providerSet = false;
-    calibrationGenerated = false;
-    currentRendererPreviewIndex = 0;
-    currentCalibrationImageIndex = 0;
-    hoverPreviewDepth = false;
-    hoverPreviewIR = false;
-    hoverPreviewingCaptured = false;
+	providerSet = false;
+	calibrationGenerated = false;
+	currentRendererPreviewIndex = 0;
+	currentCalibrationImageIndex = 0;
+	hoverPreviewDepth = false;
+	hoverPreviewIR = false;
+	hoverPreviewingCaptured = false;
 	depthCameraSelfCalibrated = false;
 	hasIncludedBoards = false;
 	currentRenderModeObject = NULL;
 }
 
 ofxRGBDCaptureGui::~ofxRGBDCaptureGui(){
-    
+	
 }
 
 void ofxRGBDCaptureGui::setup(){
-    ofEnableSmoothing();
+	ofEnableSmoothing();
 
 	renderer = &gpuRenderer;
 	
-    framewidth = 640;
+	framewidth = 640;
 	frameheight = 480;
 	thirdWidth = framewidth/3;
 	btnheight = 36;
-    margin = 12;
+	margin = 12;
 
 	contextHelpTextLarge.loadFont("GUI/NewMedia Fett.ttf", 23);
 	contextHelpTextSmall.loadFont("GUI/NewMedia Fett.ttf", 12);
 
-    currentAlignmentPair = new AlignmentPair();
+	currentAlignmentPair = new AlignmentPair();
 	currentAlignmentPair->included = true;
 	alignmentPairs.push_back(currentAlignmentPair);
 
-    timeline.setup();
+	timeline.setup();
 	timeline.setOffset(ofVec2f(0, frameheight+btnheight*3));
-    timeline.addTrack("depth sequence", &depthSequence);
+	timeline.addTrack("depth sequence", &depthSequence);
 	timeline.setLoopType(OF_LOOP_NORMAL);
 	timeline.setSpacebarTogglePlay(false);
-    timeline.hide();
-    
-    //TODO: make timeline colors
-    downColor  = ofColor(255, 120, 0);
+	timeline.hide();
+	
+	//TODO: make timeline colors
+	downColor  = ofColor(255, 120, 0);
 	idleColor  = ofColor(220, 200, 200);
 	hoverColor = ofColor(255*.2, 255*.2, 30*.2);
 
 	confirmedColor = ofColor(100, 230, 120);
 	warningColor   = ofColor(255, 200,  0);
-	errorColor     = ofColor(230, 100,  20);
+	errorColor	 = ofColor(230, 100,  20);
 
-    float totalFrameWidth = framewidth*2;
-    float quarterWidth = totalFrameWidth * .25;
-    
+	float totalFrameWidth = framewidth*2;
+	float quarterWidth = totalFrameWidth * .25;
+	
 	btnSetDirectory = new ofxMSAInteractiveObjectWithDelegate();
 	btnSetDirectory->setPosAndSize(0, 0, totalFrameWidth, btnheight);
 	btnSetDirectory->setLabel("Load Directory");
 	btnSetDirectory->fontReference = &contextHelpTextSmall;
 	buttonSet.push_back(btnSetDirectory);
-    
-    btnIntrinsicsTab = new ofxMSAInteractiveObjectWithDelegate();
+	
+	btnIntrinsicsTab = new ofxMSAInteractiveObjectWithDelegate();
 	btnIntrinsicsTab->setPosAndSize(0, btnheight, quarterWidth, btnheight);
 	btnIntrinsicsTab->setLabel("Calibrate Lenses");
 	btnIntrinsicsTab->fontReference = &contextHelpTextSmall;
 	buttonSet.push_back(btnIntrinsicsTab);
-    currentTabObject = btnIntrinsicsTab;
-    currentTab = TabIntrinsics;
-    tabSet.push_back(btnIntrinsicsTab);
-    
-    btnExtrinsicsTab = new ofxMSAInteractiveObjectWithDelegate();
+	currentTabObject = btnIntrinsicsTab;
+	currentTab = TabIntrinsics;
+	tabSet.push_back(btnIntrinsicsTab);
+	
+	btnExtrinsicsTab = new ofxMSAInteractiveObjectWithDelegate();
 	btnExtrinsicsTab->setPosAndSize(quarterWidth, btnheight, quarterWidth, btnheight);
 	btnExtrinsicsTab->setLabel("Calibrate Correspondence");
 	btnExtrinsicsTab->fontReference = &contextHelpTextSmall;
 	buttonSet.push_back(btnExtrinsicsTab);
-    tabSet.push_back(btnExtrinsicsTab);
-    
+	tabSet.push_back(btnExtrinsicsTab);
+	
 	btnRecordTab = new ofxMSAInteractiveObjectWithDelegate();
 	btnRecordTab->setPosAndSize(quarterWidth*2, btnheight, quarterWidth, btnheight);
 	btnRecordTab->setLabel("Record");
 	btnRecordTab->fontReference = &contextHelpTextSmall;
 	buttonSet.push_back(btnRecordTab);
-    tabSet.push_back(btnRecordTab);
-    
+	tabSet.push_back(btnRecordTab);
+	
 	btnPlaybackTab = new ofxMSAInteractiveObjectWithDelegate();
 	btnPlaybackTab->setPosAndSize(quarterWidth*3, btnheight, quarterWidth, btnheight);
 	btnPlaybackTab->setLabel("Playback");
 	btnPlaybackTab->fontReference = &contextHelpTextSmall;
 	buttonSet.push_back(btnPlaybackTab);
-    tabSet.push_back(btnPlaybackTab);
-    
+	tabSet.push_back(btnPlaybackTab);
+	
 	
 	btnRenderBW = new ofxMSAInteractiveObjectWithDelegate();
 	btnRenderBW->setPosAndSize(0, btnheight*2+frameheight, thirdWidth, btnheight);
 	btnRenderBW->setLabel("Black & White");
 	btnRenderBW->fontReference = &contextHelpTextSmall;
 	buttonSet.push_back(btnRenderBW);
-    currentRenderModeObject = btnRenderBW;
+	currentRenderModeObject = btnRenderBW;
 	currentRenderMode = RenderBW;
 	
 	btnRenderRainbow = new ofxMSAInteractiveObjectWithDelegate();
@@ -116,80 +116,72 @@ void ofxRGBDCaptureGui::setup(){
 	btnRenderRainbow->fontReference = &contextHelpTextSmall;
 	btnRenderRainbow->setLabel("Rainbow");
 	buttonSet.push_back(btnRenderRainbow);
-    
+	
 	btnRenderPointCloud = new ofxMSAInteractiveObjectWithDelegate();
 	btnRenderPointCloud->setPosAndSize(thirdWidth*2, btnheight*2+frameheight, thirdWidth, btnheight);
 	btnRenderPointCloud->fontReference = &contextHelpTextSmall;
 	btnRenderPointCloud->setLabel("Pointcloud");
 	buttonSet.push_back(btnRenderPointCloud);
 	
-    btnCalibrateDepthCamera =  new ofxMSAInteractiveObjectWithDelegate();
+	btnCalibrateDepthCamera =  new ofxMSAInteractiveObjectWithDelegate();
 	btnCalibrateDepthCamera->setPosAndSize(0, btnheight*3+frameheight, totalFrameWidth/2, btnheight*2);
 	btnCalibrateDepthCamera->setLabel("Self-Calibrate Depth Camera");
 	btnCalibrateDepthCamera->fontReference = &contextHelpTextLarge;
-    buttonSet.push_back(btnCalibrateDepthCamera);
+	buttonSet.push_back(btnCalibrateDepthCamera);
 
-    btnRGBLoadCalibration =  new ofxMSAInteractiveObjectWithDelegate();
-    btnRGBLoadCalibration->setPosAndSize(totalFrameWidth/2, btnheight*3+frameheight, totalFrameWidth/2, btnheight*2);
-    btnRGBLoadCalibration->setLabel("Load RGB Calibration Images");
+	btnRGBLoadCalibration =  new ofxMSAInteractiveObjectWithDelegate();
+	btnRGBLoadCalibration->setPosAndSize(totalFrameWidth/2, btnheight*3+frameheight, totalFrameWidth/2, btnheight*2);
+	btnRGBLoadCalibration->setLabel("Load RGB Calibration Images");
 	btnRGBLoadCalibration->fontReference = &contextHelpTextLarge;
-    buttonSet.push_back(btnRGBLoadCalibration);
-    
-    //EXTRINSICS
-    btnGenerateCalibration =  new ofxMSAInteractiveObjectWithDelegate();
-    btnGenerateCalibration->setPosAndSize(0, btnheight*3+frameheight, totalFrameWidth, btnheight*2);
-    btnGenerateCalibration->setLabel("Regenerate RGB/Depth Correspondence");
-    btnGenerateCalibration->disableAllEvents();
-	btnGenerateCalibration->fontReference = &contextHelpTextLarge;
-    buttonSet.push_back(btnGenerateCalibration);
-    
-    //CAPTURE
-    btnToggleRecord = new ofxMSAInteractiveObjectWithDelegate();
-    btnToggleRecord->setPosAndSize(0, btnheight*3+frameheight, totalFrameWidth, btnheight*2);
-    btnToggleRecord->setLabel("Toggle Record");
-	btnToggleRecord->fontReference = &contextHelpTextLarge;
-    btnToggleRecord->disableAllEvents();
-    buttonSet.push_back(btnToggleRecord);
-
-    for(int i = 0; i < buttonSet.size(); i++){
-        buttonSet[i]->setIdleColor(idleColor);
-        buttonSet[i]->setDownColor(downColor);
-        buttonSet[i]->setHoverColor(hoverColor);
-        buttonSet[i]->disableKeyEvents();
-        buttonSet[i]->setDelegate(this);
-    }
-    
-    previewRectLeft  = ofRectangle(0, btnheight*2, 640, 480);
-    previewRectRight = previewRectLeft;
-    previewRectRight.x += 640;
-    
-    ofRegisterMouseEvents(this);
-    ofRegisterKeyEvents(this);
-	#ifndef TARGET_WIN32
-    ofAddListener(ofEvents().fileDragEvent, this, &ofxRGBDCaptureGui::dragEvent);
-	#endif
-	ofAddListener(ofEvents().update, this, &ofxRGBDCaptureGui::update);
-    ofAddListener(ofEvents().draw, this, &ofxRGBDCaptureGui::draw);
-    ofAddListener(ofEvents().exit, this, &ofxRGBDCaptureGui::exit);
+	buttonSet.push_back(btnRGBLoadCalibration);
 	
-    depthSequence.setup();
-    
+	//EXTRINSICS
+	btnGenerateCalibration =  new ofxMSAInteractiveObjectWithDelegate();
+	btnGenerateCalibration->setPosAndSize(0, btnheight*3+frameheight, totalFrameWidth, btnheight*2);
+	btnGenerateCalibration->setLabel("Regenerate RGB/Depth Correspondence");
+	btnGenerateCalibration->disableAllEvents();
+	btnGenerateCalibration->fontReference = &contextHelpTextLarge;
+	buttonSet.push_back(btnGenerateCalibration);
+	
+	//CAPTURE
+	btnToggleRecord = new ofxMSAInteractiveObjectWithDelegate();
+	btnToggleRecord->setPosAndSize(0, btnheight*3+frameheight, totalFrameWidth, btnheight*2);
+	btnToggleRecord->setLabel("Toggle Record");
+	btnToggleRecord->fontReference = &contextHelpTextLarge;
+	btnToggleRecord->disableAllEvents();
+	buttonSet.push_back(btnToggleRecord);
+
+	for(int i = 0; i < buttonSet.size(); i++){
+		buttonSet[i]->setIdleColor(idleColor);
+		buttonSet[i]->setDownColor(downColor);
+		buttonSet[i]->setHoverColor(hoverColor);
+		buttonSet[i]->disableKeyEvents();
+		buttonSet[i]->setDelegate(this);
+	}
+	
+	previewRectLeft  = ofRectangle(0, btnheight*2, 640, 480);
+	previewRectRight = previewRectLeft;
+	previewRectRight.x += 640;
+	
+	ofRegisterMouseEvents(this);
+	ofRegisterKeyEvents(this);
+	
+	ofAddListener(ofEvents().fileDragEvent, this, &ofxRGBDCaptureGui::dragEvent);
+	ofAddListener(ofEvents().update, this, &ofxRGBDCaptureGui::update);
+	ofAddListener(ofEvents().draw, this, &ofxRGBDCaptureGui::draw);
+	ofAddListener(ofEvents().exit, this, &ofxRGBDCaptureGui::exit);
+	
+	depthSequence.setup();
+	
 	updateSceneButtons();
 	
-    cam.setup();
-	cam.cameraPositionFile = "calibrationPreviewCamera.xml";
-	cam.loadCameraPosition();
-	cam.autosavePosition = true;
-	
+	cam.setup();
 	pointcloudPreviewCam.setup();
-	pointcloudPreviewCam.cameraPositionFile = "pointcloudPreviewCamera.xml";
-	pointcloudPreviewCam.loadCameraPosition();
-	pointcloudPreviewCam.autosavePosition = true;
 
-    createRainbowPallet();
-    depthImage.allocate(640, 480, OF_IMAGE_GRAYSCALE);
-    
-    recorder.setup();
+	createRainbowPallet();
+	depthImage.allocate(640, 480, OF_IMAGE_GRAYSCALE);
+	
+	recorder.setup();
 
 	boardColors.push_back( ofColor(232,   0, 122) );
 	boardColors.push_back( ofColor(0,   180, 255) );
@@ -211,8 +203,8 @@ void ofxRGBDCaptureGui::setup(){
 	ofAddListener(checkerboardDimensions.textChanged, this, &ofxRGBDCaptureGui::squareSizeChanged);
 	
 	ofxXmlSettings defaults;
-	if(defaults.loadFile("defaults.xml")){
-		loadDirectory(defaults.getValue("currentDir", ""));
+	if(defaults.loadFile("defaultBin.xml")){
+		loadDirectory(defaults.getValue("bin", ""));
 	}
 	else{
 		loadDirectory("depthframes");
@@ -221,12 +213,12 @@ void ofxRGBDCaptureGui::setup(){
 
 void ofxRGBDCaptureGui::setImageProvider(ofxDepthImageProvider* imageProvider){
 	depthImageProvider = ofPtr<ofxDepthImageProvider>( imageProvider );
-    depthImageProvider->setup();
+	depthImageProvider->setup();
 	
 	pointcloudPreview.setDepthImage(depthImageProvider->getRawDepth());
 	pointcloudPreview.setDepthOnly();
 	
-    providerSet = true;
+	providerSet = true;
 }
 
 
@@ -246,36 +238,36 @@ void ofxRGBDCaptureGui::update(ofEventArgs& args){
 	
 	depthImageProvider->update();
 	if(depthImageProvider->isFrameNew()){
-        
-        if(currentTab != TabPlayback){
-            updateDepthImage(depthImageProvider->getRawDepth());
-        }
+		
+		if(currentTab != TabPlayback){
+			updateDepthImage(depthImageProvider->getRawDepth());
+		}
 				
 		if(recorder.isRecording()){
 			recorder.addImage(depthImageProvider->getRawDepth());
 		}
-        else if(currentTab == TabExtrinsics){
-            calibrationPreview.setTestImage( depthImageProvider->getRawIRImage() );
-        }
+		else if(currentTab == TabExtrinsics){
+			calibrationPreview.setTestImage( depthImageProvider->getRawIRImage() );
+		}
 	}
 }
 
 void ofxRGBDCaptureGui::setupRenderer(){
 	currentRendererPreviewIndex = MIN(currentRendererPreviewIndex, alignmentPairs.size()-1);
 	
-//    renderer.reloadShader();
+//	renderer.reloadShader();
 //	renderer.setup("rgbCalibRefined.yml",
 //				   "depthCalibRefined.yml", "rotationDepthToRGB.yml", "translationDepthToRGB.yml");
 	
 	cpuRenderer.setup(matrixDirectory);
 	gpuRenderer.setup(matrixDirectory);
-	cpuRenderer.flipTexture = true;
-	gpuRenderer.flipTexture = true;
 	
+//	gpuRenderer.scale = ofVec2f(2.0, 2.0);
 	gpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
 	gpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
 	gpuRenderer.update();
-
+	
+//	cpuRenderer.scale = ofVec2f(2.0, 2.0);
 	cpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
 	cpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
 	cpuRenderer.update();
@@ -283,41 +275,41 @@ void ofxRGBDCaptureGui::setupRenderer(){
 }
 void ofxRGBDCaptureGui::draw(ofEventArgs& args){
 	if(currentTab == TabIntrinsics){
-        drawIntrinsics();
+		drawIntrinsics();
 	}
-    else if(currentTab == TabExtrinsics){
-        drawExtrinsics();
-    }
+	else if(currentTab == TabExtrinsics){
+		drawExtrinsics();
+	}
 	else if(currentTab == TabCapture){
-        drawCapture();
+		drawCapture();
 	}
 	else if(currentTab == TabPlayback) {
-        drawPlayback();
+		drawPlayback();
 	}
-    
-    ofPushStyle();
-    ofRectangle highlightRect = ofRectangle(currentTabObject->x,currentTabObject->y+currentTabObject->height*.75,
-                                            currentTabObject->width,currentTabObject->height*.25);
-    ofSetColor(timeline.getColors().highlightColor);
-    ofRect(highlightRect);
-    ofPopStyle();
-    
-    if(currentRenderModeObject != NULL && currentTab != TabExtrinsics){
-        ofPushStyle();
-        ofRectangle highlightRect = ofRectangle(currentRenderModeObject->x,currentRenderModeObject->y+currentRenderModeObject->height*.75,
-                                                currentRenderModeObject->width,currentRenderModeObject->height*.25);
-        ofSetColor(timeline.getColors().highlightColor);
-        ofRect(highlightRect);
-        ofPopStyle();
-    }
 	
-    timeline.draw();
+	ofPushStyle();
+	ofRectangle highlightRect = ofRectangle(currentTabObject->x,currentTabObject->y+currentTabObject->height*.75,
+											currentTabObject->width,currentTabObject->height*.25);
+	ofSetColor(timeline.getColors().highlightColor);
+	ofRect(highlightRect);
+	ofPopStyle();
+	
+	if(currentRenderModeObject != NULL && currentTab != TabExtrinsics){
+		ofPushStyle();
+		ofRectangle highlightRect = ofRectangle(currentRenderModeObject->x,currentRenderModeObject->y+currentRenderModeObject->height*.75,
+												currentRenderModeObject->width,currentRenderModeObject->height*.25);
+		ofSetColor(timeline.getColors().highlightColor);
+		ofRect(highlightRect);
+		ofPopStyle();
+	}
+	
+	timeline.draw();
 
 }
 
 void ofxRGBDCaptureGui::drawIntrinsics(){
-    //left side is Kinect
-    bool drawCamera = providerSet && depthImageProvider->deviceFound();
+	//left side is Kinect
+	bool drawCamera = providerSet && depthImageProvider->deviceFound();
 	if(depthCameraSelfCalibrated){
 		ofFill();
 		ofSetColor(confirmedColor, 50);
@@ -328,20 +320,20 @@ void ofxRGBDCaptureGui::drawIntrinsics(){
 										btnCalibrateDepthCamera->x+10,btnCalibrateDepthCamera->y+55);		
 	}
 
-    if(drawCamera){
+	if(drawCamera){
 //		ofPushStyle();
 //		//DRAW CONFIRMATION RECTANGLE
 //		ofPopStyle();
 		drawDepthImage(previewRectLeft);
-    }
-    else{
-        ofPushStyle();
-        ofSetColor(255, 0, 0);
-        contextHelpTextSmall.drawString("Depth sensor not found. Reconnect the device and restart the application.", previewRectLeft.x + 30, previewRectLeft.y + 30);
-        ofPopStyle();
-    }
-    
-    //right side RGB
+	}
+	else{
+		ofPushStyle();
+		ofSetColor(255, 0, 0);
+		contextHelpTextSmall.drawString("Depth sensor not found. Reconnect the device and restart the application.", previewRectLeft.x + 30, previewRectLeft.y + 30);
+		ofPopStyle();
+	}
+	
+	//right side RGB
    	if (rgbCalibrationImages.size() > 0) {
 		ofPushStyle();
 		if(previewRectRight.inside(ofGetMouseX(), ofGetMouseY())){
@@ -383,15 +375,15 @@ void ofxRGBDCaptureGui::drawIntrinsics(){
 
 
 void ofxRGBDCaptureGui::drawExtrinsics(){
-    
-    bool drawCamera = providerSet && depthImageProvider->deviceFound();
+	
+	bool drawCamera = providerSet && depthImageProvider->deviceFound();
 	int drawX = previewRectLeft.x;
 	int drawY = previewRectLeft.y;
 	
 //	timeline.getFont().drawString("Show the checkerboard to the depth sensor and click to create correspondences", drawX, drawY);
 //	drawY += timeline.getFont().getLineHeight();
 	
-    //TODO draw image in whatever is hovering
+	//TODO draw image in whatever is hovering
 	checkerboardDimensions.draw();
 	if(drawCamera){
 		if(!currentAlignmentPair->depthImage.isAllocated()){
@@ -420,30 +412,43 @@ void ofxRGBDCaptureGui::drawExtrinsics(){
 			alignmentPairs[i]->colorCheckers.draw(alignmentPairs[i]->colorCheckersRect);
 		}
 		
-		//DRAW DELETE/INCLUDE/IGNORE BUTTONS
+		//DRAW DELETE
+		ofPushStyle();
+		ofSetColor(0);
+		ofRect(alignmentPairs[i]->deleteRect);
+		ofSetColor(255);		
+		contextHelpTextSmall.drawString("[X]", alignmentPairs[i]->deleteRect.x + 5,
+										alignmentPairs[i]->deleteRect.y + alignmentPairs[i]->deleteRect.height/2 + contextHelpTextSmall.getLineHeight() *.5);
+		ofNoFill();
+		ofRect(alignmentPairs[i]->deleteRect);
+		ofPopStyle();
+		
+		//DRAW INCLUDE/IGNORE BUTTONS
 		if(alignmentPairs[i] != currentAlignmentPair){
 			
 			ofPushStyle();
 			ofSetColor(0);
-			//TODO: add colors
-			ofRect(alignmentPairs[i]->deleteRect);
 			ofRect(alignmentPairs[i]->includeRect);
 			ofSetColor(255);
-			
-			contextHelpTextSmall.drawString("[X]", alignmentPairs[i]->deleteRect.x + 5,
-											alignmentPairs[i]->deleteRect.y + alignmentPairs[i]->deleteRect.height/2 + contextHelpTextSmall.getLineHeight() *.5);
 			string includeString = alignmentPairs[i]->included ? "IGNORE" : "INCLUDE";
 			contextHelpTextSmall.drawString(includeString, alignmentPairs[i]->includeRect.x + 5,
 											alignmentPairs[i]->includeRect.y + + alignmentPairs[i]->includeRect.height/2 + contextHelpTextSmall.getLineHeight() * .5);
-			ofPopStyle();
-
-			ofPushStyle();
 			ofSetColor(255);
 			ofNoFill();
-			
-			ofRect(alignmentPairs[i]->deleteRect);
 			ofRect(alignmentPairs[i]->includeRect);
 			ofPopStyle();
+		}
+		//DRAW HELPER TEXT
+		else {
+			contextHelpTextSmall.drawString("depth",
+											alignmentPairs[i]->depthImageRect.x + 5,
+											alignmentPairs[i]->depthImageRect.y + 5 + contextHelpTextSmall.getLineHeight());
+			contextHelpTextSmall.drawString("internal ir",
+											alignmentPairs[i]->depthCheckersRect.x + 5,
+											alignmentPairs[i]->depthCheckersRect.y + 5 + contextHelpTextSmall.getLineHeight());
+			contextHelpTextSmall.drawString("external rgb",
+											alignmentPairs[i]->colorCheckersRect.x + 5,
+											alignmentPairs[i]->colorCheckersRect.y + 5 + contextHelpTextSmall.getLineHeight());
 			
 		}
 		
@@ -461,13 +466,14 @@ void ofxRGBDCaptureGui::drawExtrinsics(){
 		alignmentPairs[i]->colorCheckersRect.width *= (16./9.) / (4./3.); //aspect shift
 		
 //		alignmentPairs[i]->deleteRect = ofRectangle(alignmentPairs[i]->colorCheckersRect.getMaxX(),
-//                                                    drawY,
-//                                                    framewidth - alignmentPairs[i]->colorCheckersRect.getMaxX(), subRectHeight/2);
+//													drawY,
+//													framewidth - alignmentPairs[i]->colorCheckersRect.getMaxX(), subRectHeight/2);
 		alignmentPairs[i]->includeRect = alignmentPairs[i]->colorCheckersRect;
 		alignmentPairs[i]->includeRect.x += alignmentPairs[i]->colorCheckersRect.width;
 		alignmentPairs[i]->includeRect.width = framewidth - alignmentPairs[i]->colorCheckersRect.getMaxX();
 		
 		ofPushStyle();
+		
 		
 		if(alignmentPairs[i]->included){
 			ofNoFill();
@@ -480,31 +486,39 @@ void ofxRGBDCaptureGui::drawExtrinsics(){
 		ofRect(alignmentPairs[i]->depthImageRect);
 		ofRect(alignmentPairs[i]->depthCheckersRect);
 		ofRect(alignmentPairs[i]->colorCheckersRect);
+
+		
+		if(hoverRect.getArea() != 0){
+			ofNoFill();
+			ofxEasingCubic cubic;
+			ofSetColor(255, 0, 0, ofMap(sin(ofGetFrameNum()/4.0 ), -1, 1, 50, 255));
+			ofRect(hoverRect);
+		}
 		
 		ofPopStyle();
 		
 		drawY += subRectHeight;
 	}
 	
-    
-    //Draw RIGHT side previews
-    if(hoverPreviewingCaptured){
-        hoverPreviewImage.draw(previewRectRight);
-        calibrationPreview.draw(previewRectRight);
-    }
-    else if(hoverPreviewDepth){
-        depthImage.draw(previewRectRight);
-        calibrationPreview.draw(previewRectRight);
-    }
-    else if(hoverPreviewIR){
-        depthImageProvider->getRawIRImage().draw(previewRectRight);
-        calibrationPreview.draw(previewRectRight);
-    }
-    else if(calibrationGenerated && hasIncludedBoards){
+	
+	//Draw RIGHT side previews
+	if(hoverPreviewingCaptured){
+		hoverPreviewImage.draw(previewRectRight);
+		calibrationPreview.draw(previewRectRight);
+	}
+	else if(hoverPreviewDepth){
+		depthImage.draw(previewRectRight);
+		calibrationPreview.draw(previewRectRight);
+	}
+	else if(hoverPreviewIR){
+		depthImageProvider->getRawIRImage().draw(previewRectRight);
+		calibrationPreview.draw(previewRectRight);
+	}
+	else if(calibrationGenerated && hasIncludedBoards){
 		ofPushStyle();
-        glEnable(GL_DEPTH_TEST);
-        cam.begin(previewRectRight);
-        
+		glEnable(GL_DEPTH_TEST);
+		cam.begin(previewRectRight);
+		
 		ofSetColor(255);
 		renderer->drawMesh();
 		
@@ -517,25 +531,25 @@ void ofxRGBDCaptureGui::drawExtrinsics(){
 		ofPopMatrix();
 
 		
-        cam.end();
+		cam.end();
 		glDisable(GL_DEPTH_TEST);
 		
 		ofPopStyle();
 		
 		drawCalibrationNumbers();
-    }
-    else{
-        ofPushStyle();
-        ofNoFill();
-        ofRect(previewRectRight);
+	}
+	else{
+		ofPushStyle();
+		ofNoFill();
+		ofRect(previewRectRight);
 		string dragText = "No Correspondence to Visualize";
 		contextHelpTextSmall.drawString(dragText,
 										previewRectRight.getCenter().x - contextHelpTextSmall.getStringBoundingBox(dragText, 0, 0).width/2,
 										previewRectRight.y + contextHelpTextSmall.getLineHeight()*2);
 		ofNoFill();
-        
-        ofPopStyle();
-    }
+		
+		ofPopStyle();
+	}
 	
 	drawDimensionsEntry();
 }
@@ -559,7 +573,7 @@ void ofxRGBDCaptureGui::drawDimensionsEntry(){
 }
 
 void ofxRGBDCaptureGui::drawDepthImage(ofRectangle& targetRect){
-    if(currentRenderMode == RenderPointCloud){
+	if(currentRenderMode == RenderPointCloud){
 //		pointcloudPreviewCam.begin(targetRect);
 //		pointcloudPreview.drawPointCloud();
 		//glEnable(GL_DEPTH_TEST);
@@ -588,11 +602,11 @@ void ofxRGBDCaptureGui::drawDepthImage(ofRectangle& targetRect){
 		
 //		glDisable(GL_DEPTH_TEST);
 //		pointcloudPreviewCam.end();
-        //drawPointcloud(depthSequence.getDepthImageSequence()->getPixels(), false);
-    }
-    else {
-        depthImage.draw(targetRect);
-    }
+		//drawPointcloud(depthSequence.getDepthImageSequence()->getPixels(), false);
+	}
+	else {
+		depthImage.draw(targetRect);
+	}
 }
 
 void ofxRGBDCaptureGui::drawCalibrationNumbers(){
@@ -620,10 +634,10 @@ void ofxRGBDCaptureGui::drawCalibrationNumbers(){
 }
 
 void ofxRGBDCaptureGui::drawCapture(){
-    bool drawCamera = providerSet && depthImageProvider->deviceFound();
-    if(drawCamera){
+	bool drawCamera = providerSet && depthImageProvider->deviceFound();
+	if(drawCamera){
 		drawDepthImage(previewRectLeft);
-    }
+	}
 	else{
 		contextHelpTextSmall.drawString("Depth sensor not found. Reconnect the device and restart the application.", previewRectLeft.x + 30, previewRectLeft.y + 30);
 	}
@@ -634,13 +648,25 @@ void ofxRGBDCaptureGui::drawCapture(){
 		ofSetLineWidth(5);
 		
 		ofRect(previewRectLeft);
+		
+		//draw semi transparent record
+		ofVec2f recIndicatorPos(previewRectLeft.getTopLeft() + ofVec2f(40,40));	
+		if(ofGetFrameNum() % 30 < 15){
+			ofFill();
+			ofCircle(recIndicatorPos, 6);
+			ofNoFill();
+			ofCircle(recIndicatorPos, 6);
+		}
+		ofSetColor(255);
+		contextHelpTextSmall.drawString("REC", recIndicatorPos.x+10, recIndicatorPos.y+7);
 		ofPopStyle();
 	}
 	
-    //Draw recorder safety bar
-	if(recorder.numFramesWaitingSave() > 0){
+	int framesWaiting = recorder.numFramesWaitingSave();
+	//Draw recorder safety bar
+	if(framesWaiting > 0){
 		ofPushStyle();
-		float width = recorder.numFramesWaitingSave()/2000.0 * btnToggleRecord->width;
+		float width = framesWaiting/2000.0 * btnToggleRecord->width;
 		ofFill();
 		ofSetColor(255,0, 0);
 		ofRect(btnToggleRecord->x,btnToggleRecord->y,width,btnToggleRecord->height);
@@ -648,6 +674,12 @@ void ofxRGBDCaptureGui::drawCapture(){
 		if(ofGetFrameNum() % 30 < 15){
 			ofSetColor(255, 0, 0, 40);
 			ofRect(*btnToggleRecord);
+		}
+		if(framesWaiting > 200.0){
+			ofSetColor(255);
+			contextHelpTextSmall.drawString("Warning: " + ofToString(framesWaiting) + " Frames waiting in RAM. Stop recording soon to safely writing them to disk.",
+											btnToggleRecord->getBottomLeft().x,
+											btnToggleRecord->getBottomLeft().y - 5);
 		}
 		ofPopStyle();
 	}
@@ -696,15 +728,15 @@ void ofxRGBDCaptureGui::drawSceneButtons(){
 }
 
 void ofxRGBDCaptureGui::objectDidRollOver(ofxMSAInteractiveObject* object, int x, int y){
-    
+	
 }
 
 void ofxRGBDCaptureGui::objectDidRollOut(ofxMSAInteractiveObject* object, int x, int y){
-    
+	
 }
 
 void ofxRGBDCaptureGui::objectDidPress(ofxMSAInteractiveObject* object, int x, int y, int button){
-    
+	
 }
 
 void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x, int y, int button){
@@ -712,38 +744,34 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
   	if(object == btnSetDirectory){
 		loadDirectory();
 	}
-    else if(object == btnCalibrateDepthCamera){
-        refineDepthCalibration();
-    }
-    else if(object == btnRGBLoadCalibration){
+	else if(object == btnCalibrateDepthCamera){
+		refineDepthCalibration();
+	}
+	else if(object == btnRGBLoadCalibration){
 		loadRGBIntrinsicImages();
-    }
-    else if(object == btnGenerateCalibration){
-        generateCorrespondence();
-    }
+	}
+	else if(object == btnGenerateCalibration){
+		generateCorrespondence();
+	}
 	else if(object == btnToggleRecord){
-        toggleRecord();
-    }
+		toggleRecord();
+	}
 	else if(object == btnRenderBW){
 		currentRenderMode = RenderBW;
-        currentRenderModeObject = btnRenderBW;
-	}	
+		currentRenderModeObject = btnRenderBW;
+	}
 	else if(object == btnRenderRainbow){
 		currentRenderMode = RenderRainbow;
-        currentRenderModeObject = btnRenderRainbow;
+		currentRenderModeObject = btnRenderRainbow;
 	}
 	else if(object == btnRenderPointCloud){
-		ofQuaternion baseRotate;
-		baseRotate.makeRotate(0, 0, 1, 0);
-		pointcloudPreviewCam.targetNode.setPosition(0, 0, 0);
-		pointcloudPreviewCam.targetXRot = 0;
-		pointcloudPreviewCam.targetYRot = 0;
-		pointcloudPreviewCam.targetZRot = 0;
-		pointcloudPreviewCam.applyRotation = true;
-		pointcloudPreviewCam.updateRotation();
-		
+		pointcloudPreviewCam.setPosition(0, 0, 0);
+		pointcloudPreviewCam.setOrientation(ofQuaternion());
+		pointcloudPreviewCam.rotate(0, ofVec3f(0,1,0));
+		pointcloudPreviewCam.setAnglesFromOrientation();
+	
 		currentRenderMode = RenderPointCloud;
-        currentRenderModeObject = btnRenderPointCloud;
+		currentRenderModeObject = btnRenderPointCloud;
 
 		if(depthSequence.getDepthImageSequence() != NULL &&
 		   depthSequence.getDepthImageSequence()->isLoaded())
@@ -751,56 +779,56 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
 			updateDepthImage(depthSequence.getDepthImageSequence()->getPixels());
 		}
 	}
-    else if(find(tabSet.begin(),tabSet.end(), object) != tabSet.end()){
-        
-        btnRGBLoadCalibration->disableAllEvents();
-        btnCalibrateDepthCamera->disableAllEvents();
-        btnGenerateCalibration->disableAllEvents();
-        btnToggleRecord->disableAllEvents();
-        checkerboardDimensions.disable();
-        timeline.hide();
+	else if(find(tabSet.begin(),tabSet.end(), object) != tabSet.end()){
+		
+		btnRGBLoadCalibration->disableAllEvents();
+		btnCalibrateDepthCamera->disableAllEvents();
+		btnGenerateCalibration->disableAllEvents();
+		btnToggleRecord->disableAllEvents();
+		checkerboardDimensions.disable();
+		timeline.hide();
 		timeline.stop();
 		
-        if(object == btnIntrinsicsTab){
+		if(object == btnIntrinsicsTab){
 			disableSceneButtons();
-            currentTab = TabIntrinsics;
-            currentTabObject = btnIntrinsicsTab;
-            btnRGBLoadCalibration->enableAllEvents();
-            btnCalibrateDepthCamera->enableAllEvents();
+			currentTab = TabIntrinsics;
+			currentTabObject = btnIntrinsicsTab;
+			btnRGBLoadCalibration->enableAllEvents();
+			btnCalibrateDepthCamera->enableAllEvents();
 			checkerboardDimensions.enable();
-        }
-        else if(object == btnExtrinsicsTab){
+		}
+		else if(object == btnExtrinsicsTab){
 			disableSceneButtons();
-            currentTab = TabExtrinsics;
-            currentTabObject = btnExtrinsicsTab;
-            btnGenerateCalibration->enableAllEvents();
-            checkerboardDimensions.enable();
-        }
-        else if(object == btnRecordTab){
+			currentTab = TabExtrinsics;
+			currentTabObject = btnExtrinsicsTab;
+			btnGenerateCalibration->enableAllEvents();
+			checkerboardDimensions.enable();
+		}
+		else if(object == btnRecordTab){
 			enableSceneButtons();
-            currentTab = TabCapture;
-            currentTabObject = btnRecordTab;
-            btnToggleRecord->enableAllEvents();
-        }
-        else if(object == btnPlaybackTab){
+			currentTab = TabCapture;
+			currentTabObject = btnRecordTab;
+			btnToggleRecord->enableAllEvents();
+		}
+		else if(object == btnPlaybackTab){
 			enableSceneButtons();
-            currentTab = TabPlayback;
-            currentTabObject = btnPlaybackTab;
-            timeline.show();
+			currentTab = TabPlayback;
+			currentTabObject = btnPlaybackTab;
+			timeline.show();
 			if(depthSequence.getDepthImageSequence() != NULL && depthSequence.getDepthImageSequence()->isLoaded()){
 				updateDepthImage(depthSequence.getDepthImageSequence()->getPixels());
 			}
-        }
-    }
+		}
+	}
 	else {
 		for(int i = 0; i < btnScenes.size(); i++){
 			if(object == btnScenes[i].button){
 				if(loadSequenceForPlayback( i )){
 					for(int b = 0; b < btnScenes.size(); b++){
-                		btnScenes[b].isSelected = b == i;
+						btnScenes[b].isSelected = b == i;
 					}
 				}
-                break;
+				break;
 			}
 		}
 	}
@@ -909,7 +937,9 @@ void ofxRGBDCaptureGui::loadRGBIntrinsicImages(vector<string> filepaths){
 		}
 	}
 	else{
-		ofSystemAlertDialog("Too few calibration images provided to create intrinsics. Must have 4 or more.");
+		if(rgbCalibrationImages.size() != 0){
+			ofSystemAlertDialog("Too few calibration images provided to create intrinsics. Must have 4 or more.");
+		}
 	}
 }
 
@@ -949,7 +979,7 @@ void ofxRGBDCaptureGui::squareSizeChanged(string& args){
 	
 	
 	ofBuffer buf;
-	buf.append(checkerboardDimensions.text);
+	buf.append(ofToString(squareSize));
 	ofBufferToFile(squareSizeFilePath, buf);
 	
 	checkerboardDimensions.text = ofToString(squareSize, 2);
@@ -969,65 +999,70 @@ void ofxRGBDCaptureGui::saveRGBIntrinsicImages(){
 }
 
 void ofxRGBDCaptureGui::objectDidMouseMove(ofxMSAInteractiveObject* object, int x, int y){
-    
+	
 }
 
 void ofxRGBDCaptureGui::mousePressed(ofMouseEventArgs& args){
-    
+	
 }
 
 void ofxRGBDCaptureGui::mouseMoved(ofMouseEventArgs& args){
 	cam.applyRotation = cam.applyTranslation = (currentTab == TabExtrinsics && previewRectRight.inside(args.x, args.y));
 	pointcloudPreviewCam.applyRotation = pointcloudPreviewCam.applyTranslation = (currentRenderMode == RenderPointCloud && currentTab != TabExtrinsics && previewRectLeft.inside(args.x, args.y));
 
-    //CHECK FOR HOVER IN INTRINSICS
-    if(currentTab == TabIntrinsics){
-        
-    }
-    else if(currentTab == TabExtrinsics){
-        hoverPreviewDepth =  hoverPreviewIR = hoverPreviewingCaptured = false;
-        for(int i = alignmentPairs.size()-1; i >= 0; i--){
-            if(alignmentPairs[i]->depthImageRect.inside(args.x,args.y)){
-                if(alignmentPairs[i] == currentAlignmentPair && !alignmentPairs[i]->depthImage.isAllocated()){
-                    hoverPreviewDepth = true;
-                }
-                else{
-                    hoverPreviewImage.setFromPixels(alignmentPairs[i]->depthImage.getPixelsRef());
-//                    calibrationPreview.setTestImage(alignmentPairs[i]->depthCheckers);
-                    hoverPreviewingCaptured = true;
-                }
-            }
-            if(alignmentPairs[i]->depthCheckersRect.inside(args.x,args.y)){
-                if(alignmentPairs[i] == currentAlignmentPair && !alignmentPairs[i]->depthCheckers.isAllocated()){
-                    hoverPreviewIR = true;
-                }
-                else{
-                    hoverPreviewImage.setFromPixels(alignmentPairs[i]->depthCheckers.getPixelsRef());
-//                    calibrationPreview.setTestImage(alignmentPairs[i]->depthCheckers);
-                    hoverPreviewingCaptured = true;
-                }
-            }
-            
-            if(alignmentPairs[i]->colorCheckersRect.inside(args.x,args.y)){
-                //TODO check for colors to set and make it work within the given size
-            }
-        }
-    }
+	hoverRect = ofRectangle();
+	//CHECK FOR HOVER IN INTRINSICS
+	if(currentTab == TabIntrinsics){
+		
+	}
+	else if(currentTab == TabExtrinsics){
+		hoverPreviewDepth =  hoverPreviewIR = hoverPreviewingCaptured = false;
+		for(int i = alignmentPairs.size()-1; i >= 0; i--){
+			if(alignmentPairs[i]->depthImageRect.inside(args.x,args.y)){
+				if(alignmentPairs[i] == currentAlignmentPair && !alignmentPairs[i]->depthImage.isAllocated()){
+					hoverPreviewDepth = true;
+				}
+				else{
+					hoverPreviewImage.setFromPixels(alignmentPairs[i]->depthImage.getPixelsRef());
+//					calibrationPreview.setTestImage(alignmentPairs[i]->depthCheckers);
+					hoverPreviewingCaptured = true;
+				}
+				hoverRect = alignmentPairs[i]->depthImageRect;				
+			}
+			if(alignmentPairs[i]->depthCheckersRect.inside(args.x,args.y)){
+				if(alignmentPairs[i] == currentAlignmentPair && !alignmentPairs[i]->depthCheckers.isAllocated()){
+					hoverPreviewIR = true;
+				}
+				else{
+					hoverPreviewImage.setFromPixels(alignmentPairs[i]->depthCheckers.getPixelsRef());
+//					calibrationPreview.setTestImage(alignmentPairs[i]->depthCheckers);
+					hoverPreviewingCaptured = true;
+				}
+				hoverRect = alignmentPairs[i]->depthCheckersRect;
+			}
+			
+			if(alignmentPairs[i]->colorCheckersRect.inside(args.x,args.y)){
+				//TODO check for colors to set and make it work within the given size
+				hoverRect = alignmentPairs[i]->colorCheckersRect;
+			}
+		}
+	}
 }
 
 void ofxRGBDCaptureGui::mouseDragged(ofMouseEventArgs& args){
-    
+	
 }
 
 void ofxRGBDCaptureGui::mouseReleased(ofMouseEventArgs& args){
-    
-    //CHECK FOR HOVER IN INTRINSICS
-    if(currentTab == TabIntrinsics){
-        
-    }
-    else if(currentTab == TabExtrinsics){
-        //CHECK FOR HOVERING ON EXTRINSICS
-        for(int i = alignmentPairs.size()-1; i >= 0; i--){
+	
+	//CHECK FOR HOVER IN INTRINSICS
+	if(currentTab == TabIntrinsics){
+		
+	}
+	else if(currentTab == TabExtrinsics){
+		//CHECK FOR HOVERING ON EXTRINSICS
+		for(int i = alignmentPairs.size()-1; i >= 0; i--){
+			//only if it's the current one
 			if(alignmentPairs[i] == currentAlignmentPair){
 				if(alignmentPairs[i]->depthImageRect.inside(args.x,args.y)){
 					//CAPTURE DEPTH IMAGE
@@ -1049,7 +1084,6 @@ void ofxRGBDCaptureGui::mouseReleased(ofMouseEventArgs& args){
 						//preview the still of what you just clicked
 						hoverPreviewIR = false;
 						hoverPreviewingCaptured = true;
-
 					}
 					else{
 						ofSystemAlertDialog("No checkerboard found in IR image!");
@@ -1061,51 +1095,59 @@ void ofxRGBDCaptureGui::mouseReleased(ofMouseEventArgs& args){
 					break;
 				}
 			}
-			
-			if(alignmentPairs[i] != currentAlignmentPair){
-                
-                if(alignmentPairs[i]->deleteRect.inside(args.x,args.y)){
+					 
+			//DELETE CLICKED
+			if(alignmentPairs[i]->deleteRect.inside(args.x,args.y)){
 
-                    delete alignmentPairs[i];
-                    alignmentPairs.erase(alignmentPairs.begin() + i);
+				if(alignmentPairs[i] != currentAlignmentPair){
+					
+					delete alignmentPairs[i];
+					alignmentPairs.erase(alignmentPairs.begin() + i);
 					if(alignmentPairs.size() <= 1){
 						calibrationGenerated = false;
 					}
 					if(currentRendererPreviewIndex == i){
-                        previewNextAlignmentPair();
-                    }
-					saveCorrespondenceImages();
-                    break;
-                }
-                
-                if(alignmentPairs[i]->includeRect.inside(args.x, args.y)){
-                    alignmentPairs[i]->included = !alignmentPairs[i]->included;
-					hasIncludedBoards = false;
-					for(int i = 0; i < alignmentPairs.size()-1; i++){
-						hasIncludedBoards |= alignmentPairs[i]->included;
+						previewNextAlignmentPair();
 					}
-					saveCorrespondenceIncludes();
-                }
-            }
-        }
-        
-        if(currentAlignmentPair->depthImage.isAllocated() && currentAlignmentPair->depthCheckers.isAllocated()){
-            currentAlignmentPair = new AlignmentPair();
+					saveCorrespondenceImages();
+					break;
+					
+				}
+				else {
+					currentAlignmentPair->colorCheckers.clear();
+					currentAlignmentPair->depthCheckers.clear();
+					currentAlignmentPair->depthImage.clear();
+				}
+			}
+
+			//INCLUDED CLICKED
+			if(alignmentPairs[i] != currentAlignmentPair && alignmentPairs[i]->includeRect.inside(args.x, args.y)){
+				alignmentPairs[i]->included = !alignmentPairs[i]->included;
+				hasIncludedBoards = false;
+				for(int i = 0; i < alignmentPairs.size()-1; i++){
+					hasIncludedBoards |= alignmentPairs[i]->included;
+				}
+				saveCorrespondenceIncludes();
+			}
+		}
+		
+		if(currentAlignmentPair->depthImage.isAllocated() && currentAlignmentPair->depthCheckers.isAllocated()){
+			currentAlignmentPair = new AlignmentPair();
 			currentAlignmentPair->included = true;
-            alignmentPairs.push_back(currentAlignmentPair);
+			alignmentPairs.push_back(currentAlignmentPair);
 			saveCorrespondenceImages();
-        }
-    }
+		}
+	}
 }
 
 void ofxRGBDCaptureGui::keyPressed(ofKeyEventArgs& args){
-    if(args.key == 'R'){
+	if(args.key == 'R'){
 		gpuRenderer.reloadShader();
 	}
 }
 
 void ofxRGBDCaptureGui::keyReleased(ofKeyEventArgs& args){
-    if(currentTab == TabExtrinsics && calibrationGenerated){
+	if(currentTab == TabExtrinsics && calibrationGenerated){
 		if(args.key == OF_KEY_RIGHT){
 			previewNextAlignmentPair();
 		}
@@ -1138,12 +1180,13 @@ void ofxRGBDCaptureGui::previewNextAlignmentPair(){
 		return;
 	}
 	currentRendererPreviewIndex = (currentRendererPreviewIndex + 1) % (alignmentPairs.size()-1);
+	
 	cpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
 	gpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
 	
 	cpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
 	gpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
-	
+
 	cpuRenderer.update();
 	gpuRenderer.update();
 
@@ -1160,21 +1203,22 @@ void ofxRGBDCaptureGui::previewPreviousAlignmentPair(){
 	}
 	gpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
 	gpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
-	gpuRenderer.update();
 
 	cpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
 	cpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
-	cpuRenderer.update();
+
+	cpuRenderer.update();	
+	gpuRenderer.update();
 
 }
 
 void ofxRGBDCaptureGui::loadDirectory(){
-    if(recorder.numFramesWaitingCompession() != 0){
+	if(recorder.numFramesWaitingCompession() != 0){
 
-    	ofSystemAlertDialog("Cannot change directory while footage is compressing.");
+		ofSystemAlertDialog("Cannot change directory while footage is compressing.");
 		return;
-    }
-    
+	}
+	
 	ofFileDialogResult r = ofSystemLoadDialog("Select Record Directory", true);
 	if(r.bSuccess){
 		loadDirectory(r.getPath());
@@ -1183,20 +1227,20 @@ void ofxRGBDCaptureGui::loadDirectory(){
 
 #pragma mark Load Working Directory
 void ofxRGBDCaptureGui::loadDirectory(string path){
-    
-    if(path == ""){
-        ofSystemAlertDialog("The Working directory empty. Resetting to bin/data/depthframes/");
-        loadDefaultDirectory();
-        return;
-    }
-    
-    ofDirectory workingDirPath(path);
-    if(!workingDirPath.exists()){
-        ofSystemAlertDialog("The Working directory empty. Resetting to bin/data/depthframes/");
-        loadDefaultDirectory();
-        return;
-    }
-    
+	
+	if(path == ""){
+		ofSystemAlertDialog("The Working directory empty. Resetting to bin/data/depthframes/");
+		loadDefaultDirectory();
+		return;
+	}
+	
+	ofDirectory workingDirPath(path);
+	if(!workingDirPath.exists()){
+		ofSystemAlertDialog("The Working directory empty. Resetting to bin/data/depthframes/");
+		loadDefaultDirectory();
+		return;
+	}
+	
 	clearCorrespondenceImages();
 	
 	alignmentPairs.clear();
@@ -1205,12 +1249,20 @@ void ofxRGBDCaptureGui::loadDirectory(string path){
 	rgbCalibrationImages.clear();
 	rgbCalibrationFileNames.clear();
 
-    workingDirectory = path;
+	workingDirectory = path;
 	recorder.setRecordLocation(path, "frame");
 	rgbCalibrationDirectory  = workingDirectory+"/_calibration/rgbCalibration/";
 	correspondenceDirectory = workingDirectory+"/_calibration/correspondence/";
 	matrixDirectory = workingDirectory+"/_calibration/matrices/";
 	squareSizeFilePath = workingDirectory+"/_calibration/squaresize.txt";
+	
+	cam.cameraPositionFile = workingDirectory+"/_calibration/calibrationPreviewCamera.xml";
+	cam.loadCameraPosition();
+	cam.autosavePosition = true;
+	
+	pointcloudPreviewCam.cameraPositionFile = workingDirectory+"/_calibration/pointcloudPreviewFile.xml";
+	pointcloudPreviewCam.loadCameraPosition();
+	pointcloudPreviewCam.autosavePosition = true;
 	
 	string newSize;
 	if(ofFile::doesFileExist(squareSizeFilePath)){
@@ -1305,9 +1357,9 @@ void ofxRGBDCaptureGui::loadDirectory(string path){
 	btnSetDirectory->setLabel("Working Dir: " + path );
 	updateSceneButtons();
 	ofxXmlSettings defaults;
-	defaults.loadFile("defaults.xml");
-	defaults.setValue("currentDir", path);
-	defaults.saveFile("defaults.xml");
+	defaults.loadFile("defaultBin.xml");
+	defaults.setValue("bin", path);
+	defaults.saveFile("defaultBin.xml");
 }
 
 void ofxRGBDCaptureGui::clearCorrespondenceImages(){
@@ -1320,20 +1372,20 @@ void ofxRGBDCaptureGui::clearCorrespondenceImages(){
 }
 
 void ofxRGBDCaptureGui::loadDefaultDirectory(){
-    
-    //create it if it doesn't exist
-    string defaultDir = "depthframes";
-    if(!ofDirectory(defaultDir).exists()){
-        ofDirectory(defaultDir).create(true);
-    }
-    loadDirectory(defaultDir);
+	
+	//create it if it doesn't exist
+	string defaultDir = "depthframes";
+	if(!ofDirectory(defaultDir).exists()){
+		ofDirectory(defaultDir).create(true);
+	}
+	loadDirectory(defaultDir);
 }
 
 //--------------------------------------------------------------
 bool ofxRGBDCaptureGui::loadSequenceForPlayback( int index ){
-    
+	
 	if(recorder.getScenes()[index]->uncompressedDepthFrameCount == 0){
-	    depthSequence.loadSequence( recorder.getScenes()[index]->depthFolder );
+		depthSequence.loadSequence( recorder.getScenes()[index]->depthFolder );
 		timeline.setDurationInSeconds(depthSequence.getDepthImageSequence()->getDurationInSeconds());
 		return true;
 	}
@@ -1343,38 +1395,38 @@ bool ofxRGBDCaptureGui::loadSequenceForPlayback( int index ){
 //--------------------------------------------------------------
 void ofxRGBDCaptureGui::updateSceneButtons(){
 	
-    vector<ofxRGBDScene*>& scenes = recorder.getScenes();
+	vector<ofxRGBDScene*>& scenes = recorder.getScenes();
 	if(scenes.size() == btnScenes.size()){
-    	return;
-    }
-    
+		return;
+	}
+	
 	for(int i = 0; i < btnScenes.size(); i++){
-        btnScenes[i].button->disableAllEvents();
-        btnScenes[i].button->enabled = false;
+		btnScenes[i].button->disableAllEvents();
+		btnScenes[i].button->enabled = false;
 		delete btnScenes[i].button;
 	}
-    
+	
 	btnScenes.clear();
 	
 	float x = previewRectRight.x;
 	float y = previewRectRight.y;
 	float takebuttonHeight = previewRectRight.height*.05;
 	for(int i = 0; i < scenes.size(); i++){
-        SceneButton tb;
-        tb.isSelected = false;
-        tb.sceneRef = scenes[i];
-        
+		SceneButton tb;
+		tb.isSelected = false;
+		tb.sceneRef = scenes[i];
+		
 		ofxMSAInteractiveObjectWithDelegate* btnScene = new ofxMSAInteractiveObjectWithDelegate();
 		
 		btnScene->setPosAndSize(x, y, thirdWidth, btnheight*.66);
-        btnScene->setLabel( scenes[i]->name );
+		btnScene->setLabel( scenes[i]->name );
 		btnScene->setIdleColor(idleColor);
 		btnScene->setDownColor(downColor);
 		btnScene->setHoverColor(hoverColor);
 		btnScene->setDelegate(this);
-        btnScene->enableMouseEvents();
-        btnScene->disableKeyEvents();
-        btnScene->fontReference = &contextHelpTextSmall;
+		btnScene->enableMouseEvents();
+		btnScene->disableKeyEvents();
+		btnScene->fontReference = &contextHelpTextSmall;
 		tb.button = btnScene;
 		btnScenes.push_back( tb );
 		
@@ -1407,8 +1459,7 @@ void ofxRGBDCaptureGui::enableSceneButtons(){
 void ofxRGBDCaptureGui::dragEvent(ofDragInfo& dragInfo){
 	string filename = dragInfo.files[0];
 	string extension = ofToLower(ofFilePath::getFileExt(filename));
-    cout << "drag event!!" << endl;
-
+	
 	bool draggedIntoImageRect = currentTab == TabIntrinsics && previewRectRight.inside( dragInfo.position );
 	if(draggedIntoImageRect) {
 		loadRGBIntrinsicImages(dragInfo.files);
@@ -1416,48 +1467,48 @@ void ofxRGBDCaptureGui::dragEvent(ofDragInfo& dragInfo){
 			saveRGBIntrinsicImages();
 		}
 	}
-    
-    if(currentTab == TabExtrinsics){
-        if(extension == "png" || extension == "jpg" || extension == "jpeg"){ //TODO: make accept all valid files
-            for(int i = 0; i < alignmentPairs.size()-1; i++){
-//                if(alignmentPairs[i]->depthImageRect.inside(dragInfo.position)){
-//                    recorder.getCompressor().readCompressedPng(filename, alignmentPairs[i]->depthPixelsRaw);
-//                    alignmentPairs[i]->depthImage = recorder.getCompressor().convertTo8BitImage(alignmentPairs[i]->depthPixelsRaw);
-//                }
-//                if(alignmentPairs[i]->depthCheckersRect.inside(dragInfo.position)){
-//                    alignmentPairs[i]->depthCheckers.loadImage(filename);
-//                    alignmentPairs[i]->depthCheckers.setImageType(OF_IMAGE_GRAYSCALE);
-//                }
-			
-                if(alignmentPairs[i]->colorCheckersRect.inside(dragInfo.position)){
-                    alignmentPairs[i]->colorCheckers.loadImage(filename);
-                }
+	
+	if(currentTab == TabExtrinsics){
+		if(extension == "png" || extension == "jpg" || extension == "jpeg"){ //TODO: make accept all valid files
+			for(int i = 0; i < alignmentPairs.size()-1; i++){
+				if(alignmentPairs[i]->depthImageRect.inside(dragInfo.position)){
+					recorder.getCompressor().readCompressedPng(filename, alignmentPairs[i]->depthPixelsRaw);
+					alignmentPairs[i]->depthImage = recorder.getCompressor().convertTo8BitImage(alignmentPairs[i]->depthPixelsRaw);
+				}
+				if(alignmentPairs[i]->depthCheckersRect.inside(dragInfo.position)){
+					alignmentPairs[i]->depthCheckers.loadImage(filename);
+					alignmentPairs[i]->depthCheckers.setImageType(OF_IMAGE_GRAYSCALE);
+				}
+				if(alignmentPairs[i]->colorCheckersRect.inside(dragInfo.position)){
+					alignmentPairs[i]->colorCheckers.loadImage(filename);
+				}
 				
 				hasIncludedBoards = true;
-            }
+			}
 			
-//            if(currentAlignmentPair->depthImage.isAllocated() && currentAlignmentPair->depthCheckers.isAllocated()){
-//                currentAlignmentPair = new AlignmentPair();
+//			if(currentAlignmentPair->depthImage.isAllocated() && currentAlignmentPair->depthCheckers.isAllocated()){
+//				currentAlignmentPair = new AlignmentPair();
 //				currentAlignmentPair->included = true;
 //				
-//                alignmentPairs.push_back(currentAlignmentPair);
-//            }
-        }
-        
-        //if(extension == "mov" || extension == "mp4"){
+//				alignmentPairs.push_back(currentAlignmentPair);
+//			}
+		}
+		
+
 		if(ofContains(ofxRGBDScene::getValidVideoExtensions(), extension)){
-            for(int i = 0; i < alignmentPairs.size(); i++){
-                if(alignmentPairs[i]->colorCheckersRect.inside(dragInfo.position)){
-                    ofVideoPlayer p;
-                    p.setUseTexture(false);
-                    p.loadMovie(filename);
-                    p.setPosition(.5);
-                    alignmentPairs[i]->colorCheckers.setFromPixels(p.getPixelsRef());
-                    alignmentPairs[i]->colorCheckers.setImageType(OF_IMAGE_GRAYSCALE);
-                }
-            }
-        }
-    }
+			for(int i = 0; i < alignmentPairs.size(); i++){
+				if(alignmentPairs[i]->colorCheckersRect.inside(dragInfo.position)){
+					ofVideoPlayer p;
+					p.setUseTexture(false);
+					p.loadMovie(filename);
+					p.setPosition(.5);
+					alignmentPairs[i]->colorCheckers.setFromPixels(p.getPixelsRef());
+					alignmentPairs[i]->colorCheckers.setImageType(OF_IMAGE_GRAYSCALE);
+					hasIncludedBoards = true;					
+				}
+			}
+		}
+	}
 }
 
 void ofxRGBDCaptureGui::refineDepthCalibration(){
@@ -1470,15 +1521,21 @@ void ofxRGBDCaptureGui::refineDepthCalibration(){
 	for(int y = 0; y < height; y++){
 		for(int x = 0; x < width; x++){
 			ofVec3f objectPoint = depthImageProvider->getWorldCoordinateAt(x, y);
-            //			cout << "object point is " << objectPoint << endl;
+			//			cout << "object point is " << objectPoint << endl;
 			if(objectPoint.z != 0){
 				depthObjectCollection.push_back(Point3f(objectPoint.x,objectPoint.y,objectPoint.z));
 				depthImageCollection.push_back(Point2f(x,y));
 			}
 		}
 	}
+	
+	if(depthObjectCollection.size() == 0){
+		ofSystemAlertDialog("No depth points to self calibrate against. Make sure the sensor is connected and looking out into the world.");
+		return;
+	}
+	   
 	cout << "depth object points for refinment " << depthObjectCollection.size() << endl;
-    
+	
 	vector< vector<Point3f> > depthObjectPoints;
 	vector< vector<Point2f> > depthImagePoints;
 	depthObjectPoints.push_back(depthObjectCollection);
@@ -1501,13 +1558,13 @@ void ofxRGBDCaptureGui::refineDepthCalibration(){
 	
 	Intrinsics newDepth;
 	newDepth.setup(depthCameraMatrix,cv::Size(width,height));
-    
-    //TODO impose folder structure
+	
+	//TODO impose folder structure
 	depthCalibrationRefined.setIntrinsics(newDepth, depthDistCoeffs);
 
-    depthCameraMatrix = depthCalibrationRefined.getDistortedIntrinsics().getCameraMatrix();
-    fov = ofVec2f(depthCameraMatrix.at<double>(0,0), depthCameraMatrix.at<double>(1,1));
-    pp = ofVec2f(depthCameraMatrix.at<double>(0,2),depthCameraMatrix.at<double>(1,2));
+	depthCameraMatrix = depthCalibrationRefined.getDistortedIntrinsics().getCameraMatrix();
+	fov = ofVec2f(depthCameraMatrix.at<double>(0,0), depthCameraMatrix.at<double>(1,1));
+	pp = ofVec2f(depthCameraMatrix.at<double>(0,2),depthCameraMatrix.at<double>(1,2));
 	
 	if(abs(320 - pp.x) > 2 || abs(240 - pp.y) > 2 ){
 		ofSystemAlertDialog("Self Calibration failed. Make sure the depth camera is pointed out into space and is seeing a wide range of depth values.");
@@ -1532,8 +1589,8 @@ void ofxRGBDCaptureGui::saveCorrespondenceImages(){
 		   alignmentPairs[i]->depthCheckers.isAllocated() &&
 		   alignmentPairs[i]->colorCheckers.isAllocated() )
 		{
-            
-            //save the correspondnce images
+			
+			//save the correspondnce images
 			recorder.getCompressor().saveToCompressedPng(correspondenceDirectory + ofToString(i) + "_depth_pixels.png",
 														 alignmentPairs[i]->depthPixelsRaw.getPixels());
 			alignmentPairs[i]->depthCheckers.saveImage(correspondenceDirectory + ofToString(i) + "_checkers.png");
@@ -1561,8 +1618,8 @@ void ofxRGBDCaptureGui::saveCorrespondenceIncludes(){
 }
 
 void ofxRGBDCaptureGui::generateCorrespondence(){
-    if(!depthCalibrationRefined.isReady() || !rgbCalibration.isReady()){
-        ofSystemAlertDialog("You cannot generate a correspondence before you've calibrated both the RGB and Depth lenses.");
+	if(!depthCalibrationRefined.isReady() || !rgbCalibration.isReady()){
+		ofSystemAlertDialog("You cannot generate a correspondence before you've calibrated both the RGB and Depth lenses.");
 		return;
 	}
 
@@ -1578,15 +1635,15 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 	cam.updateRotation();
 	
 	vector< vector<Point2f> > kinectImagePoints;
-    vector< vector<Point2f> > externalRGBPoints;
-    vector< vector<ofVec3f> > kinect3dPoints;
-    vector< vector<Point3f> > objectPoints;
-    
-    vector<Point3f> filteredKinectObjectPoints;
+	vector< vector<Point2f> > externalRGBPoints;
+	vector< vector<ofVec3f> > kinect3dPoints;
+	vector< vector<Point3f> > objectPoints;
+	
+	vector<Point3f> filteredKinectObjectPoints;
 	vector<Point2f> filteredExternalImagePoints;
 	map<int,int> indexToBoard;
 	
-    saveCorrespondenceImages();
+	saveCorrespondenceImages();
 	
 	inlierPoints.clear();
 	
@@ -1609,21 +1666,21 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 			//foundBoard = calibrationPreview.getCalibration().findBoard(toCv(alignmentPairs[i]->colorCheckers), externalPoints);
 			foundBoard = rgbCalibration.findBoard(toCv(alignmentPairs[i]->colorCheckers), externalPoints, true);
 			if(!foundBoard){
-                //if we don't find the board, try scaling it to 1/4 size and looking...
-                ofImage downscaled;
-                downscaled.setUseTexture(false);
-                downscaled.setFromPixels(alignmentPairs[i]->colorCheckers);
-                downscaled.resize(downscaled.getWidth()/2, downscaled.getHeight()/2);
-                
-                foundBoard = rgbCalibration.findBoard(toCv(downscaled), externalPoints, true);
-                if(!foundBoard){
-                    ofLogError("Correspondence Error") << "color checkerboard " << (i+1) << " of " << alignmentPairs.size() << " cannot be found " << endl;
-                    continue;
-                }
-                for(int x = 0; x < externalPoints.size(); x++){
-                    externalPoints[x].x *= 2;
-                    externalPoints[i].y *= 2;
-                }
+				//if we don't find the board, try scaling it to 1/4 size and looking...
+				ofImage downscaled;
+				downscaled.setUseTexture(false);
+				downscaled.setFromPixels(alignmentPairs[i]->colorCheckers);
+				downscaled.resize(downscaled.getWidth()/2, downscaled.getHeight()/2);
+				
+				foundBoard = rgbCalibration.findBoard(toCv(downscaled), externalPoints, true);
+				if(!foundBoard){
+					ofLogError("Correspondence Error") << "color checkerboard " << (i+1) << " of " << alignmentPairs.size() << " cannot be found " << endl;
+					continue;
+				}
+				for(int x = 0; x < externalPoints.size(); x++){
+					externalPoints[x].x *= 2;
+					externalPoints[i].y *= 2;
+				}
 			}
 			
 			kinectImagePoints.push_back( kinectPoints );
@@ -1641,11 +1698,11 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 			objectPoints.push_back( Calibration::createObjectPoints(cv::Size(10,7), squareSize, CHESSBOARD));
 		}
 	}
-    
-    if(objectPoints.size() == 0){
+	
+	if(objectPoints.size() == 0){
 		ofSystemAlertDialog("No points to calibrate with found when calibrating");
-        return;
-    }
+		return;
+	}
 	
 	int numPointsFound = 0;
 	int boardIndex = 0;
@@ -1671,7 +1728,7 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 	cout << "Found a total of " << numPointsFound << " for correspondence " << endl;
 	vector< vector<Point3f> > cvObjectPoints;
 	vector< vector<Point2f> > cvImagePoints;
-    
+	
 	cvObjectPoints.push_back( filteredKinectObjectPoints );
 	cvImagePoints.push_back( filteredExternalImagePoints );
 	Mat cameraMatrix;
@@ -1688,41 +1745,38 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 	cout << "Camera image size " << rgbCalibration.getDistortedIntrinsics().getImageSize().width << " " << rgbCalibration.getDistortedIntrinsics().getImageSize().height << endl;
 	
 	
-    /*
-    int flags = CV_CALIB_USE_INTRINSIC_GUESS;// | CV_CALIB_FIX_INTRINSIC;
-	double rms  = calibrateCamera(cvObjectPoints, cvImagePoints, cv::Size(rgbCalibration.getDistortedIntrinsics().getImageSize()), cameraMatrix, distCoeffs,rotations,translations, flags); //todo fix distortion
+/*
+	int flags = CV_CALIB_USE_INTRINSIC_GUESS | CV_CALIB_FIX_INTRINSIC | CV_CALIB_FIX_K1;
+	double rms  = calibrateCamera(cvObjectPoints, cvImagePoints, rgbCalibration.getDistortedIntrinsics().getImageSize(), cameraMatrix, distCoeffs,rotations,translations, flags); //todo fix distortion
 	rotationDepthToRGB = rotations[0];
 	translationDepthToRGB = translations[0];
 	cout << "RMS IS " << rms << endl;
-	*/
-	
-    Mat inliers;
+*/
+
+
+	Mat inliers;
 	solvePnPRansac(filteredKinectObjectPoints, filteredExternalImagePoints,
-                   cameraMatrix, distCoeffs,
-                   rotationDepthToRGB, translationDepthToRGB,
-                   true,//use intrinsics guess
-                   100, //iterations
+				   cameraMatrix, distCoeffs,
+				   rotationDepthToRGB, translationDepthToRGB,
+				   true,//use intrinsics guess
+				   100, //iterations
 				   1.5, //reprojection error
-                   numPointsFound, //min inliers
-                   inliers ); //output inliers
+				   numPointsFound, //min inliers
+				   inliers ); //output inliers
 	
-    cout << "inliers " << inliers.total() << endl;
+	cout << "inliers " << inliers.total() << endl;
 
 	for(int i= 0; i < inliers.total(); i++){
 		inlierPoints.addColor( boardColors[ indexToBoard[ inliers.at<int>(i) ] ] );
 		inlierPoints.addVertex( toOf(filteredKinectObjectPoints[inliers.at<int>(i)]) );
 	}
-	
-	cout << "Final camera matrix is " << cameraMatrix << endl;
-	cout << "Final distortion coefficients " << distCoeffs << endl;
-	cout << "Depth->RGB rotation " << rotationDepthToRGB << endl;
-	cout << "Depth->RGB translation " << translationDepthToRGB << endl;
-	
+
 	if(inliers.total() == 0){
 		ofSystemAlertDialog("Calibration failed. Try including a different set of checkerboard triplets and trying again.");
 		calibrationGenerated = false;
 	}
 	else{
+
 		saveMat(rotationDepthToRGB, matrixDirectory + "rotationDepthToRGB.yml");
 		saveMat(translationDepthToRGB, matrixDirectory + "translationDepthToRGB.yml");
 		
@@ -1736,20 +1790,26 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 		
 		setupRenderer();
 	}
+
+	cout << "Final camera matrix is " << cameraMatrix << endl;
+	cout << "Final distortion coefficients " << distCoeffs << endl;
+	cout << "Depth->RGB rotation " << rotationDepthToRGB << endl;
+	cout << "Depth->RGB translation " << translationDepthToRGB << endl;
+	
 }
 
 ofVec3f ofxRGBDCaptureGui::depthToWorldFromCalibration(int x, int y, unsigned short z){
-    //    return ofVec3f(((x - pp.x) / 640) * z * fov.x, ((y - pp.y) / 480) * z * fov.y, z);
-    return ofVec3f((x - pp.x) * z / fov.x, (y - pp.y) * z / fov.y, z);
+	//	return ofVec3f(((x - pp.x) / 640) * z * fov.x, ((y - pp.y) / 480) * z * fov.y, z);
+	return ofVec3f((x - pp.x) * z / fov.x, (y - pp.y) * z / fov.y, z);
 }
 
 void ofxRGBDCaptureGui::exit(ofEventArgs& args){
-    calibrationPreview.quit();
+	calibrationPreview.quit();
 	recorder.shutdown();
-    if(providerSet){
+	if(providerSet){
 		depthImageProvider->close();
-        providerSet = false;
-    }
+		providerSet = false;
+	}
 }
 
 //TODO move this to a shader
@@ -1794,40 +1854,40 @@ void ofxRGBDCaptureGui::createRainbowPallet() {
 }
 
 void ofxRGBDCaptureGui::updateDepthImage(ofShortPixels& pixels){
-    
-    if(!pixels.isAllocated()){
-        return;
-    }
-    
-    int max_depth = depthImageProvider->maxDepth();
-    if(max_depth == 0){
-    	max_depth = 5000;
-    }
 	
-    //    cout << "updating depth image with max depth of " << max_depth << " render: " << (currentRenderMode == RenderRainbow ? "rainbow" : "b&w") <<  endl;
-    if(currentRenderMode == RenderRainbow){
+	if(!pixels.isAllocated()){
+		return;
+	}
+	
+	int max_depth = depthImageProvider->maxDepth();
+	if(max_depth == 0){
+		max_depth = 5000;
+	}
+	
+	//	cout << "updating depth image with max depth of " << max_depth << " render: " << (currentRenderMode == RenderRainbow ? "rainbow" : "b&w") <<  endl;
+	if(currentRenderMode == RenderRainbow){
 		if(depthImage.getPixelsRef().getImageType() != OF_IMAGE_COLOR){
 			depthImage.setImageType(OF_IMAGE_COLOR);
 		}
-        for(int i = 0; i < 640*480; i++){
-            int lookup = pixels.getPixels()[i] / (max_depth / 256);
-            //int lookup = ofMap( depthPixels.getPixels()[i], 0, max_depth, 0, 255, true);
-            depthImage.getPixels()[(i*3)+0] = LUTR[lookup];
-            depthImage.getPixels()[(i*3)+1] = LUTG[lookup];
-            depthImage.getPixels()[(i*3)+2] = LUTB[lookup];
-        }
-    }
-    else if(currentRenderMode == RenderBW){
+		for(int i = 0; i < 640*480; i++){
+			int lookup = pixels.getPixels()[i] / (max_depth / 256);
+			//int lookup = ofMap( depthPixels.getPixels()[i], 0, max_depth, 0, 255, true);
+			depthImage.getPixels()[(i*3)+0] = LUTR[lookup];
+			depthImage.getPixels()[(i*3)+1] = LUTG[lookup];
+			depthImage.getPixels()[(i*3)+2] = LUTB[lookup];
+		}
+	}
+	else if(currentRenderMode == RenderBW){
 		if(depthImage.getPixelsRef().getImageType() != OF_IMAGE_GRAYSCALE){
 			depthImage.setImageType(OF_IMAGE_GRAYSCALE);
 		}
 
-        recorder.getCompressor().convertTo8BitImage(pixels, depthImage);
-    }
+		recorder.getCompressor().convertTo8BitImage(pixels, depthImage);
+	}
 	else{
 		pointcloudPreview.setDepthImage(pixels);
 		pointcloudPreview.update();
 	}
-    
-    depthImage.update();	
+	
+	depthImage.update();	
 }

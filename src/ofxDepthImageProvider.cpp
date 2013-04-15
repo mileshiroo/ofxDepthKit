@@ -11,7 +11,7 @@
 
 ofxDepthImageProvider::ofxDepthImageProvider(){
 	bUseRainbow = true;
-    
+	
 	bDepthImageDirty = false;
 	bDeviceFound = false;
 	bNewFrame = false;
@@ -52,7 +52,7 @@ ofImage& ofxDepthImageProvider::getColorImage(){
 
 /*
 ofImage& ofxDepthImageProvider::getDepthImage(){
-    
+	
 	if(bDepthImageDirty){
 		
 		if(bUseRainbow){		
