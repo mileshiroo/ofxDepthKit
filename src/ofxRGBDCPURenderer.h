@@ -43,10 +43,8 @@ class ofxRGBDCPURenderer : public ofxRGBDRenderer{
 	
     bool hasTriangles;
     bool calculateTextureCoordinates;
-    bool normalizeTextureCoordinates;    
-    void setTextureScaleForImage(ofBaseHasTexture& texture);
-    
-    ofVec2f textureScale;
+    bool normalizeTextureCoordinates;
+
 	ofVec3f getWorldPoint(float x, float y);
     ofVec3f getWorldPoint(float x, float y, unsigned short z);
     ofVec3f getWorldPoint(float x, float y, ofShortPixels& pixels);

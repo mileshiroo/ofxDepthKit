@@ -231,12 +231,7 @@ void ofxRGBDCaptureGui::setImageProvider(ofxDepthImageProvider* imageProvider){
 
 
 void ofxRGBDCaptureGui::update(ofEventArgs& args){
-	if(!providerSet || !depthImageProvider->deviceFound()){
-		return;
-	}
 	
-	depthImageProvider->update();
-    
 	if(currentTab == TabPlayback &&
 	   depthSequence.getDepthImageSequence() != NULL &&
 	   depthSequence.getDepthImageSequence()->isLoaded() &&
@@ -245,6 +240,11 @@ void ofxRGBDCaptureGui::update(ofEventArgs& args){
 		updateDepthImage(depthSequence.getDepthImageSequence()->getPixels());
 	}
 	
+	if(!providerSet || !depthImageProvider->deviceFound()){
+		return;
+	}
+	
+	depthImageProvider->update();
 	if(depthImageProvider->isFrameNew()){
         
         if(currentTab != TabPlayback){
@@ -562,7 +562,6 @@ void ofxRGBDCaptureGui::drawDepthImage(ofRectangle& targetRect){
     if(currentRenderMode == RenderPointCloud){
 //		pointcloudPreviewCam.begin(targetRect);
 //		pointcloudPreview.drawPointCloud();
-		
 		//glEnable(GL_DEPTH_TEST);
 		glEnable(GL_POINT_SMOOTH);
 		glPointSize(2);
@@ -745,8 +744,13 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
 		
 		currentRenderMode = RenderPointCloud;
         currentRenderModeObject = btnRenderPointCloud;
-	}
 
+		if(depthSequence.getDepthImageSequence() != NULL &&
+		   depthSequence.getDepthImageSequence()->isLoaded())
+		{
+			updateDepthImage(depthSequence.getDepthImageSequence()->getPixels());
+		}
+	}
     else if(find(tabSet.begin(),tabSet.end(), object) != tabSet.end()){
         
         btnRGBLoadCalibration->disableAllEvents();
@@ -1137,12 +1141,6 @@ void ofxRGBDCaptureGui::previewNextAlignmentPair(){
 	cpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
 	gpuRenderer.setDepthImage(alignmentPairs[currentRendererPreviewIndex]->depthPixelsRaw);
 	
-//	previewPixelsUndistorted.setFromPixels(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
-//	rgbCalibration.undistort( toCv(previewPixelsUndistorted) );
-//	previewPixelsUndistorted.reloadTexture();
-//	cpuRenderer.setRGBTexture(previewPixelsUndistorted);
-//	gpuRenderer.setRGBTexture(previewPixelsUndistorted);
-
 	cpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
 	gpuRenderer.setRGBTexture(alignmentPairs[currentRendererPreviewIndex]->colorCheckers);
 	
@@ -1511,7 +1509,7 @@ void ofxRGBDCaptureGui::refineDepthCalibration(){
     fov = ofVec2f(depthCameraMatrix.at<double>(0,0), depthCameraMatrix.at<double>(1,1));
     pp = ofVec2f(depthCameraMatrix.at<double>(0,2),depthCameraMatrix.at<double>(1,2));
 	
-	if(abs( 320 - pp.x) > 2 || abs(240 - pp.x) > 2 ){
+	if(abs(320 - pp.x) > 2 || abs(240 - pp.y) > 2 ){
 		ofSystemAlertDialog("Self Calibration failed. Make sure the depth camera is pointed out into space and is seeing a wide range of depth values.");
 	}
 	else{
@@ -1590,17 +1588,7 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 	
     saveCorrespondenceImages();
 	
-//	kinect3dPoints.clear();
-//	kinectImagePoints.clear();
-//	externalRGBPoints.clear();
-//	objectPoints.clear();
-//	filteredKinectObjectPoints.clear();
-//	filteredExternalImagePoints.clear();
 	inlierPoints.clear();
-	
-
-//    inlierKinectObjectPoints.clear();
-	
 	
 	int numAlignmentPairsReady = 0;
 	for(int i = 0; i < alignmentPairs.size(); i++){
