@@ -255,10 +255,17 @@ void ofxRGBDCPURenderer::generateTextureCoordinates(vector<ofVec3f>& points, vec
 	}
 
 	texCoords.clear();
-	Mat pcMat = Mat(toCv(points));
-	vector<cv::Point2f> imagePoints;
-	imagePoints.resize(points.size());
-	projectPoints(pcMat,
+	//Mat pcMat = Mat(toCv(points));
+	vector<cv::Point3f> objectPoints(points.size());
+	vector<cv::Point2f> imagePoints(points.size());
+
+	for(int i = 0; i < points.size(); i++) {
+		objectPoints[i].x = points[i].x;
+		objectPoints[i].y = points[i].y;
+		objectPoints[i].z = points[i].z;
+	}
+
+	projectPoints(objectPoints,
 				  rotationDepthToRGB, translationDepthToRGB,
 				  rgbCalibration.getDistortedIntrinsics().getCameraMatrix(),
 				  rgbCalibration.getDistCoeffs(),

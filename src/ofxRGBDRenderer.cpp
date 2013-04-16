@@ -181,12 +181,25 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath,
 	}
 	
 
-	
+	//windows seems to load these differently sometimes
 	Mat dis = rgbCalibration.getDistCoeffs();
-	distortionK = ofVec3f(dis.at<double>(0,0),
-						  dis.at<double>(0,1),
-						  dis.size().height == 5 ? dis.at<double>(0,4) : 0);
-	distortionP = ofVec2f(dis.at<double>(0,2),dis.at<double>(0,3));
+	if(dis.cols == 1){
+		distortionK = ofVec3f(dis.at<double>(0,0),
+							  dis.at<double>(1,0),
+							  dis.rows == 5 ? dis.at<double>(4,0) : 0);
+		distortionP = ofVec2f(dis.at<double>(2,0),dis.at<double>(3,0));
+	}
+	else if(dis.rows == 1){
+		distortionK = ofVec3f(dis.at<double>(0,0),
+							  dis.at<double>(0,1),
+							  dis.cols == 5 ? dis.at<double>(0,4) : 0);
+		distortionP = ofVec2f(dis.at<double>(0,2),dis.at<double>(0,3));	
+	}
+
+	//distortionK = ofVec3f(dis.at<double>(0,0),
+	//					  dis.at<double>(0,1),
+	//					  dis.rows == 5 ? dis.at<double>(0,4) : 0);
+	distortionP = ofVec2f(dis.at<double>(2,0),dis.at<double>(3,0));
 
 	//  cout << "successfully loaded calibration: fx + fy is " << fx << " " << fy  << endl;
 	//	cout << "RGB Camera Matrix is " << rgbCalibration.getDistortedIntrinsics().getCameraMatrix() << endl;
