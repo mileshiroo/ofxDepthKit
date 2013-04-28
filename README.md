@@ -1,8 +1,6 @@
 # ofxRGBDepth Addon
 
-Addon for combining with high definition video and depth data. Companion add on to the [RGBDToolkit](https://github.com/obviousjim/RGBDToolkit/)
-
-# [RGBDToolkit](http://www.rgbdtoolkit.com) beta 005
+** Addon for combining with high definition video and depth data. Companion add on to the [RGBDToolkit](https://github.com/obviousjim/RGBDToolkit/) **
 
 The RGBDToolkit is an experiment in a possible future of film making, where photographic data captured in 3-dimensions will allow for deciding camera angles after the fact, combining the languages of photography and data visualization. This hybrid computer graphics and video would allow for a storytelling medium at once imaginary and photo real.  The RGBDToolkit is a software work flow for augmenting high definition video with 3D scans from a depth sensor, such as an Xbox Kinect, to create a hybrid video and computer graphics. First a recording application allows you to calibrate a high definition video camera to the depth sensor, allowing their data streams to be merged. Secondly a visualization application allows for viewing the combined footage and applying different 3D rendering styles, camera moves, and exporting sequences. 
 
