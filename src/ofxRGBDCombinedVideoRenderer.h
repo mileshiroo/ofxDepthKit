@@ -2,18 +2,29 @@
 
 #include "ofMain.h"
 #include "ofxXmlSettings.h"
+typedef struct {
+	ofVec2f fov;
+	ofVec2f principalPoint;
+	float minDepth;
+	float maxDepth;
+	
+} DepthProperties;
 
 class ofxRGBDCombinedVideoRenderer {
   public:
 	ofxRGBDCombinedVideoRenderer();
 	~ofxRGBDCombinedVideoRenderer();
 	
-	void setup(string videoPath);
+	//exported by combined video renderer
+	void setupDepthProperties(string depthPropertiesXml);
 
+	void setCombinedImage(ofBaseHasTexture& texture);
 	void setShaderPath(string shaderPath);
 	void reloadShader();
 	
   protected:
-	ofVideoPlayer player;
 	ofShader shader;
+	string shaderPath;
+	ofBaseHasTexture* combinedImage;
+	
 };
