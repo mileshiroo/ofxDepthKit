@@ -22,13 +22,16 @@ void ofxDepthImageProviderOpenNI::setup(int deviceId, bool useColor){
 		recordContext = new ofxOpenNIContext();
 		bDeviceFound  = recordContext->setup();	// all nodes created by code -> NOT using the xml config file at all
 	}
-	bDeviceFound &= recordDepth.setup(recordContext, deviceId);
+	bDeviceFound &= recordDepth.setup(recordContext);
+	//bDeviceFound &= recordDepth.setup(recordContext, deviceId);
 	if(useColor){
-		bDeviceFound &= recordColor.setup(recordContext, deviceId);
+		//bDeviceFound &= recordColor.setup(recordContext, deviceId);
 	}
 	else{
-		bDeviceFound &= recordImage.setup(recordContext, deviceId);
+		//bDeviceFound &= recordImage.setup(recordContext, deviceId);
 	}
+	bDeviceFound &= recordImage.setup(recordContext);
+
     usingColor = useColor;
     if(!bDeviceFound){
     	ofLogError("ofxDepthImageProviderOpenNI -- OpenNI Device Failed");
