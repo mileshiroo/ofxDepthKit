@@ -10,6 +10,8 @@ class ofxRGBDScene {
 	bool loadFromFolder(string sourceMediaFolder, bool countFrames = true);
 	bool valid();
 
+	vector<string> getCompositions();
+	
 	bool hasPairings;
 	bool hasXYShift;
 	bool hasCalibration;

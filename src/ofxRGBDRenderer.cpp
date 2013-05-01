@@ -180,6 +180,15 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath,
 		memcpy(depthToRGBRotation, rotation3fv, sizeof(float)*3*3);
 	}
 	
+	
+	float mat4x4[16] = {
+		depthToRGBRotation[0],depthToRGBRotation[1],depthToRGBRotation[2],0,
+		depthToRGBRotation[3],depthToRGBRotation[4],depthToRGBRotation[5],0,
+		depthToRGBRotation[6],depthToRGBRotation[7],depthToRGBRotation[8],0,
+		depthToRGBTranslation.x,depthToRGBTranslation.y,depthToRGBTranslation.z,1
+	};
+	
+	extrinsics = ofMatrix4x4(mat4x4);
 
 	//windows seems to load these differently sometimes
 	Mat dis = rgbCalibration.getDistCoeffs();

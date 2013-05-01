@@ -50,8 +50,14 @@ public:
 	//fudge factors to apply during alignment
 	void setXYShift(ofVec2f shift);
 	void setXYScale(ofVec2f scale);
+	
+	//old way, applied in shader
 	ofVec2f shift;
 	ofVec2f scale;
+	
+	//new way, applied to matrix
+	ofVec3f colorMatrixRotate;
+	ofVec3f colorMatrixTranslate;
 	
 	float edgeClip;
 	float farClip;
@@ -93,6 +99,7 @@ public:
 	//broken out extrinsics
 	float depthToRGBRotation[9];
 	ofVec3f depthToRGBTranslation;
+	ofMatrix4x4 extrinsics;
 	ofVec3f distortionK;
 	ofVec2f distortionP;
 

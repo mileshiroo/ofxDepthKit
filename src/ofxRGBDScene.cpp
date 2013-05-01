@@ -310,3 +310,22 @@ bool ofxRGBDScene::valid(){
 	//return (hasDepth && !hasColor) || (hasDepth && hasColor && hasCalibration);
 	return (hasDepth && hasColor && hasCalibration);
 }
+
+vector<string> ofxRGBDScene::getCompositions(){
+	vector<string> comps;
+	string compositionsFolder = mediaFolder + pathDelim + "compositions" + pathDelim;
+    ofDirectory compositionsDirectory(compositionsFolder);
+    if(compositionsDirectory.exists()){
+		compositionsDirectory.listDir();
+
+		for(int i = 0; i < compositionsDirectory.numFiles(); i++){
+			
+			if(compositionsDirectory.getFile(i).isDirectory()){
+				comps.push_back( compositionsDirectory.getPath(i) );
+			}
+		}
+	}
+	
+	
+	return comps;
+}

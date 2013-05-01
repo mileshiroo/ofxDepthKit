@@ -39,8 +39,7 @@ void testApp::setup(){
 			//position accesses the combinedImage in this case to distort the mesh based on the depth camera settings
 			mesh.setVertex(index++, pointForPosition(x, y));
 		}
-	}
-	
+	}	
 }
 
 //--------------------------------------------------------------

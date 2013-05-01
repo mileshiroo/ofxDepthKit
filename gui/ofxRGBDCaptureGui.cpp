@@ -23,6 +23,7 @@ ofxRGBDCaptureGui::ofxRGBDCaptureGui(){
 	depthCameraSelfCalibrated = false;
 	hasIncludedBoards = false;
 	currentRenderModeObject = NULL;
+	backpackMode = false;
 }
 
 ofxRGBDCaptureGui::~ofxRGBDCaptureGui(){
@@ -209,6 +210,12 @@ void ofxRGBDCaptureGui::setup(){
 	else{
 		loadDirectory("depthframes");
 	}
+	
+	recordOn.loadSound("sound/record_start_short.aif");
+	recordOff.loadSound("sound/record_stop.wav");
+	
+	ofSoundPlayer recordOff;
+	
 }
 
 void ofxRGBDCaptureGui::setImageProvider(ofxDepthImageProvider* imageProvider){
@@ -250,6 +257,19 @@ void ofxRGBDCaptureGui::update(ofEventArgs& args){
 			calibrationPreview.setTestImage( depthImageProvider->getRawIRImage() );
 		}
 	}
+	
+	if(backpackMode && recorder.isRecording() && ofGetFrameNum() % 60 == 0){
+		recordOn.setPosition(0);
+		recordOn.play();
+	}
+	
+	int framesWaiting = recorder.numFramesWaitingSave();
+	//Draw recorder safety click
+	if(backpackMode && framesWaiting > 750 && ofGetFrameNum() % 30 == 0){
+		recordOff.setPosition(0);
+		recordOff.play();
+	}
+
 }
 
 void ofxRGBDCaptureGui::setupRenderer(){
@@ -305,6 +325,16 @@ void ofxRGBDCaptureGui::draw(ofEventArgs& args){
 	
 	timeline.draw();
 
+	if(backpackMode){
+		ofSetColor(255,0,0,50);
+		ofRect(0,0,ofGetWidth(),ofGetHeight());
+		
+		ofSetColor(255);
+		contextHelpTextLarge.drawString("BACKPACK MODE",
+										ofGetWidth()/2 - contextHelpTextLarge.stringWidth("BACKPACK MODE")/2,
+										ofGetHeight()/2 - contextHelpTextLarge.stringHeight("BACKPACK MODE")/2);
+		
+	}
 }
 
 void ofxRGBDCaptureGui::drawIntrinsics(){
@@ -741,6 +771,10 @@ void ofxRGBDCaptureGui::objectDidPress(ofxMSAInteractiveObject* object, int x, i
 
 void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x, int y, int button){
 
+	if(backpackMode){
+		return;
+	}
+	
   	if(object == btnSetDirectory){
 		loadDirectory();
 	}
@@ -837,23 +871,22 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
 void ofxRGBDCaptureGui::toggleRecord(){
 	if(providerSet || !depthImageProvider->deviceFound()){
 		recorder.toggleRecord();
-		/*
-		 if(recorder.isRecording()){
-		 recordOn.setPosition(0);
-		 recordOn.play();
-		 }
-		 else{
-		 recordOff.setPosition(0);
-		 recordOff.play();
-		 }
-		 */
+
+		if(backpackMode){
+			if(recorder.isRecording()){
+				recordOn.setPosition(0);
+				recordOn.play();
+			}
+			else{
+				recordOff.setPosition(0);
+				recordOff.play();
+			}
+		}
 		updateSceneButtons();
 	}
 	else {
 		ofSystemAlertDialog("No depth sensor to record");
 	}
-
-
 }
 
 void ofxRGBDCaptureGui::loadRGBIntrinsicImages(){
@@ -1055,6 +1088,11 @@ void ofxRGBDCaptureGui::mouseDragged(ofMouseEventArgs& args){
 
 void ofxRGBDCaptureGui::mouseReleased(ofMouseEventArgs& args){
 	
+	if(backpackMode){
+		toggleRecord();
+		return;
+	}
+	
 	//CHECK FOR HOVER IN INTRINSICS
 	if(currentTab == TabIntrinsics){
 		
@@ -1171,6 +1209,15 @@ void ofxRGBDCaptureGui::keyReleased(ofKeyEventArgs& args){
 	}
 	else if(args.key == OF_KEY_DOWN){
 		renderer = &cpuRenderer;
+	}
+	
+	if(args.key == 'M'){
+		backpackMode = !backpackMode;
+		ofToggleFullscreen();
+		if(backpackMode){
+
+		}
+		cout << "KEY PRESSED " << backpackMode << endl;
 	}
 }
 
