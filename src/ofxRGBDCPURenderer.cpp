@@ -26,14 +26,12 @@ ofxRGBDCPURenderer::ofxRGBDCPURenderer(){
 	hasTriangles = false;
 	
 	textureScale = ofVec2f(1.0, 1.0);
-	mirror = false;
 	scale = ofVec2f(1,1);
 	
 	cacheValidVertices = false;
 	
+	center = ofVec3f(0,0,0);
 	pivot = ofVec3f(0,0,0);
-	worldPosition = ofVec3f(0,0,0);
-	worldRotation = ofVec3f(0,0,0);
 }
 
 ofxRGBDCPURenderer::~ofxRGBDCPURenderer(){
@@ -68,16 +66,16 @@ void ofxRGBDCPURenderer::setSimplification(ofVec2f simplification){
 	for (float ystep = 0; ystep < h-simplify.y; ystep += simplify.y){
 		for (float xstep = 0; xstep < w-simplify.x; xstep += simplify.x){
 			ofIndexType a,b,c;
-			c = x+y*gw;
+			a = x+y*gw;
 			b = (x+1)+y*gw;
-			a = x+(y+1)*gw;
+			c = x+(y+1)*gw;
 			baseIndeces.push_back(a);
 			baseIndeces.push_back(b);
 			baseIndeces.push_back(c);
 			
-			c = (x+1)+(y+1)*gw;
+			a = (x+1)+(y+1)*gw;
 			b = x+(y+1)*gw;
-			a = (x+1)+(y)*gw;
+			c = (x+1)+(y)*gw;
 			baseIndeces.push_back(a);
 			baseIndeces.push_back(b);
 			baseIndeces.push_back(c);
@@ -88,6 +86,7 @@ void ofxRGBDCPURenderer::setSimplification(ofVec2f simplification){
 		x = 0;
 	}
 	
+	indexToPixelCoord.clear();
 	mesh.clearVertices();
 	for (float y = 0; y < depthImageSize.height; y += simplify.y){
 		for (float x = 0; x < depthImageSize.width; x += simplify.x){
@@ -137,12 +136,11 @@ void ofxRGBDCPURenderer::update(){
 	}
 	
 	
-	//holeFiller.close(depthImage);
-		
 	//feed the zed values into the mesh
 	int vertexIndex = 0;
 	hasTriangles = false;
 	validVertIndices.clear();
+	int discardedPoints = 0;
 	unsigned short* ptr = currentDepthImage->getPixels();
 	for(float y = 0; y < depthImageSize.height; y += simplify.y) {
 		for(float x = 0; x < depthImageSize.width; x += simplify.x) {
@@ -162,6 +160,8 @@ void ofxRGBDCPURenderer::update(){
 				}
 			}
 			else {
+				discardedPoints++;
+				//cout << "discarded point at " << x << " " << y << endl;
 				point = ofVec3f(0,0,0);
 			}
 			mesh.setVertex(vertexIndex++, point);
@@ -255,10 +255,17 @@ void ofxRGBDCPURenderer::generateTextureCoordinates(vector<ofVec3f>& points, vec
 	}
 
 	texCoords.clear();
-	Mat pcMat = Mat(toCv(points));
-	vector<cv::Point2f> imagePoints;
+	//Mat pcMat = Mat(toCv(points));
+	vector<cv::Point3f> objectPoints(points.size());
+	vector<cv::Point2f> imagePoints(points.size());
 
-	projectPoints(pcMat,
+	for(int i = 0; i < points.size(); i++) {
+		objectPoints[i].x = points[i].x;
+		objectPoints[i].y = points[i].y;
+		objectPoints[i].z = points[i].z;
+	}
+
+	projectPoints(objectPoints,
 				  rotationDepthToRGB, translationDepthToRGB,
 				  rgbCalibration.getDistortedIntrinsics().getCameraMatrix(),
 				  rgbCalibration.getDistCoeffs(),
@@ -266,15 +273,25 @@ void ofxRGBDCPURenderer::generateTextureCoordinates(vector<ofVec3f>& points, vec
 	
 	//TODO turn into matrix transform!
 	cv::Size rgbImage = rgbCalibration.getDistortedIntrinsics().getImageSize();
+	ofVec2f dims = ofVec2f(rgbImage.width,rgbImage.height);
+	
+//	cout << "REPORT:: " << endl;
+//	cout << "	IMAGE SIZE:	" << dims << endl;
+//	cout << "	SHIFT:		" << shift << endl;
+//	cout << "	SCALE:		" << scale << endl;
+//	cout << "	TEX SCALE:	" << textureScale << endl;
+//	cout << "	DISTORTION " << rgbCalibration.getDistCoeffs() << endl;
+//	cout << "	CAM MATRIX " << rgbCalibration.getDistortedIntrinsics().getCameraMatrix() << endl;
+//	cout << "::END REPORT" << endl;
+	
 	for(int i = 0; i < imagePoints.size(); i++) {
 		ofVec2f texCd = ofVec2f(imagePoints[i].x, imagePoints[i].y);
-		texCd /= ofVec2f(rgbImage.width,rgbImage.height);
-		texCd *= scale;
+		texCd /= dims;
 		texCd += shift;
-		texCd.x = ofClamp(texCd.x,0.0,1.0);
-		texCd.y = ofClamp(texCd.y,0.0,1.0);
-		texCd *= ofVec2f(rgbImage.width,rgbImage.height) * textureScale;
-
+		texCd = ( (texCd - .5)*scale) + .5;
+		texCd *= dims * textureScale;
+		texCd.x = ofClamp(texCd.x, 0, currentRGBImage->getTextureReference().getWidth()-1);
+		texCd.y = ofClamp(texCd.y, 0, currentRGBImage->getTextureReference().getHeight()-1);
 		texCoords.push_back(texCd);
 	}
 }

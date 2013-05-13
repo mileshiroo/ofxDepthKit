@@ -178,6 +178,11 @@ public:
 	float sceneWidth;
 	float margin;
 
+	ofSoundPlayer recordOn;
+	ofSoundPlayer recordOff;
+	
+	bool backpackMode;
+	
 	//Preview
 	void updateDepthImage(ofShortPixels& pixels);
 	ofImage depthImage;

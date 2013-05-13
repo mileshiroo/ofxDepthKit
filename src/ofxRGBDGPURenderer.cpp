@@ -222,8 +222,14 @@ void ofxRGBDGPURenderer::setupProjectionUniforms(){
 	
 		//glUniformMatrix3fv(shader.getUniformLocation("colorRotate"), 1, GL_FALSE, depthToRGBRotation);
 		glUniformMatrix3fv( glGetUniformLocation(shader.getProgram(), "colorRotate"), 1, GL_FALSE,depthToRGBRotation);
-		
 		shader.setUniform3f("colorTranslate", depthToRGBTranslation.x,depthToRGBTranslation.y,depthToRGBTranslation.z);
+		ofMatrix4x4 modMat;
+		modMat.rotate(colorMatrixRotate.x, 0, 1, 0);
+		modMat.rotate(colorMatrixRotate.y, 1, 0, 0);
+		modMat.translate(colorMatrixTranslate.x, colorMatrixTranslate.y, 0);
+		
+		shader.setUniformMatrix4f( "extrinsics", (extrinsics * modMat) );
+
 		shader.setUniform2f("colorFOV", colorFOV.x, colorFOV.y );
 		shader.setUniform2f("colorPP", colorPrincipalPoint.x, colorPrincipalPoint.y);
 	}
@@ -233,13 +239,13 @@ void ofxRGBDGPURenderer::setupProjectionUniforms(){
 	
 	shader.setUniformTexture("depthTex", depthTexture, 1);
 	shader.setUniform2f("principalPoint", depthPrincipalPoint.x, depthPrincipalPoint.y);
+	
 	shader.setUniform2f("fov", depthFOV.x, depthFOV.y);
+	shader.setUniform1f("nearClip", nearClip);
 	shader.setUniform1f("farClip", farClip);
 	shader.setUniform1f("edgeClip", edgeClip);
 	
-	//TODO: vectorize in shader
-	shader.setUniform1f("xsimplify", simplify.x);
-	shader.setUniform1f("ysimplify", simplify.y);
+	shader.setUniform2f("simplify", simplify.x, simplify.y);
 }
 
 ofShader& ofxRGBDGPURenderer::getShader(){

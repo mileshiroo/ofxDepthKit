@@ -18,7 +18,7 @@ using namespace ofxCv;
 using namespace cv;
 
 ofxRGBDRenderer::ofxRGBDRenderer(){
-	
+
 	shift.x = 0;
 	shift.y = 0;
 	scale.x = 1.0;
@@ -44,6 +44,9 @@ ofxRGBDRenderer::ofxRGBDRenderer(){
 	currentDepthImage = NULL;
 	useTexture = true;
 	meshGenerated = false;
+	
+	worldPosition = ofVec3f(0,0,0);
+	worldRotation = ofVec3f(0,0,0);
 }
 
 ofxRGBDRenderer::~ofxRGBDRenderer(){
@@ -188,13 +191,35 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath,
 		memcpy(depthToRGBRotation, rotation3fv, sizeof(float)*3*3);
 	}
 	
-
 	
+	float mat4x4[16] = {
+		depthToRGBRotation[0],depthToRGBRotation[1],depthToRGBRotation[2],0,
+		depthToRGBRotation[3],depthToRGBRotation[4],depthToRGBRotation[5],0,
+		depthToRGBRotation[6],depthToRGBRotation[7],depthToRGBRotation[8],0,
+		depthToRGBTranslation.x,depthToRGBTranslation.y,depthToRGBTranslation.z,1
+	};
+	
+	extrinsics = ofMatrix4x4(mat4x4);
+
+	//windows seems to load these differently sometimes
 	Mat dis = rgbCalibration.getDistCoeffs();
-	distortionK = ofVec3f(dis.at<double>(0,0),
-						  dis.at<double>(0,1),
-						  dis.size().height == 5 ? dis.at<double>(0,4) : 0);
-	distortionP = ofVec2f(dis.at<double>(0,2),dis.at<double>(0,3));
+	if(dis.cols == 1){
+		distortionK = ofVec3f(dis.at<double>(0,0),
+							  dis.at<double>(1,0),
+							  dis.rows == 5 ? dis.at<double>(4,0) : 0);
+		distortionP = ofVec2f(dis.at<double>(2,0),dis.at<double>(3,0));
+	}
+	else if(dis.rows == 1){
+		distortionK = ofVec3f(dis.at<double>(0,0),
+							  dis.at<double>(0,1),
+							  dis.cols == 5 ? dis.at<double>(0,4) : 0);
+		distortionP = ofVec2f(dis.at<double>(0,2),dis.at<double>(0,3));	
+	}
+
+	//distortionK = ofVec3f(dis.at<double>(0,0),
+	//					  dis.at<double>(0,1),
+	//					  dis.rows == 5 ? dis.at<double>(0,4) : 0);
+	distortionP = ofVec2f(dis.at<double>(2,0),dis.at<double>(3,0));
 
 	//  cout << "successfully loaded calibration: fx + fy is " << fx << " " << fy  << endl;
 	//	cout << "RGB Camera Matrix is " << rgbCalibration.getDistortedIntrinsics().getCameraMatrix() << endl;
@@ -278,45 +303,6 @@ void ofxRGBDRenderer::setXYScale(ofVec2f newScale){
 	scale = newScale;	
 }
 
-//-----------------------------------------------
-void ofxRGBDRenderer::drawProjectionDebug(bool showDepth, bool showRGB, float rgbTexturePosition){
-	ofPushStyle();
-	
-	glEnable(GL_DEPTH_TEST);
-	if(showRGB){
-		ofPushMatrix();
-		ofSetColor(255);
-		rgbMatrix = (depthToRGBView * rgbProjection);
-		ofScale(1,-1,1);
-		glMultMatrixf(rgbMatrix.getInverse().getPtr());
-		
-		ofNoFill();
-		ofSetColor(255,200,10);
-		ofBox(1.99f);
-		
-		//draw texture
-		if(rgbTexturePosition > 0){
-			ofSetColor(255);
-			ofTranslate(0, 0, 1.0 - powf(1-rgbTexturePosition, 2.0));
-			currentRGBImage->getTextureReference().draw(1, 1, -2, -2);
-		}
-		ofPopMatrix();
-	}
-	
-	if(showDepth){
-		ofPushMatrix();
-		ofScale(-1,1,-1);
-		ofNoFill();
-		ofSetColor(10,200,255);
-		glMultMatrixf(depthProjection.getInverse().getPtr());
-		ofBox(1.99f);
-		ofPopMatrix();
-	}
-	
-	glDisable(GL_DEPTH_TEST);
-	ofPopStyle();
-}
-
 ofMesh& ofxRGBDRenderer::getMesh(){
 	return mesh;
 }
@@ -335,4 +321,41 @@ ofMatrix4x4& ofxRGBDRenderer::getRGBMatrix(){
 
 ofMatrix4x4& ofxRGBDRenderer::getDepthToRGBTransform(){
 	return depthToRGBView;
+}
+
+void ofxRGBDRenderer::drawProjectionDebug(bool showDepth, bool showRGB, float rgbTexturePosition){
+	ofPushStyle();
+	glEnable(GL_DEPTH_TEST);
+	if(showRGB){
+		ofPushMatrix();
+		ofSetColor(255);
+		rgbMatrix = (depthToRGBView * rgbProjection);
+		ofScale(1,-1,-1);
+		glMultMatrixf(rgbMatrix.getInverse().getPtr());
+		
+		ofNoFill();
+		ofSetColor(255,200,10);
+		ofBox(1.99f);
+		
+		//draw texture
+		if(rgbTexturePosition > 0){
+			ofSetColor(255);
+			ofTranslate(0, 0, 1.0 - powf(1-rgbTexturePosition, 2.0));
+			currentRGBImage->getTextureReference().draw(1, -1, -2, 2);
+		}
+		ofPopMatrix();
+	}
+	
+	if(showDepth){
+		ofPushMatrix();
+		ofScale(1,1,-1);
+		ofNoFill();
+		ofSetColor(10,200,255);
+		glMultMatrixf(depthProjection.getInverse().getPtr());
+		ofBox(1.99f);
+		ofPopMatrix();
+	}
+	
+	glDisable(GL_DEPTH_TEST);
+	ofPopStyle();
 }

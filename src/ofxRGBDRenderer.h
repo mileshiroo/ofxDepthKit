@@ -38,6 +38,9 @@ public:
 	//compensates for textures scaled from the original calibration
 	void setTextureScaleForImage(ofBaseHasTexture& texture);
 	
+	//fun way of visualizing the calibration
+	void drawProjectionDebug(bool showDepth, bool showRGB, float rgbTexturePosition);
+
 	virtual void update() = 0;
 	void drawMesh();
 	void drawPointCloud();
@@ -47,8 +50,14 @@ public:
 	//fudge factors to apply during alignment
 	void setXYShift(ofVec2f shift);
 	void setXYScale(ofVec2f scale);
+	
+	//old way, applied in shader
 	ofVec2f shift;
 	ofVec2f scale;
+	
+	//new way, applied to matrix
+	ofVec3f colorMatrixRotate;
+	ofVec3f colorMatrixTranslate;
 	
 	float edgeClip;
 	float farClip;
@@ -62,10 +71,7 @@ public:
 
 	ofVec3f worldPosition;
 	ofVec3f worldRotation;
-	
-	//fun way of visualizing the calibration
-	void drawProjectionDebug(bool showDepth, bool showRGB, float rgbTexturePosition);
-	
+		
 	//sets a level of simplification,
 	//should be either 1 for none
 	//2 for half, or 4 for quarter;
@@ -93,12 +99,13 @@ public:
 	//broken out extrinsics
 	float depthToRGBRotation[9];
 	ofVec3f depthToRGBTranslation;
+	ofMatrix4x4 extrinsics;
 	ofVec3f distortionK;
 	ofVec2f distortionP;
 
   protected:
-	//ofVboMesh mesh;
-	ofMesh mesh;
+	ofVboMesh mesh;
+	//ofMesh mesh;
 	ofBaseHasTexture* currentRGBImage;
 	ofShortPixels* currentDepthImage;
 	ofVec2f simplify;

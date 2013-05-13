@@ -59,10 +59,8 @@ class ofxRGBDCPURenderer : public ofxRGBDRenderer{
 	ofVec2f getTextureCoordinateForPoint(ofVec3f point);
 	
   private:
-	
 	void setupDrawMatrices();
 	map< ofIndexType, pair<int, int> > indexToPixelCoord;
-	
 	
 	void generateTextureCoordinates();  
 	vector<ofIndexType> baseIndeces;	

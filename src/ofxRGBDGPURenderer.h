@@ -31,9 +31,6 @@ class ofxRGBDGPURenderer : public ofxRGBDRenderer {
 	
 	//called inside of bind/unbind
 	void setupProjectionUniforms();
-
-	//fun way of visualizing the calibration
-	void drawProjectionDebug(bool showDepth, bool showRGB, float rgbTexturePosition);
 	
 	void setShaderPath(string path);
 	void reloadShader();
