@@ -98,13 +98,24 @@ bool ofxRGBDRenderer::setup(string calibrationDirectory){
 		ofLogError("ofxRGBDGPURenderer --- Calibration directory doesn't exist: " + calibrationDirectory);
 		return false;
 	}
-	return setup(calibrationDirectory+"/rgbCalib.yml", calibrationDirectory+"/depthCalib.yml",
-				 calibrationDirectory+"/rotationDepthToRGB.yml", calibrationDirectory+"/translationDepthToRGB.yml");
+	return setup(calibrationDirectory+"rgbCalib.yml", calibrationDirectory+"depthCalib.yml",
+				 calibrationDirectory+"rotationDepthToRGB.yml", calibrationDirectory+"translationDepthToRGB.yml");
 }
 
 bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath,
 							string depthIntrinsicsPath, string rotationPath, string translationPath)
 {
+	if(!ofFile::doesFileExist(rgbIntrinsicsPath) ||
+	   !ofFile::doesFileExist(depthIntrinsicsPath) ||
+	   !ofFile::doesFileExist(rotationPath) ||
+	   !ofFile::doesFileExist(translationPath))
+	{
+		ofLogError() << "ofxRGBDRenderer::setup -- Missing one or more matrix files! " << rgbIntrinsicsPath << " " <<
+			depthIntrinsicsPath << " " <<
+			rotationPath << " " <<
+			translationPath;
+		return false;
+	}
 	
 	depthCalibration.load(depthIntrinsicsPath);
 	rgbCalibration.load(rgbIntrinsicsPath);

@@ -15,6 +15,7 @@ ofxRGBDPlayer::ofxRGBDPlayer(){
 	shift = ofVec2f(0,0);
 	updateVideoPlayer = true;
 	lastFrame = 0;
+	bUseTexture = true;
 }
 
 ofxRGBDPlayer::~ofxRGBDPlayer(){
@@ -31,7 +32,12 @@ bool ofxRGBDPlayer::setup(string sceneDirectory, bool forceHiRes){
 	return setup(scene, forceHiRes);
 }
 
-bool ofxRGBDPlayer::setup(ofxRGBDScene newScene, bool forceHiRes){
+
+bool ofxRGBDPlayer::setUseTexture(bool useTexture){
+	bUseTexture = useTexture;
+}
+
+bool ofxRGBDPlayer::setup(ofxRGBDScene& newScene, bool forceHiRes){
 
 	scene = newScene;
 	
@@ -97,6 +103,7 @@ void ofxRGBDPlayer::useHiresVideo(){
 	}
 	
 	player = ofPtr<ofVideoPlayer>(new ofVideoPlayer());
+	player->setUseTexture(bUseTexture);
 	if(!player->loadMovie(scene.alternativeHiResVideoPath)){
 		ofLogError("ofxRGBDPlayer::useHiresVideo -- error loading hi res video, returning to low res");
 		useLowResVideo();
@@ -107,6 +114,7 @@ void ofxRGBDPlayer::useHiresVideo(){
 
 void ofxRGBDPlayer::useLowResVideo(){
 	player = ofPtr<ofVideoPlayer>(new ofVideoPlayer());
+	player->setUseTexture(bUseTexture);
 	if(!player->loadMovie(scene.videoPath)){
 		scene.clear();
 		ofLogError("Movie failed to load");

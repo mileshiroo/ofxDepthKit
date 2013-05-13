@@ -47,7 +47,6 @@ vector<string> ofxRGBDScene::getValidVideoExtensions(){
 
 bool ofxRGBDScene::loadFromFolder(string sourceMediaFolder, bool countFrames){
 	
-	
 	clear();
 		
 	calibrationFolder = "";
