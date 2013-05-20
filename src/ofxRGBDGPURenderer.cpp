@@ -220,9 +220,7 @@ void ofxRGBDGPURenderer::setupProjectionUniforms(){
 		shader.setUniform3f("dK", distortionK.x, distortionK.y, distortionK.z);
 		shader.setUniform2f("dP", distortionP.x, distortionP.y);
 	
-		//glUniformMatrix3fv(shader.getUniformLocation("colorRotate"), 1, GL_FALSE, depthToRGBRotation);
-//		glUniformMatrix3fv( glGetUniformLocation(shader.getProgram(), "colorRotate"), 1, GL_FALSE,depthToRGBRotation);
-//		shader.setUniform3f("colorTranslate", depthToRGBTranslation.x,depthToRGBTranslation.y,depthToRGBTranslation.z);
+
 		ofMatrix4x4 modMat;
 		modMat.rotate(colorMatrixRotate.x, 0, 1, 0);
 		modMat.rotate(colorMatrixRotate.y, 1, 0, 0);

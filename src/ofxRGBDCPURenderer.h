@@ -12,8 +12,6 @@
 #include "ofxCv.h"
 #include "ofxRGBDRenderer.h"
 
-//#include "ofxDepthHoleFiller.h"
-
 class ofxRGBDCPURenderer : public ofxRGBDRenderer{
   public:
 	
