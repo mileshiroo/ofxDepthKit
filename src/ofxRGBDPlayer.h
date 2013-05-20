@@ -34,7 +34,10 @@ class ofxRGBDPlayer {
 	~ofxRGBDPlayer();
 	
 	bool setup(string sceneDirectory, bool forceHires = false);
-	bool setup(ofxRGBDScene scene, bool forceHires = false);
+	bool setup(ofxRGBDScene& scene, bool forceHires = false);
+	
+	bool setUseTexture(bool useTexture);
+	
 	void update();
 	
 	bool isLoaded();
@@ -73,6 +76,7 @@ class ofxRGBDPlayer {
 	ofVec2f shift;
 	ofVec2f scale;
 	int lastFrame;
+	bool bUseTexture;
 	
 	ofxRGBDScene scene;
 	ofPtr<ofVideoPlayer> player;
