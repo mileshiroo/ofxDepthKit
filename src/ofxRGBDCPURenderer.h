@@ -29,9 +29,15 @@ class ofxRGBDCPURenderer : public ofxRGBDRenderer{
 	void setSimplification(ofVec2f simplify);
 	
 	//mesh with only valid vertices
-	ofMesh getReducedMesh(bool normalizeTextureCoords,
-						  ofVec3f vertexScale = ofVec3f(1,1,1),
-						  bool flipTextureX = false, bool flipTextureY = false, float texCoordScale = 1.0);
+	void getReducedMesh(ofMesh& mesh,
+						bool normalizeTextureCoords,
+						bool flipTextureX = false,
+						bool flipTextureY = false,
+						ofMatrix4x4 mat = ofMatrix4x4());
+	
+//	ofMesh getReducedMesh(bool normalizeTextureCoords,
+//						  ofVec3f vertexScale = ofVec3f(1,1,1),
+//						  bool flipTextureX = false, bool flipTextureY = false, float texCoordScale = 1.0);
 	
 	//TODO: bring to super class
 	float bottomClip;

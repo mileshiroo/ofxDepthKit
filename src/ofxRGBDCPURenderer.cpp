@@ -194,15 +194,21 @@ void ofxRGBDCPURenderer::update(){
 	//cout << "updated mesh has " << mesh.getNumIndices()/3 << " triangles " << endl;
 }
 
-ofMesh ofxRGBDCPURenderer::getReducedMesh(bool normalizeTextureCoords, ofVec3f vertexScale, bool flipTextureX, bool flipTextureY, float texCoordScale){
+void ofxRGBDCPURenderer::getReducedMesh(ofMesh& reducedMesh,
+										bool normalizeTextureCoords,
+										bool flipTextureX,
+										bool flipTextureY,
+										ofMatrix4x4 matrix)
+{
+
 	if(!cacheValidVertices){
 		ofLogError("ofxRGBDCPURenderer::getReducedMesh -- Must cache valid verts to get the reduced mesh");
 	}
-	ofMesh reducedMesh;
+	ofIndexType initialIndex = reducedMesh.getNumVertices();
 	map<ofIndexType, ofIndexType> vertMapping;
 	for(int i = 0; i < validVertIndices.size(); i++){
 		vertMapping[ validVertIndices[i] ] = i;
-		reducedMesh.addVertex( mesh.getVertices()[ validVertIndices[i] ] * vertexScale);
+		reducedMesh.addVertex(  mesh.getVertices()[ validVertIndices[i] ] * matrix);
 		if(mesh.hasTexCoords() && calculateTextureCoordinates && currentRGBImage != NULL){
 			ofVec2f& coord = mesh.getTexCoords()[ validVertIndices[i] ] ;
 			if(flipTextureX){
@@ -226,8 +232,9 @@ ofMesh ofxRGBDCPURenderer::getReducedMesh(bool normalizeTextureCoords, ofVec3f v
 	}
 	
 	for(int i = 0; i < mesh.getNumIndices(); i++){
-		reducedMesh.addIndex( vertMapping[ mesh.getIndex(i) ] );
+		reducedMesh.addIndex( initialIndex + vertMapping[ mesh.getIndex(i) ] );
 	}
+	
 	return reducedMesh;
 }
 
