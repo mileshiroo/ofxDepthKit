@@ -100,6 +100,8 @@ public:
 	float depthToRGBRotation[9];
 	ofVec3f depthToRGBTranslation;
 	ofMatrix4x4 extrinsics;
+	ofMatrix4x4 getAdjustedMatrix();
+	
 	ofVec3f distortionK;
 	ofVec2f distortionP;
 

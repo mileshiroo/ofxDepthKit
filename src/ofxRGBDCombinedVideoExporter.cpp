@@ -48,3 +48,4 @@ void ofxRGBDCombinedVideoExporter::updatePixels(ofxRGBDCPURenderer& mesh, ofBase
 ofColor ofxRGBDCombinedVideoExporter::huePixelForDepth(unsigned short x){
 	return ofColor::fromHsb(ofMap(x, minDepth, maxDepth, 0, 255), 255, 255);
 }
+

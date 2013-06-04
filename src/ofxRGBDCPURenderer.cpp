@@ -43,7 +43,7 @@ void ofxRGBDCPURenderer::setSimplification(ofVec2f simplification){
 		return;
 	}
 	
-	if(simplify == simplification){
+	if(simplify == simplification){	
 		return;
 	}
 	
@@ -255,16 +255,53 @@ void ofxRGBDCPURenderer::generateTextureCoordinates(vector<ofVec3f>& points, vec
 	}
 
 	texCoords.clear();
-	//Mat pcMat = Mat(toCv(points));
-	vector<cv::Point3f> objectPoints(points.size());
-	vector<cv::Point2f> imagePoints(points.size());
-
+	texCoords.resize(points.size());
 	for(int i = 0; i < points.size(); i++) {
-		objectPoints[i].x = points[i].x;
-		objectPoints[i].y = points[i].y;
-		objectPoints[i].z = points[i].z;
+
+		ofVec4f worldPos = ofVec4f(points[i].x,points[i].y,points[i].z, 1.0);
+		
+		//http://opencv.willowgarage.com/documentation/camera_calibration_and_3d_reconstruction.html
+		ofVec2f dim = ofVec2f(colorImageSize.width, colorImageSize.height);
+		//vec3 projection = colorRotate * pos.xyz + colorTranslate + ;
+		ofVec2f oldShift = shift*dim / textureScale;
+		ofVec4f projection = worldPos * getAdjustedMatrix() + ofVec4f(oldShift.x,oldShift.y,0,0);
+		if(projection.z != 0.0) {
+			
+			ofVec2f xyp = ofVec2f(projection.x, projection.y) / projection.z;
+			float r2 = powf(xyp.x, 2.0) + powf(xyp.y, 2.0);
+			float r4 = r2*r2;
+			float r6 = r4*r2;
+			ofVec2f xypp = xyp;
+			xypp.x = xyp.x * (1.0 + distortionK.x*r2 + distortionK.y*r4 + distortionK.z*r6) + 2.0*distortionP.x * xyp.x * xyp.y + distortionP.y*(r2 + 2.0 * powf(xyp.x,2.0) );
+			xypp.y = xyp.y * (1.0 + distortionK.x*r2 + distortionK.y*r4 + distortionK.z*r6) + distortionP.x * (r2 + 2.0*powf(xyp.y, 2.0) ) + 2.0*distortionP.y*xyp.x*xyp.y;
+			ofVec2f uv = (colorFOV * xypp + colorPrincipalPoint);
+			uv = ((uv-dim/2.0) * scale) + dim/2.0;
+			texCoords[i].x = ofClamp(uv.x, 0, currentRGBImage->getTextureReference().getWidth()-1);
+			texCoords[i].y = ofClamp(uv.y, 0, currentRGBImage->getTextureReference().getHeight()-1);
+		}
+		else{
+			texCoords[i] = ofVec2f(0,0);
+		}
 	}
 
+	/*
+	 vec4 projection = extrinsics * pos + vec4(shift*dim / textureScale,0,0);
+	 
+	 if(projection.z != 0.0) {
+	 
+	 vec2 xyp = projection.xy / projection.z;
+	 float r2 = pow(xyp.x, 2.0) + pow(xyp.y, 2.0);
+	 float r4 = r2*r2;
+	 float r6 = r4*r2;
+	 vec2 xypp = xyp;
+	 xypp.x = xyp.x * (1.0 + dK.x*r2 + dK.y*r4 + dK.z*r6) + 2.0*dP.x * xyp.x * xyp.y + dP.y*(r2 + 2.0 * pow(xyp.x,2.0) );
+	 xypp.y = xyp.y * (1.0 + dK.x*r2 + dK.y*r4 + dK.z*r6) + dP.x * (r2 + 2.0*pow(xyp.y, 2.0) ) + 2.0*dP.y*xyp.x*xyp.y;
+	 vec2 uv = (colorFOV * xypp + colorPP) * textureScale;
+	 texCd.xy = ((uv-dim/2.0) * scale) + dim/2.0;
+	 }
+	 */
+	
+	/*
 	projectPoints(objectPoints,
 				  rotationDepthToRGB, translationDepthToRGB,
 				  rgbCalibration.getDistortedIntrinsics().getCameraMatrix(),
@@ -294,6 +331,7 @@ void ofxRGBDCPURenderer::generateTextureCoordinates(vector<ofVec3f>& points, vec
 		texCd.y = ofClamp(texCd.y, 0, currentRGBImage->getTextureReference().getHeight()-1);
 		texCoords.push_back(texCd);
 	}
+	 */
 }
 
 ofVec3f ofxRGBDCPURenderer::getWorldPoint(float x, float y){

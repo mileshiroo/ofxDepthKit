@@ -241,6 +241,15 @@ bool ofxRGBDRenderer::setup(string rgbIntrinsicsPath,
 	return true;
 }
 
+ofMatrix4x4 ofxRGBDRenderer::getAdjustedMatrix(){
+	
+	ofMatrix4x4 modMat;
+	modMat.rotate(colorMatrixRotate.x, 0, 1, 0);
+	modMat.rotate(colorMatrixRotate.y, 1, 0, 0);
+	modMat.translate(colorMatrixTranslate.x, colorMatrixTranslate.y, 0);
+
+	return extrinsics * modMat;
+}
 //-----------------------------------------------
 ofVec2f ofxRGBDRenderer::getSimplification(){
 	return simplify;
