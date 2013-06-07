@@ -234,8 +234,6 @@ void ofxRGBDCPURenderer::getReducedMesh(ofMesh& reducedMesh,
 	for(int i = 0; i < mesh.getNumIndices(); i++){
 		reducedMesh.addIndex( initialIndex + vertMapping[ mesh.getIndex(i) ] );
 	}
-	
-	return reducedMesh;
 }
 
 void ofxRGBDCPURenderer::generateTextureCoordinates(){

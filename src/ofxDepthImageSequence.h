@@ -48,6 +48,7 @@ class ofxDepthImageSequence {
 	
 	ofShortPixels& getPixels();
 	void getPixelsAtTime(long timeInMillis, ofShortPixels& pixels);
+	void getPixelsAtFrame(int frame, ofShortPixels& pixels);
 	
 	vector<DepthImage>& getImageArray();
 	ofxDepthImageCompressor& getCompressor();

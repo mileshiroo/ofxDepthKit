@@ -199,6 +199,10 @@ void ofxDepthImageSequence::getPixelsAtTime(long timeInMillis, ofShortPixels& ou
 	ofxDepthImageCompressor::readCompressedPng(images[frameForTime(timeInMillis)].path, outPixels);
 }
 
+void ofxDepthImageSequence::getPixelsAtFrame(int frame, ofShortPixels& outPixels){
+	ofxDepthImageCompressor::readCompressedPng(images[frame].path, outPixels);
+}
+
 vector<DepthImage>& ofxDepthImageSequence::getImageArray(){
 	return images;
 }
