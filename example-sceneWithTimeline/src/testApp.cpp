@@ -4,7 +4,7 @@
  * with a timeline to scrub through the video.
  *
  * It requiers ofxGameCamera https://github.com/Flightphase/ofxGameCamera 
- * and ofxTimeline https://github.com/Flightphase/ofxTimeline in addition to ofxRGBDepth
+ * and ofxTimeline https://github.com/YCAMInterlab/ofxTimeline in addition to ofxRGBDepth
  *
  * James George 2012 
  * Released under the MIT License
@@ -14,12 +14,14 @@
 
 #include "testApp.h"
 
+
+
 //--------------------------------------------------------------
 void testApp::setup(){
     
     ofSetFrameRate(60);
     ofSetVerticalSync(true);
-    ofBackground(255);
+    ofBackground(0);
     
     //set up a standard timeline with a default duration to begin with
     timeline.setup();
@@ -79,9 +81,9 @@ bool testApp::loadScene(string takeDirectory){
         settings.saveFile();
 
         renderer.setup(player.getScene().calibrationFolder);
-        renderer.setRGBTexture(player.getVideoPlayer());
+        renderer.setRGBTexture(*player.getVideoPlayer());
         renderer.setDepthImage(player.getDepthPixels());
-		renderer.setSimplification(2);
+		renderer.setSimplification(ofVec2f(2,2));
 
         videoTrack.setPlayer(player.getVideoPlayer());
         depthTrack.setSequence(player.getDepthSequence());
@@ -116,7 +118,6 @@ void testApp::draw(){
         glEnable(GL_DEPTH_TEST);
         renderer.drawWireFrame();
         glDisable(GL_DEPTH_TEST);
-		renderer.drawProjectionDebug();
         cam.end();
     }
 
@@ -126,9 +127,7 @@ void testApp::draw(){
 
 //--------------------------------------------------------------
 void testApp::keyPressed(int key){
-    if(key == ' '){
-        timeline.togglePlay();
-    }
+
 }
 
 //--------------------------------------------------------------

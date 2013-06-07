@@ -4,7 +4,7 @@
  * with a timeline to scrub through the video.
  *
  * It requiers ofxGameCamera https://github.com/Flightphase/ofxGameCamera 
- * and ofxTimeline https://github.com/Flightphase/ofxTimeline in addition to ofxRGBDepth
+ * and ofxTimeline https://github.com/YCAMInterlab/ofxTimeline in addition to ofxRGBDepth
  *
  * James George 2012 
  * Released under the MIT License
@@ -20,7 +20,7 @@
 #include "ofxTLVideoTrack.h"
 #include "ofxGameCamera.h"
 #include "ofxRGBDPlayer.h"
-#include "ofxRGBDRenderer.h"
+#include "ofxRGBDGPURenderer.h"
 #include "ofxTLDepthImageSequence.h"
 
 class testApp : public ofBaseApp{
@@ -40,13 +40,14 @@ class testApp : public ofBaseApp{
     void gotMessage(ofMessage msg);
     
     ofxRGBDPlayer player;
-    ofxRGBDRenderer renderer;
+    ofxRGBDGPURenderer renderer;
     
     ofxGameCamera cam;
     ofxTimeline timeline;
     ofxTLVideoTrack videoTrack ;
 	ofxTLDepthImageSequence depthTrack;
     
+	
     bool loadNewScene();
     bool loadDefaultScene();
     bool loadScene(string takeDirectory);
