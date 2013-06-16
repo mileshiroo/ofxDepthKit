@@ -63,6 +63,11 @@ public:
 	float farClip;
 	float nearClip;
 	
+	float bottomClip;
+	float topClip;
+	float rightClip;
+	float leftClip;
+
 	bool addColors;
 	bool mirror;
 	bool calibrationSetup;

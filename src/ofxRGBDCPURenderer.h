@@ -38,13 +38,7 @@ class ofxRGBDCPURenderer : public ofxRGBDRenderer{
 //	ofMesh getReducedMesh(bool normalizeTextureCoords,
 //						  ofVec3f vertexScale = ofVec3f(1,1,1),
 //						  bool flipTextureX = false, bool flipTextureY = false, float texCoordScale = 1.0);
-	
-	//TODO: bring to super class
-	float bottomClip;
-	float topClip;
-	float rightClip;
-	float leftClip;	
-	
+		
 	bool hasTriangles;
 	bool calculateTextureCoordinates;
 	bool normalizeTextureCoordinates;

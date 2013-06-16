@@ -6,18 +6,21 @@
 
 class ofxRGBDCombinedVideoExporter {
   public:
+	
 	ofxRGBDCombinedVideoExporter();
 	~ofxRGBDCombinedVideoExporter();
 	
 	int minDepth;
 	int maxDepth;
-	
+
 	void updatePixels(ofxRGBDCPURenderer& mesh, ofBaseHasPixels& colorPixels);
 	
 	ofPixelsRef getPixels();
+	bool oneToOne;
 	
   protected:
 	
 	ofPixels pixels;
+
 	ofColor huePixelForDepth(unsigned short x);
 };
