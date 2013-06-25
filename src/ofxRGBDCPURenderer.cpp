@@ -339,9 +339,17 @@ void ofxRGBDCPURenderer::generateTextureCoordinates(vector<ofVec3f>& points, vec
 	 */
 }
 
+ofVec3f ofxRGBDCPURenderer::getWorldPoint(ofVec2f uv){
+	return getWorldPoint(uv.x,uv.y);
+}
+
 ofVec3f ofxRGBDCPURenderer::getWorldPoint(float x, float y){
 	if(currentDepthImage == NULL) return ofVec3f(0,0,0);
 	return getWorldPoint(x,y,*currentDepthImage);
+}
+
+ofVec3f ofxRGBDCPURenderer::getWorldPoint(ofVec2f uv, ofShortPixels& pixels){
+	return getWorldPoint(uv.x, uv.y, pixels);
 }
 
 ofVec3f ofxRGBDCPURenderer::getWorldPoint(float x, float y, ofShortPixels& pixels){

@@ -38,6 +38,10 @@ class ofxRGBDPlayer {
 	
 	bool setUseTexture(bool useTexture);
 	
+	//allows easy swapping of video files from other directories
+	//we use this for swapping in color corrected files when doing batch exports
+	void setAlternativeVideoFolder(string directory);
+	
 	void update();
 	
 	bool isLoaded();
@@ -46,12 +50,7 @@ class ofxRGBDPlayer {
 	void play();
 	void stop();
 	void togglePlay();
-	
-	ofVec2f getXYShift();
-	ofVec2f getXYScale();
-	
-	void saveShiftValues();
-	
+		
 	int getDurationInFrames();
 	float getDurationInSeconds();
 	
@@ -67,16 +66,17 @@ class ofxRGBDPlayer {
 	void useLowResVideo();
 	
 	bool updateVideoPlayer;
-	
 
   protected:
 	bool loaded;
 	bool frameIsNew;
 	bool currentlyHiRes;
-	ofVec2f shift;
-	ofVec2f scale;
 	int lastFrame;
 	bool bUseTexture;
+	
+	void useAlternativeVideo();
+	
+	string alternativeVideoFolder;
 	
 	ofxRGBDScene scene;
 	ofPtr<ofVideoPlayer> player;
