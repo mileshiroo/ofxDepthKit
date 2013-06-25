@@ -237,6 +237,11 @@ void ofxRGBDGPURenderer::setupProjectionUniforms(){
 	shader.setUniform1f("farClip", farClip);
 	shader.setUniform1f("edgeClip", edgeClip);
 	
+	shader.setUniform1f("leftClip",leftClip);
+	shader.setUniform1f("rightClip",rightClip);
+	shader.setUniform1f("topClip",topClip);
+	shader.setUniform1f("bottomClip",bottomClip);
+
 	shader.setUniform2f("simplify", simplify.x, simplify.y);
 }
 

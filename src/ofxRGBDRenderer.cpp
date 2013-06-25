@@ -19,18 +19,24 @@ using namespace cv;
 
 ofxRGBDRenderer::ofxRGBDRenderer(){
 
+	flipTexture = false;
+	
 	shift.x = 0;
 	shift.y = 0;
 	scale.x = 1.0;
 	scale.y = 1.0;
 	
-	flipTexture = false;
+	bottomClip = 1.0;
+	topClip = 0.0;
+	rightClip = 0.0;
+	leftClip = 1.0;
 	
 	nearClip = 1;
 	edgeClip = 50;
+	farClip = 6000;
+	
 	simplify = ofVec2f(0,0);
 	
-	farClip = 6000;
 	//meshRotate = ofVec3f(0,0,0);
 	textureScale = ofVec2f(1.0, 1.0);
 	

@@ -36,11 +36,11 @@ class ofxRGBDCPURenderer : public ofxRGBDRenderer{
 						ofMatrix4x4 mat = ofMatrix4x4());
 	
 	//TODO: bring to super class
-	float bottomClip;
-	float topClip;
-	float rightClip;
-	float leftClip;	
-	
+//	float bottomClip;
+//	float topClip;
+//	float rightClip;
+//	float leftClip;	
+//	
 	bool hasTriangles;
 	bool calculateTextureCoordinates;
 	bool normalizeTextureCoordinates;
