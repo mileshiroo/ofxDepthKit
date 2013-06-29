@@ -40,7 +40,9 @@ class ofxRGBDPlayer {
 	
 	//allows easy swapping of video files from other directories
 	//we use this for swapping in color corrected files when doing batch exports
-	void setAlternativeVideoFolder(string directory);
+	//confirming the frame number makes sure the alternative file duraiton is the same as the original
+	void setAlternativeVideoFolder(string directory, bool confirmFrameNum);
+	bool alternativeVideoIsConfirmed();
 	
 	void update();
 	
@@ -73,6 +75,8 @@ class ofxRGBDPlayer {
 	bool currentlyHiRes;
 	int lastFrame;
 	bool bUseTexture;
+	bool bConfirmFrameNum;
+	bool bAlternativeFileIsConfirmed;
 	
 	void useAlternativeVideo();
 	

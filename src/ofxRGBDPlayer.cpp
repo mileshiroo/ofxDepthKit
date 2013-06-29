@@ -15,6 +15,8 @@ ofxRGBDPlayer::ofxRGBDPlayer(){
 	updateVideoPlayer = true;
 	lastFrame = 0;
 	bUseTexture = true;
+	bConfirmFrameNum = false;
+	bAlternativeFileIsConfirmed = false;
 }
 
 ofxRGBDPlayer::~ofxRGBDPlayer(){
@@ -35,8 +37,13 @@ bool ofxRGBDPlayer::setUseTexture(bool useTexture){
 	bUseTexture = useTexture;
 }
 
-void ofxRGBDPlayer::setAlternativeVideoFolder(string directory){
+void ofxRGBDPlayer::setAlternativeVideoFolder(string directory,bool confirmFrameNum){
 	alternativeVideoFolder = directory;
+	bConfirmFrameNum = confirmFrameNum;
+}
+
+bool ofxRGBDPlayer::alternativeVideoIsConfirmed(){
+	return bAlternativeFileIsConfirmed;
 }
 
 bool ofxRGBDPlayer::setup(ofxRGBDScene& newScene, bool forceHiRes){
@@ -105,9 +112,13 @@ void ofxRGBDPlayer::useLowResVideo(){
 }
 
 void ofxRGBDPlayer::useAlternativeVideo(){
-
+	
+	bAlternativeFileIsConfirmed = false;
+	
 	player = ofPtr<ofVideoPlayer>(new ofVideoPlayer());
 	player->setUseTexture(bUseTexture);
+	
+	
 	string alternativeFilePath = alternativeVideoFolder + ofFilePath::getFileName(scene.videoPath) ;
 	cout << "loading alternative path " << alternativeFilePath << endl;
 	if( !player->loadMovie(alternativeFilePath) ){
@@ -115,6 +126,13 @@ void ofxRGBDPlayer::useAlternativeVideo(){
 		ofLogError("Alternative Movie failed to load: " + alternativeFilePath);
 		loaded = false;
 		useLowResVideo();
+		return;
+	}
+	
+	if(bConfirmFrameNum){
+		ofVideoPlayer originalFile;
+		originalFile.setUseTexture(false);
+		bAlternativeFileIsConfirmed = originalFile.loadMovie(scene.videoPath) && (player->getTotalNumFrames() == originalFile.getTotalNumFrames());
 	}
 }
 
