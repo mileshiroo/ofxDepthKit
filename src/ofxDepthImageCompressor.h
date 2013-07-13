@@ -28,7 +28,7 @@ class ofxDepthImageCompressor {
 	ofImage readDepthFrametoImage(string filename);
 	
 	ofImage convertTo8BitImage(ofShortPixels& pix, bool createTexture = true);
-	ofImage convertTo8BitImage(unsigned short* buf, bool ceateTexture = true);
+	ofImage convertTo8BitImage(unsigned short* buf, bool createTexture = true);
 	
 	void convertTo8BitImage(ofShortPixels& pix, ofImage& image);
 	void convertTo8BitImage(unsigned short* buf, ofImage& image);

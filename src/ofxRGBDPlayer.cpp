@@ -12,10 +12,11 @@ ofxRGBDPlayer::ofxRGBDPlayer(){
 	loaded = false;
 	frameIsNew = false;
 	currentlyHiRes = false;
-	shift = ofVec2f(0,0);
 	updateVideoPlayer = true;
 	lastFrame = 0;
 	bUseTexture = true;
+	bConfirmFrameNum = false;
+	bAlternativeFileIsConfirmed = false;
 }
 
 ofxRGBDPlayer::~ofxRGBDPlayer(){
@@ -32,16 +33,27 @@ bool ofxRGBDPlayer::setup(string sceneDirectory, bool forceHiRes){
 	return setup(scene, forceHiRes);
 }
 
-
 bool ofxRGBDPlayer::setUseTexture(bool useTexture){
 	bUseTexture = useTexture;
+}
+
+void ofxRGBDPlayer::setAlternativeVideoFolder(string directory,bool confirmFrameNum){
+	alternativeVideoFolder = directory;
+	bConfirmFrameNum = confirmFrameNum;
+}
+
+bool ofxRGBDPlayer::alternativeVideoIsConfirmed(){
+	return bAlternativeFileIsConfirmed;
 }
 
 bool ofxRGBDPlayer::setup(ofxRGBDScene& newScene, bool forceHiRes){
 
 	scene = newScene;
 	
-	if(forceHiRes){
+	if(alternativeVideoFolder != ""){
+		useAlternativeVideo();
+	}
+	else if(forceHiRes){
 		useHiresVideo();
 	}
 	else{
@@ -56,31 +68,7 @@ bool ofxRGBDPlayer::setup(ofxRGBDScene& newScene, bool forceHiRes){
 	videoDepthAligment = ofPtr<ofxRGBDVideoDepthSequence>( new ofxRGBDVideoDepthSequence() );
 	videoDepthAligment->loadPairingFile(scene.pairingsFile);
 	
-	if(scene.hasXYShift){
-		ofxXmlSettings xyshift;
-		xyshift.loadFile(scene.xyshiftFile);
-		shift = ofVec2f(xyshift.getValue("xshift", 0.),
-						xyshift.getValue("yshift", 0.));
-		
-		scale = ofVec2f(xyshift.getValue("xscale", 1.0),
-						xyshift.getValue("yscale", 1.0));
-	}
-	else{
-		shift = ofVec2f(0,0);
-		scale = ofVec2f(1,1);
-	}
-		
 	return (loaded = true);
-}
-
-void ofxRGBDPlayer::saveShiftValues(){
-	ofxXmlSettings xyshift;
-	xyshift.setValue("xshift", shift.x);
-	xyshift.setValue("yshift", shift.y);
-	
-	xyshift.setValue("xscale", scale.x);
-	xyshift.setValue("yscale", scale.y);
-	xyshift.saveFile(scene.xyshiftFile);
 }
 
 bool ofxRGBDPlayer::hasHighresVideo(){
@@ -123,10 +111,31 @@ void ofxRGBDPlayer::useLowResVideo(){
 	currentlyHiRes = false;
 }
 
-ofVec2f ofxRGBDPlayer::getXYShift(){
-	return shift;
+void ofxRGBDPlayer::useAlternativeVideo(){
+	
+	bAlternativeFileIsConfirmed = false;
+	
+	player = ofPtr<ofVideoPlayer>(new ofVideoPlayer());
+	player->setUseTexture(bUseTexture);
+	
+	
+	string alternativeFilePath = alternativeVideoFolder + ofFilePath::getFileName(scene.videoPath) ;
+	cout << "loading alternative path " << alternativeFilePath << endl;
+	if( !player->loadMovie(alternativeFilePath) ){
+		scene.clear();
+		ofLogError("Alternative Movie failed to load: " + alternativeFilePath);
+		loaded = false;
+		useLowResVideo();
+		return;
+	}
+	
+	if(bConfirmFrameNum){
+		ofVideoPlayer originalFile;
+		originalFile.setUseTexture(false);
+		bAlternativeFileIsConfirmed = originalFile.loadMovie(scene.videoPath) && (player->getTotalNumFrames() == originalFile.getTotalNumFrames());
+	}
 }
-												 
+
 void ofxRGBDPlayer::update(){
 	if(!loaded) return;
 	
@@ -159,13 +168,11 @@ bool ofxRGBDPlayer::isFrameNew(){
 
 void ofxRGBDPlayer::play(){
 	if(!loaded) return;
-//	player->setSpeed(1.0);
 	player->play();
 }
 
 void ofxRGBDPlayer::stop(){
 	if(!loaded) return;
-//	player->setSpeed(0.0);
 	player->stop();
 }
 						   

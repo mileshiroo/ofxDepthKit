@@ -35,15 +35,19 @@ class ofxRGBDCPURenderer : public ofxRGBDRenderer{
 						bool flipTextureY = false,
 						ofMatrix4x4 mat = ofMatrix4x4());
 	
-//	ofMesh getReducedMesh(bool normalizeTextureCoords,
-//						  ofVec3f vertexScale = ofVec3f(1,1,1),
-//						  bool flipTextureX = false, bool flipTextureY = false, float texCoordScale = 1.0);
-		
+	//TODO: bring to super class
+//	float bottomClip;
+//	float topClip;
+//	float rightClip;
+//	float leftClip;	
+//	
 	bool hasTriangles;
 	bool calculateTextureCoordinates;
 	bool normalizeTextureCoordinates;
 
+	ofVec3f getWorldPoint(ofVec2f uv);
 	ofVec3f getWorldPoint(float x, float y);
+	ofVec3f getWorldPoint(ofVec2f uv, ofShortPixels& pixels);
 	ofVec3f getWorldPoint(float x, float y, unsigned short z);
 	ofVec3f getWorldPoint(float x, float y, ofShortPixels& pixels);
 	
