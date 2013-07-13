@@ -17,7 +17,7 @@ class ofxRGBDCombinedVideoExporter {
 	
 	ofPixelsRef getPixels();
 	bool oneToOne;
-	
+	int frameSize;
   protected:
 	
 	ofPixels pixels;

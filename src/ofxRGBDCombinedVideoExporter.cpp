@@ -13,6 +13,7 @@ ofxRGBDCombinedVideoExporter::ofxRGBDCombinedVideoExporter(){
 	minDepth = 0;
 	maxDepth = 2500;
 	oneToOne = true;
+	frameSize = 720;
 }
 
 ofxRGBDCombinedVideoExporter::~ofxRGBDCombinedVideoExporter(){
@@ -26,7 +27,11 @@ ofPixelsRef ofxRGBDCombinedVideoExporter::getPixels(){
 void ofxRGBDCombinedVideoExporter::updatePixels(ofxRGBDCPURenderer& mesh, ofBaseHasPixels& colorPixels){
 	
 	if(oneToOne){
-		if(!pixels.isAllocated()){
+		
+		if(!pixels.isAllocated() ||
+		   pixels.getWidth() != 640 ||
+		   pixels.getHeight() != 480*2)
+		{
 			pixels.allocate(640, 480*2, OF_IMAGE_COLOR_ALPHA);
 		}
 		
@@ -47,13 +52,12 @@ void ofxRGBDCombinedVideoExporter::updatePixels(ofxRGBDCPURenderer& mesh, ofBase
 		}
 	}
 	else {
-		ofRectangle videoRectangle = ofRectangle(0,0,1280,720);
+		ofRectangle videoRectangle = ofRectangle(0,0,frameSize * 16./9.,frameSize);
 		if(!pixels.isAllocated() ||
-		   pixels.getWidth() != videoRectangle.getWidth() ||
-		   pixels.getHeight() != videoRectangle.getHeight() + 480)
+		   pixels.getWidth() != videoRectangle.getWidth() + 640 ||
+		   pixels.getHeight() != videoRectangle.getHeight())
 		{
-			
-			pixels.allocate(videoRectangle.getWidth(), videoRectangle.getHeight() + 480, OF_IMAGE_COLOR);
+			pixels.allocate(videoRectangle.getWidth() + 640, videoRectangle.getHeight(), OF_IMAGE_COLOR);
 		}
 
 		memset(pixels.getPixels(), 0, pixels.getWidth()*pixels.getHeight()*3);
@@ -64,8 +68,8 @@ void ofxRGBDCombinedVideoExporter::updatePixels(ofxRGBDCPURenderer& mesh, ofBase
 		
 		ofShortPixels& p = mesh.getDepthImage();
 		ofRectangle depthBox;
-		depthBox.x = 0;
-		depthBox.y = videoRectangle.getHeight();
+		depthBox.x = videoRectangle.getWidth();
+		depthBox.y = 0;
 		depthBox.width = p.getWidth();
 		depthBox.height = p.getHeight();
 		
