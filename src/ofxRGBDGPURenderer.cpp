@@ -109,10 +109,11 @@ void ofxRGBDGPURenderer::setDepthImage(ofShortPixels& pix){
 		ofTextureData texData;
 		texData.width = pix.getWidth();
 		texData.height = pix.getHeight();
-		texData.glType = GL_LUMINANCE;
 		texData.glTypeInternal = GL_LUMINANCE16;
+#if OF_VERSION_MINOR < 8
+		texData.glType = GL_LUMINANCE;
 		texData.pixelType = GL_UNSIGNED_SHORT;
-		
+#endif
 		depthTexture.allocate(texData);
 		depthTexture.bind();
 		GLint internalFormat;
