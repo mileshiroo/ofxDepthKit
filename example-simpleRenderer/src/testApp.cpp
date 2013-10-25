@@ -34,12 +34,15 @@ void testApp::setup(){
     yshift = 0;
     
     gui.setup("tests");
-    gui.add(xshift.setup("xshift", ofxParameter<float>(), -.15, .15));
-    gui.add(yshift.setup("yshift", ofxParameter<float>(), -.15, .15));
-    gui.add(xsimplify.setup("xsimplify", ofxParameter<float>(), 1, 8));
-    gui.add(ysimplify.setup("ysimplify", ofxParameter<float>(), 1, 8));
+    
+	gui.add(xshift.setup("xshift", ofParameter<float>(), -.15, .15));
+    gui.add(yshift.setup("yshift", ofParameter<float>(), -.15, .15));
+    gui.add(xsimplify.setup("xsimplify", ofParameter<float>(), 1, 8));
+    gui.add(ysimplify.setup("ysimplify", ofParameter<float>(), 1, 8));
+	gui.add(scanLines.setup("scanlines", ofParameter<bool>()));
+	
     gui.add(loadNew.setup("load new"));
-    gui.add(flipTexture.setup("flip texture", ofxParameter<bool>()));
+
         
     gui.loadFromFile("defaultSettings.xml");
     
@@ -88,7 +91,6 @@ bool testApp::loadScene(string takeDirectory){
         player.getVideoPlayer()->setPosition(.5);
         player.update();
         
-        renderer.setXYShift(player.getXYShift());
 		renderer.setRGBTexture(*player.getVideoPlayer());
 		renderer.setDepthImage(player.getDepthPixels());
         
@@ -106,7 +108,7 @@ void testApp::update(){
     //copy any GUI changes into the mesh
     renderer.setXYShift(ofVec2f(xshift,yshift));
     renderer.setSimplification(ofVec2f(xsimplify,ysimplify));
-    renderer.flipTexture = flipTexture;
+
 
     //update the mesh if there is a new depth frame in the player
     player.update();
@@ -119,31 +121,31 @@ void testApp::update(){
 void testApp::draw(){
     if(player.isLoaded()){
         cam.begin();
+		
 		ofSetColor(255);
         glEnable(GL_DEPTH_TEST);
 		ofEnableBlendMode(OF_BLENDMODE_SCREEN);
 		
-		renderer.bindRenderer();
-		
-		glPointSize(5);
-		ofMesh m;
-//		for(int i = 0; i < 2000; i++){
-//			m.addVertex(ofVec3f(ofRandom(640), ofRandom(480), 0) );
-//		}
-		for(int y = 0; y < 480; y += 10){
-			for(int x = 0; x < 640; x += 10){
-				m.addVertex(ofVec3f(x-10,y + (ofGetFrameNum() % 10),0));
-				m.addVertex(ofVec3f(x,y + (ofGetFrameNum() % 10),0));
+		if(scanLines){
+			ofMesh m;
+			ofVec2f simp = renderer.getSimplification();
+			for(int y = 0; y < 480; y += simp.y){
+				for(int x = 0; x < 640; x += simp.x){
+					m.addVertex(ofVec3f(x,y,0));
+					m.addVertex(ofVec3f(x+simp.x,y,0));
+				}
 			}
+			
+			m.setMode(OF_PRIMITIVE_LINES);
+			
+			renderer.bindRenderer();
+			m.draw();
+			renderer.unbindRenderer();
+		}
+		else{
+			renderer.drawWireFrame();
 		}
 		
-		m.setMode(OF_PRIMITIVE_LINES);
-		
-		m.draw();
-		
-		renderer.unbindRenderer();
-		
-        //renderer.drawWireFrame();
 		glDisable(GL_DEPTH_TEST);
         cam.end();
     }

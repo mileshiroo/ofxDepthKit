@@ -26,10 +26,10 @@ ofxRGBDRenderer::ofxRGBDRenderer(){
 	scale.x = 1.0;
 	scale.y = 1.0;
 	
-	bottomClip = 1.0;
 	topClip = 0.0;
-	rightClip = 0.0;
-	leftClip = 1.0;
+	bottomClip = 1.0;
+	leftClip = 0.0;
+	rightClip = 1.0;
 	
 	nearClip = 1;
 	edgeClip = 50;

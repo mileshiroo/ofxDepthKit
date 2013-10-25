@@ -40,7 +40,7 @@ class ofxRGBDCPURenderer : public ofxRGBDRenderer{
 //	float topClip;
 //	float rightClip;
 //	float leftClip;	
-//	
+//
 	bool hasTriangles;
 	bool calculateTextureCoordinates;
 	bool normalizeTextureCoordinates;
