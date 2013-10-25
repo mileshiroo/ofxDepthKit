@@ -289,7 +289,7 @@ void ofxRGBDGPURenderer::setShaderPath(string path){
 }
 
 void ofxRGBDGPURenderer::reloadShader(){
-	if(shaderPath != "" && ofFile(shaderPath + ".vert").exists() && ofFile(shaderPath + ".vert").exists()){
+	if(shaderPath != "" && ofFile(shaderPath + ".vert").exists() && ofFile(shaderPath + ".frag").exists()){
 		if(!shader.load(shaderPath)){
 			ofLogError("ofxRGBDGPURenderer::reloadShader") << "Failed to load vert & frag shader at path " << shaderPath;
 			setupDefaultShader();
