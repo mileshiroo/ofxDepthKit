@@ -187,11 +187,15 @@ void ofxRGBDCPURenderer::update(){
 	}
 
 //	cout << "has triangles? " << mesh.getNumIndices() << endl;
-	if(calculateTextureCoordinates && !depthOnly){
+	if(hasRGBImage && calculateTextureCoordinates && !depthOnly){
 		generateTextureCoordinates();
 	}
 	
 	//cout << "updated mesh has " << mesh.getNumIndices()/3 << " triangles " << endl;
+}
+
+void ofxRGBDCPURenderer::getReducedMesh(ofMesh& mesh,ofMatrix4x4 mat){
+	getReducedMesh(mesh,false,false,false,mat);
 }
 
 void ofxRGBDCPURenderer::getReducedMesh(ofMesh& reducedMesh,
@@ -208,7 +212,8 @@ void ofxRGBDCPURenderer::getReducedMesh(ofMesh& reducedMesh,
 	map<ofIndexType, ofIndexType> vertMapping;
 	for(int i = 0; i < validVertIndices.size(); i++){
 		vertMapping[ validVertIndices[i] ] = i;
-		reducedMesh.addVertex(  mesh.getVertices()[ validVertIndices[i] ] * matrix);
+		//reducedMesh.addVertex(  mesh.getVertices()[ validVertIndices[i] ] * matrix);
+		reducedMesh.addVertex(  matrix.preMult( mesh.getVertices()[ validVertIndices[i] ] ) );
 		if(mesh.hasTexCoords() && calculateTextureCoordinates && currentRGBImage != NULL){
 			ofVec2f& coord = mesh.getTexCoords()[ validVertIndices[i] ] ;
 			if(flipTextureX){

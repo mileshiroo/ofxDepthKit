@@ -30,17 +30,14 @@ class ofxRGBDCPURenderer : public ofxRGBDRenderer{
 	
 	//mesh with only valid vertices
 	void getReducedMesh(ofMesh& mesh,
+						ofMatrix4x4 mat = ofMatrix4x4());
+
+	void getReducedMesh(ofMesh& mesh,
 						bool normalizeTextureCoords,
 						bool flipTextureX = false,
 						bool flipTextureY = false,
 						ofMatrix4x4 mat = ofMatrix4x4());
-	
-	//TODO: bring to super class
-//	float bottomClip;
-//	float topClip;
-//	float rightClip;
-//	float leftClip;	
-//	
+		
 	bool hasTriangles;
 	bool calculateTextureCoordinates;
 	bool normalizeTextureCoordinates;

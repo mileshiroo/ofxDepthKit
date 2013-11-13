@@ -107,6 +107,7 @@ bool ofxRGBDRenderer::setup(string calibrationDirectory){
 		ofLogError("ofxRGBDGPURenderer --- Calibration directory doesn't exist: " + calibrationDirectory);
 		return false;
 	}
+	calibrationDirectory = ofFilePath::addTrailingSlash(calibrationDirectory);
 	return setup(calibrationDirectory+"rgbCalib.yml", calibrationDirectory+"depthCalib.yml",
 				 calibrationDirectory+"rotationDepthToRGB.yml", calibrationDirectory+"translationDepthToRGB.yml");
 }
