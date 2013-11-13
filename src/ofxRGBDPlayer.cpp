@@ -33,7 +33,7 @@ bool ofxRGBDPlayer::setup(string sceneDirectory, bool forceHiRes){
 	return setup(scene, forceHiRes);
 }
 
-bool ofxRGBDPlayer::setUseTexture(bool useTexture){
+void ofxRGBDPlayer::setUseTexture(bool useTexture){
 	bUseTexture = useTexture;
 }
 

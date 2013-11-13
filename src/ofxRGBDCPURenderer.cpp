@@ -14,11 +14,6 @@ ofxRGBDCPURenderer::ofxRGBDCPURenderer(){
 	
 	depthOnly = false;
 
-	//TODO: bring this into renderer?
-	topClip = 0.0;
-	bottomClip = 1.0;
-	leftClip = 0.0;
-	rightClip = 1.0;
 
 	calibrationSetup = false;
 	calculateTextureCoordinates = true;

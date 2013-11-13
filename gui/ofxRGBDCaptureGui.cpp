@@ -1805,7 +1805,7 @@ void ofxRGBDCaptureGui::generateCorrespondence(){
 	solvePnPRansac(filteredKinectObjectPoints, filteredExternalImagePoints,
 				   cameraMatrix, distCoeffs,
 				   rotationDepthToRGB, translationDepthToRGB,
-				   true,//use intrinsics guess
+				   false,//use intrinsics guess
 				   100, //iterations
 				   1.5, //reprojection error
 				   numPointsFound, //min inliers

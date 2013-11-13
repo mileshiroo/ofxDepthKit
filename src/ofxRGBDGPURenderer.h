@@ -9,13 +9,15 @@
  *  http://github.com/obviousjim
  *
  * Developed with support from:
- *	  Frank-Ratchy STUDIO for Creative Inquiry http://studioforcreativeinquiry.org
+ *	  Frank-Ratchye STUDIO for Creative Inquiry http://studioforcreativeinquiry.org
  *	  YCAM InterLab http://interlab.ycam.jp/en
  *	  Eyebeam http://eyebeam.org
  */
 
 #pragma once
 #include "ofxRGBDRenderer.h"
+
+
 
 class ofxRGBDGPURenderer : public ofxRGBDRenderer {
   public:
@@ -47,7 +49,10 @@ class ofxRGBDGPURenderer : public ofxRGBDRenderer {
 	
   protected:
 	ofShader shader;
-	string shaderPath;
+	void setupDefaultShader();
+	void printUniforms();
+	
+	string shaderPath; // if "" then load default shader
 	bool rendererBound;
 	ofTexture depthTexture;
 	

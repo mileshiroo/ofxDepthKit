@@ -53,7 +53,7 @@ class testApp : public ofBaseApp{
     ofxFloatSlider yshift;
     ofxFloatSlider xsimplify;
     ofxFloatSlider ysimplify;
-    ofxToggle flipTexture;
+	ofxToggle scanLines;
     ofxButton loadNew;
     
     bool loadNewScene();

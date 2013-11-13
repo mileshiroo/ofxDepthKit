@@ -36,7 +36,7 @@ class ofxRGBDPlayer {
 	bool setup(string sceneDirectory, bool forceHires = false);
 	bool setup(ofxRGBDScene& scene, bool forceHires = false);
 	
-	bool setUseTexture(bool useTexture);
+	void setUseTexture(bool useTexture);
 	
 	//allows easy swapping of video files from other directories
 	//we use this for swapping in color corrected files when doing batch exports

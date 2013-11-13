@@ -37,7 +37,7 @@ class ofxRGBDCPURenderer : public ofxRGBDRenderer{
 						bool flipTextureX = false,
 						bool flipTextureY = false,
 						ofMatrix4x4 mat = ofMatrix4x4());
-		
+
 	bool hasTriangles;
 	bool calculateTextureCoordinates;
 	bool normalizeTextureCoordinates;
