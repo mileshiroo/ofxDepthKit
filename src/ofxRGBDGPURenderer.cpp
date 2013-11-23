@@ -77,8 +77,8 @@ void main(void)
     float up    = depthAtPosition(floor(gl_Vertex.xy + vec2(0.0,-simplify.y)) + halfvec );
     float bl    = depthAtPosition(vec2(floor(gl_Vertex.x - simplify.x),floor( gl_Vertex.y + simplify.y)) + halfvec );
     float ur    = depthAtPosition(vec2(floor(gl_Vertex.x  + simplify.x),floor(gl_Vertex.y - simplify.y)) + halfvec );
-//
-//    //cull invalid verts
+
+	//cull invalid verts
     positionValid = (depth < farClip &&
 					 right < farClip &&
 					 down < farClip &&
@@ -156,7 +156,7 @@ ofxRGBDGPURenderer::ofxRGBDGPURenderer()
 {
 	rendererBound = false;
 	depthOnly = false;
-	setupDefaultShader();
+	bShaderLoaded = false;
 }
 
 ofxRGBDGPURenderer::~ofxRGBDGPURenderer(){
@@ -174,6 +174,10 @@ void ofxRGBDGPURenderer::setSimplification(ofVec2f simplification){
 		return;
 	}
 	
+	if(!bShaderLoaded){
+		setupDefaultShader();
+	}
+
 	if(simplification.x <= 0  || simplification.y <= 0){
 		return;
 	}
@@ -230,6 +234,7 @@ void ofxRGBDGPURenderer::setSimplification(ofVec2f simplification){
 	}
 	
 	meshGenerated = true;
+	
 }
 
 
@@ -289,8 +294,10 @@ void ofxRGBDGPURenderer::setShaderPath(string path){
 }
 
 void ofxRGBDGPURenderer::reloadShader(){
+	bShaderLoaded = false;
 	if(shaderPath != "" && ofFile(shaderPath + ".vert").exists() && ofFile(shaderPath + ".frag").exists()){
-		if(!shader.load(shaderPath)){
+		bShaderLoaded = shader.load(shaderPath);
+		if(!bShaderLoaded){
 			ofLogError("ofxRGBDGPURenderer::reloadShader") << "Failed to load vert & frag shader at path " << shaderPath;
 			setupDefaultShader();
 		}
@@ -303,7 +310,7 @@ void ofxRGBDGPURenderer::reloadShader(){
 void ofxRGBDGPURenderer::setupDefaultShader(){
 	shader.setupShaderFromSource(GL_VERTEX_SHADER, vert);
 	shader.setupShaderFromSource(GL_FRAGMENT_SHADER, frag);
-	shader.linkProgram();
+	bShaderLoaded = shader.linkProgram();
 }
 
 bool ofxRGBDGPURenderer::bindRenderer(){

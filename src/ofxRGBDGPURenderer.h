@@ -34,6 +34,7 @@ class ofxRGBDGPURenderer : public ofxRGBDRenderer {
 	//called inside of bind/unbind
 	void setupProjectionUniforms();
 	
+	void setupDefaultShader();
 	void setShaderPath(string path);
 	void reloadShader();
 
@@ -48,8 +49,9 @@ class ofxRGBDGPURenderer : public ofxRGBDRenderer {
 	void draw(ofPolyRenderMode drawMode);
 	
   protected:
+	bool bShaderLoaded;
 	ofShader shader;
-	void setupDefaultShader();
+
 	void printUniforms();
 	
 	string shaderPath; // if "" then load default shader
