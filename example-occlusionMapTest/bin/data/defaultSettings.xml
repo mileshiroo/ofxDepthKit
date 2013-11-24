@@ -1,0 +1,14 @@
+<xshift>0.000000000</xshift>
+<yshift>0.000000000</yshift>
+<simplify>5</simplify>
+<xsimplify>3.519999981</xsimplify>
+<ysimplify>3.555000067</ysimplify>
+<flip_texture>0</flip_texture>
+<tests>
+    <xshift>0.234</xshift>
+    <yshift>-0.234</yshift>
+    <xsimplify>1</xsimplify>
+    <ysimplify>1</ysimplify>
+    <scanlines>0</scanlines>
+    <occlude>1</occlude>
+</tests>

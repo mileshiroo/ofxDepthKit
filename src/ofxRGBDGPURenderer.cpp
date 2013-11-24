@@ -103,14 +103,14 @@ void main(void)
 					 abs(bl - depth) < edgeClip
 					 ) ? 1.0 : 0.0;
 	
-	
+
 	vec4 pos = vec4((gl_Vertex.x - principalPoint.x) * depth / fov.x,
                     (gl_Vertex.y - principalPoint.y) * depth / fov.y, depth, 1.0);
 	
 	
     //projective texture on the geometry
 	//http://opencv.willowgarage.com/documentation/camera_calibration_and_3d_reconstruction.html
-	vec4 texCd;
+	vec4 texCd = vec4(0.);
 	vec4 projection = extrinsics * pos;// + vec4(shift*dim / textureScale,0,0);
 	
 	if(projection.z != 0.0) {
@@ -130,7 +130,8 @@ void main(void)
     gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * pos;
     gl_FrontColor = gl_Color;
 	
-});
+}
+						  );
 
 const GLchar* frag = GLSL(110, GL_ARB_texture_rectangle : enable,
 
@@ -140,13 +141,15 @@ const float epsilon = 1e-6;
 
 void main()
 {
-    if(positionValid < epsilon){
+
+	if(positionValid < epsilon){
     	discard;
         return;
     }
 
 	gl_FragColor = texture2DRect(colorTex, gl_TexCoord[0].st) * gl_Color;
-});
+}
+);
 
 using namespace ofxCv;
 using namespace cv;
@@ -307,7 +310,7 @@ void ofxRGBDGPURenderer::reloadShader(){
 	}
 }
 
-void ofxRGBDGPURenderer::setupDefaultShader(){
+void ofxRGBDGPURenderer::setupDefaultShader(){	
 	shader.setupShaderFromSource(GL_VERTEX_SHADER, vert);
 	shader.setupShaderFromSource(GL_FRAGMENT_SHADER, frag);
 	bShaderLoaded = shader.linkProgram();
@@ -327,10 +330,10 @@ bool ofxRGBDGPURenderer::bindRenderer(){
 	
 	ofPushMatrix();
 	
-	ofScale(1, -1, 1);
-	if(!mirror){
-		ofScale(-1, 1, 1);	
-	}
+//	ofScale(1, -1, 1);
+//	if(!mirror){
+//		ofScale(-1, 1, 1);	
+//	}
 	
 	ofRotate(worldRotation.x,1,0,0);
 	ofRotate(worldRotation.y,0,1,0);
@@ -459,6 +462,9 @@ void ofxRGBDGPURenderer::draw(ofPolyRenderMode drawMode){
 		}
 		
 		unbindRenderer();
+	}
+	else{
+		ofLogError("ofxRGBDGPURenderer::draw") << "Binde renderer failed";
 	}
 }
 
