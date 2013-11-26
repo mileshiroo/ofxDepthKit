@@ -330,10 +330,10 @@ bool ofxRGBDGPURenderer::bindRenderer(){
 	
 	ofPushMatrix();
 	
-//	ofScale(1, -1, 1);
-//	if(!mirror){
-//		ofScale(-1, 1, 1);	
-//	}
+	ofScale(1, -1, 1);
+	if(!mirror){
+		ofScale(-1, 1, 1);	
+	}
 	
 	ofRotate(worldRotation.x,1,0,0);
 	ofRotate(worldRotation.y,0,1,0);
