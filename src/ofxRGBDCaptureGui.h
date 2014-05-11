@@ -159,6 +159,7 @@ public:
 	void loadDefaultDirectory();
 	
 	bool loadSequenceForPlayback( int index );
+	void updateInterfaceForTab(ofxMSAInteractiveObject* tab);
 	void updateSceneButtons();
 	void disableSceneButtons();
 	void enableSceneButtons();

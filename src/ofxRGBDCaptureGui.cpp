@@ -157,6 +157,7 @@ void ofxRGBDCaptureGui::setup(){
 		buttonSet[i]->setDownColor(downColor);
 		buttonSet[i]->setHoverColor(hoverColor);
 		buttonSet[i]->disableKeyEvents();
+		buttonSet[i]->enableMouseEvents();
 		buttonSet[i]->setDelegate(this);
 	}
 	
@@ -174,6 +175,7 @@ void ofxRGBDCaptureGui::setup(){
 	
 	depthSequence.setup();
 	
+	updateInterfaceForTab(btnIntrinsicsTab);
 	updateSceneButtons();
 	
 	cam.setup();
@@ -814,45 +816,7 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
 		}
 	}
 	else if(find(tabSet.begin(),tabSet.end(), object) != tabSet.end()){
-		
-		btnRGBLoadCalibration->disableAllEvents();
-		btnCalibrateDepthCamera->disableAllEvents();
-		btnGenerateCalibration->disableAllEvents();
-		btnToggleRecord->disableAllEvents();
-		checkerboardDimensions.disable();
-		timeline.hide();
-		timeline.stop();
-		
-		if(object == btnIntrinsicsTab){
-			disableSceneButtons();
-			currentTab = TabIntrinsics;
-			currentTabObject = btnIntrinsicsTab;
-			btnRGBLoadCalibration->enableAllEvents();
-			btnCalibrateDepthCamera->enableAllEvents();
-			checkerboardDimensions.enable();
-		}
-		else if(object == btnExtrinsicsTab){
-			disableSceneButtons();
-			currentTab = TabExtrinsics;
-			currentTabObject = btnExtrinsicsTab;
-			btnGenerateCalibration->enableAllEvents();
-			checkerboardDimensions.enable();
-		}
-		else if(object == btnRecordTab){
-			enableSceneButtons();
-			currentTab = TabCapture;
-			currentTabObject = btnRecordTab;
-			btnToggleRecord->enableAllEvents();
-		}
-		else if(object == btnPlaybackTab){
-			enableSceneButtons();
-			currentTab = TabPlayback;
-			currentTabObject = btnPlaybackTab;
-			timeline.show();
-			if(depthSequence.getDepthImageSequence() != NULL && depthSequence.getDepthImageSequence()->isLoaded()){
-				updateDepthImage(depthSequence.getDepthImageSequence()->getPixels());
-			}
-		}
+		updateInterfaceForTab(object);
 	}
 	else {
 		for(int i = 0; i < btnScenes.size(); i++){
@@ -864,6 +828,48 @@ void ofxRGBDCaptureGui::objectDidRelease(ofxMSAInteractiveObject* object, int x,
 				}
 				break;
 			}
+		}
+	}
+}
+
+void ofxRGBDCaptureGui::updateInterfaceForTab(ofxMSAInteractiveObject* tab){
+	
+	btnRGBLoadCalibration->disableAllEvents();
+	btnCalibrateDepthCamera->disableAllEvents();
+	btnGenerateCalibration->disableAllEvents();
+	btnToggleRecord->disableAllEvents();
+	checkerboardDimensions.disable();
+	timeline.hide();
+	timeline.stop();
+	
+	if(tab == btnIntrinsicsTab){
+		disableSceneButtons();
+		currentTab = TabIntrinsics;
+		currentTabObject = btnIntrinsicsTab;
+		btnRGBLoadCalibration->enableAllEvents();
+		btnCalibrateDepthCamera->enableAllEvents();
+		checkerboardDimensions.enable();
+	}
+	else if(tab == btnExtrinsicsTab){
+		disableSceneButtons();
+		currentTab = TabExtrinsics;
+		currentTabObject = btnExtrinsicsTab;
+		btnGenerateCalibration->enableAllEvents();
+		checkerboardDimensions.enable();
+	}
+	else if(tab == btnRecordTab){
+		enableSceneButtons();
+		currentTab = TabCapture;
+		currentTabObject = btnRecordTab;
+		btnToggleRecord->enableAllEvents();
+	}
+	else if(tab == btnPlaybackTab){
+		enableSceneButtons();
+		currentTab = TabPlayback;
+		currentTabObject = btnPlaybackTab;
+		timeline.show();
+		if(depthSequence.getDepthImageSequence() != NULL && depthSequence.getDepthImageSequence()->isLoaded()){
+			updateDepthImage(depthSequence.getDepthImageSequence()->getPixels());
 		}
 	}
 }
