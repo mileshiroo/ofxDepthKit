@@ -281,10 +281,11 @@ void ofxRGBDCPURenderer::generateTextureCoordinates(vector<ofVec3f>& points, vec
 			xypp.y = xyp.y * (1.0 + distortionK.x*r2 + distortionK.y*r4 + distortionK.z*r6) + distortionP.x * (r2 + 2.0*powf(xyp.y, 2.0) ) + 2.0*distortionP.y*xyp.x*xyp.y;
 			ofVec2f uv = (colorFOV * xypp + colorPrincipalPoint);
 			uv = ((uv-dim/2.0) * scale) + dim/2.0;
+			uv *= textureScale;
 			texCoords[i].x = ofClamp(uv.x, 0, currentRGBImage->getTextureReference().getWidth()-1);
 			texCoords[i].y = ofClamp(uv.y, 0, currentRGBImage->getTextureReference().getHeight()-1);
 		}
-		else{
+		else {
 			texCoords[i] = ofVec2f(0,0);
 		}
 	}

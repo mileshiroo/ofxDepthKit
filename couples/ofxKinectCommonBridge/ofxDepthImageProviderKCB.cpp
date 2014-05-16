@@ -11,16 +11,10 @@
 
 
 void ofxDepthImageProviderKCB::setup(int deviceId, bool useColor){
-	/*
-	bDeviceFound  = kinect.init(!useColor, true); // shows infrared instead of RGB video image
-	bDeviceFound &= kinect.open();
-	*/
 
 	kinect.initSensor();
-	//kinect.initIRStream(640, 480);
 	kinect.initIRStream(640, 480);
-	kinect.initDepthStream(640, 480, true);
-	//kinect.initSkeletonStream(true);
+	kinect.initDepthStream(640, 480, false);
 
 	//simple start
 	bDeviceFound = kinect.start();
