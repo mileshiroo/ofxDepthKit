@@ -40,8 +40,9 @@ bool ofxDepthImageSequence::loadSequence(string newSequenceDirectory){
 		ofLogError("ofxTLDepthImageSequence -- sequence directory " + newSequenceDirectory + " is empty!");
 		return false;
 	}
-	
-	sequenceList.sort();
+#ifndef TARGET_WIN32
+	sequenceList.sort();//slow
+#endif
 	bool checkedForTimestamp = false;
 	unsigned long firstFrameTimeOffset = 0;
 	for(int i = 0; i < numFiles; i++){
