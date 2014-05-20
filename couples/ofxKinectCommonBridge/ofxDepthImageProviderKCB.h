@@ -24,4 +24,6 @@ class ofxDepthImageProviderKCB : public ofxDepthImageProvider {
 	
   protected:
 	ofxKinectCommonBridge kinect;
+	vector<ofVec3f> cashedCoords;
+	bool coordsDirty;
 };

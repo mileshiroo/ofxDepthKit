@@ -1565,6 +1565,17 @@ void ofxRGBDCaptureGui::dragEvent(ofDragInfo& dragInfo){
 }
 
 void ofxRGBDCaptureGui::refineDepthCalibration(){
+
+	if(!depthImageProvider->deviceFound() ){
+		ofSystemAlertDialog("No depth sensor found. Plug in the device and restart the application.");
+		return;
+	}
+
+	if(!ofFile("depthCalibBase.yml").exists()){
+		ofSystemAlertDialog("No base calibrationfound. make sure the depthCalibBase.yml file is in the data folder next to the application.");
+		return;		
+	}
+
 	depthCalibrationBase.load("depthCalibBase.yml");
 	int width  = depthImageProvider->getRawIRImage().getWidth();
 	int height = depthImageProvider->getRawIRImage().getHeight();

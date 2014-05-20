@@ -25,7 +25,6 @@ class ofxDepthImageProvider {
 
 	ofShortPixels& getRawDepth();
 	ofImage& getRawIRImage();
-//	ofImage& getDepthImage();
 	ofImage& getColorImage();
 	
 	void setDepthModeRainbow(bool useRainbow); //otherwise grayscale

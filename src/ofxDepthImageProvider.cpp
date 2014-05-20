@@ -50,27 +50,4 @@ ofImage& ofxDepthImageProvider::getColorImage(){
 	return colorImage;
 }
 
-/*
-ofImage& ofxDepthImageProvider::getDepthImage(){
-	
-	if(bDepthImageDirty){
-		
-		if(bUseRainbow){		
-			int max_depth = maxDepth();
-			for(int i = 0; i < 640*480; i++){
-				int lookup = depthPixels.getPixels()[i] / (max_depth / 256);
-				//int lookup = ofMap( depthPixels.getPixels()[i], 0, max_depth, 0, 255, true);
-				depthImage.getPixels()[(i*3)+0] = LUTR[lookup];
-				depthImage.getPixels()[(i*3)+1] = LUTG[lookup];
-				depthImage.getPixels()[(i*3)+2] = LUTB[lookup];
-			}
-		}
-		else{
-			//TODO!
-		}
-		depthImage.update();
-		bDepthImageDirty  = false;
-	}
-	return depthImage;
-}
-*/
+
