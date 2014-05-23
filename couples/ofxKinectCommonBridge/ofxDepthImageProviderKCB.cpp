@@ -31,9 +31,12 @@ void ofxDepthImageProviderKCB::update(){
 		bNewFrame = true;
 		bDepthImageDirty = true;
 		depthPixels = kinect.getRawDepthPixelsRef();
+		depthPixels.mirror(false,true);
+
 		rawIRImage.setUseTexture(false);
 		rawIRImage.setFromPixels(kinect.getColorPixelsRef());
 		rawIRImage.setImageType(OF_IMAGE_GRAYSCALE);
+		rawIRImage.mirror(false,true);
 		rawIRImage.setUseTexture(true);
 		rawIRImage.update();
 	}		
